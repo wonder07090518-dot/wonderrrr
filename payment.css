@@ -1,0 +1,8 @@
+:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,"PingFang SC",sans-serif;color:#f5f5f7;background:#000}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#28282c 0,#000 45%);display:grid;place-items:center}
+.payment-shell{width:min(480px,calc(100% - 36px));padding:35px 0}
+.brand{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-size:18px;font-weight:700;letter-spacing:-.04em}
+.brand .brand-mark{width:22px;height:22px;flex:none}.brand .brand-mark rect{fill:#fff}.brand .brand-mark path{fill:none;stroke:#000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.payment-card{margin-top:22px;border:1px solid #303033;border-radius:26px;background:#171719;padding:32px;text-align:center}
+.kicker{font-size:10px;letter-spacing:.1em;color:#86868b;margin:0 0 12px}.payment-card h1{font-size:34px;letter-spacing:-.05em;margin:0}.description{font-size:14px;line-height:1.6;color:#a1a1a6;margin:14px 0 8px}.amount{font-size:48px;font-weight:700;letter-spacing:-.06em;margin:8px 0 24px}.methods{display:flex;gap:8px}.methods button{flex:1;border:1px solid #4a4a4d;background:transparent;color:#f5f5f7;border-radius:12px;padding:11px;font-size:13px;cursor:pointer}.methods button.active{background:#fff;color:#000;border-color:#fff}.qr-wrap{margin:18px auto}.qr-wrap img{display:block;width:min(260px,100%);margin:auto;border-radius:14px;background:#fff;padding:7px}.qr-wrap p{font-size:12px;color:#a1a1a6;margin:12px 0}.confirm{width:100%;border:0;border-radius:999px;background:#fff;color:#000;padding:14px;font-size:14px;font-weight:600;cursor:pointer}.notice{font-size:11px;line-height:1.6;color:#86868b;margin:16px 0 0}
