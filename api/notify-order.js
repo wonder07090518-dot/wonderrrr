@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const { id, service, email, idea, size, style, payment, date, price } = req.body || {};
   if (!id || !service || !email || !idea) return res.status(400).json({ error: 'Missing order details' });
   if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return res.status(503).json({ error: 'Email service is not configured' });
-  const servicePrices = { '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', 'AI 简历照片': '¥1 / 张', 'AI 证件照': '¥1 / 张', 'AI 去背景': '¥0.3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '短视频剪辑': '¥15 / 条起', '音频配乐': '¥5 / 条起' };
+  const servicePrices = { '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', 'AI 简历照片': '¥1 / 张', 'AI 证件照': '¥1 / 张', 'AI 去背景': '¥0.3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '其他需求': 'AI 评估报价（审核后确认）' };
   const orderPrice = servicePrices[service] || price || '待确认报价';
   const text = `新创意订单\n\n订单号：${id}\n服务：${service}\n本次应付项目价格：${orderPrice}\n客户邮箱：${email}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n提交时间：${date}\n\n需求：\n${idea}`;
   const ownerResponse = await fetch('https://api.resend.com/emails', {
