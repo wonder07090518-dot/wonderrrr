@@ -1,5 +1,8 @@
+import { isAdmin } from './_admin.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin authentication required' });
   const { email, orderId, service, price, fileName, fileData } = req.body || {};
   if (!email || !orderId || !fileName || !fileData) return res.status(400).json({ error: 'Missing delivery details' });
   if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return res.status(503).json({ error: 'Email service is not configured' });
