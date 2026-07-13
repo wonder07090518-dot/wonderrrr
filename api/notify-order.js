@@ -8,9 +8,9 @@ export default async function handler(req, res) {
   const { id, service, email, idea, size, style, payment, date, price } = req.body || {};
   if (!id || !service || !email || !idea) return res.status(400).json({ error: 'Missing order details' });
   if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return res.status(503).json({ error: 'Email service is not configured' });
-  const servicePrices = { '社媒封面': '¥3–5 / 张', '营销海报': '¥3–5 / 张', '电商商品图': '¥3–5 / 张', 'PPT 美化': '¥5–10 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥8–15 / 个', 'Banner 设计': '¥2–4 / 张', 'AI 简历照片': '¥1 / 张', 'AI 证件照': '¥1 / 张', 'AI 去背景': '¥0.3 / 张' };
+  const servicePrices = { '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', 'AI 简历照片': '¥1 / 张', 'AI 证件照': '¥1 / 张', 'AI 去背景': '¥0.3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张' };
   const orderPrice = servicePrices[service] || price || '待确认报价';
-  const text = `新创意订单\n\n订单号：${id}\n服务：${service}\n项目参考价格：${orderPrice}\n客户邮箱：${email}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n提交时间：${date}\n\n需求：\n${idea}`;
+  const text = `新创意订单\n\n订单号：${id}\n服务：${service}\n本次应付项目价格：${orderPrice}\n客户邮箱：${email}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n提交时间：${date}\n\n需求：\n${idea}`;
   const ownerResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   const customerResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: process.env.MAIL_FROM, to: [email], subject: `Wonder Ad Lab 已收到你的订单 ${id}`, text: `你好，\n\n我们已收到你的 ${service} 订单，当前状态为：已提交，正在审核中。\n订单号：${id}\n项目参考价格：${orderPrice}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n\n请使用附件中的${qrLabel}完成付款。付款后请等待 Wonder Ad Lab 团队确认。作品完成后会通过邮件发送给你。\n\nWonder Ad Lab`, attachments: [{ filename: `${qrLabel}.jpg`, content: qrContent }] })
+    body: JSON.stringify({ from: process.env.MAIL_FROM, to: [email], subject: `Wonder Ad Lab 已收到你的订单 ${id}`, text: `你好，\n\n我们已收到你的 ${service} 订单，当前状态为：已提交，正在审核中。\n订单号：${id}\n本次应付项目价格：${orderPrice}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n\n请使用附件中的${qrLabel}完成付款。付款后请等待 Wonder Ad Lab 团队确认。作品完成后会通过邮件发送给你。\n\nWonder Ad Lab`, attachments: [{ filename: `${qrLabel}.jpg`, content: qrContent }] })
   });
   if (!ownerResponse.ok || !customerResponse.ok) return res.status(502).json({ error: 'Email delivery failed' });
   return res.status(200).json({ ok: true });
