@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Wonder Ad Lab · 管理后台</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar"><a class="brand" href="/">✦ <span>Wonder Ad Lab</span></a><p>ADMIN CONSOLE</p><button id="logout" hidden>退出登录</button></header>
+
+    <section class="login-card" id="loginView">
+      <p class="eyebrow">PRIVATE ACCESS</p>
+      <h1>管理员后台</h1>
+      <p>仅限 Wonder Ad Lab 管理员与授权员工。客户无法从主站访问或查看这里的订单。</p>
+      <form id="loginForm">
+        <label>管理员邮箱<input id="email" type="email" autocomplete="username" required /></label>
+        <label>管理员密码<input id="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">安全登录 <b>→</b></button>
+        <p class="hint" id="loginHint">管理员账号尚未设置时，后台不会开放。</p>
+      </form>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="dashboard-head"><div><p class="eyebrow">ORDER MANAGEMENT</p><h1>创意订单</h1><p>查看客户需求、更新进度并交付成品。状态更新与交付邮件仅在这里执行。</p></div><button class="refresh" id="refresh">刷新订单</button></div>
+      <div class="stats"><article><small>全部订单</small><strong id="total">0</strong></article><article><small>待处理</small><strong id="pending">0</strong></article><article><small>制作中</small><strong id="making">0</strong></article><article><small>已交付</small><strong id="done">0</strong></article></div>
+      <div class="notice" id="notice">正在加载订单…</div>
+      <section class="orders" id="orders"></section>
+    </section>
+  </main>
+  <template id="orderTemplate"><article class="order-card"><div class="order-main"><div class="row"><span class="service"></span><span class="status"></span></div><h2 class="idea"></h2><p class="meta"></p><p class="date"></p></div><div class="actions"><label>订单状态<select class="status-select"><option>待支付</option><option>待确认支付</option><option>已支付</option><option>制作中</option><option>已交付</option></select></label><label class="file-label">上传成品并邮件交付<input class="file-input" type="file" accept="image/*,.pdf,.ppt,.pptx" /></label><p class="delivery-note">上传成功后才会标记为“已交付”，并将成品发送至客户邮箱。</p></div></article></template>
+  <script src="admin.js"></script>
+</body>
+</html>
