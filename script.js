@@ -1,14 +1,11 @@
 const service = document.querySelector('#service');
 const toast = document.querySelector('#toast');
-const inboxModal = document.querySelector('#inboxModal');
 const ordersModal = document.querySelector('#ordersModal');
 const accountModal = document.querySelector('#accountModal');
 const authModal = document.querySelector('#authModal');
 const privacyModal = document.querySelector('#privacyModal');
 const submittedModal = document.querySelector('#submittedModal');
-const inboxList = document.querySelector('#inboxList');
 const ordersList = document.querySelector('#ordersList');
-const inboxCount = document.querySelector('#inboxCount');
 const inboxKey = 'wonderad-orders';
 const accountsKey = 'wonderad-accounts';
 const sessionKey = 'wonderad-session';
@@ -97,32 +94,24 @@ async function notifyDelivery(order, result) {
     return response.ok;
   } catch { return false; }
 }
+async function saveSharedOrder(order) {
+  try {
+    const response = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
+    return response.ok;
+  } catch { return false; }
+}
 function statusClass(status) {
   return ({ '待支付': 'pending', '待确认支付': 'pending', '已支付': 'paid', '制作中': 'making', '已交付': 'done' })[status] || 'pending';
-}
-function adminDeliveryTools(order) {
-  if (order.status === '已交付') return '<p class="delivery-wait">成品已上传，并已通过邮件发送给客户。</p>';
-  return `<div class="admin-tools"><label>订单状态 <select class="status-select"><option ${order.status === '待支付' ? 'selected' : ''}>待支付</option><option ${order.status === '待确认支付' ? 'selected' : ''}>待确认支付</option><option ${order.status === '已支付' ? 'selected' : ''}>已支付</option><option ${order.status === '制作中' ? 'selected' : ''}>制作中</option></select></label><label class="upload-result">上传并邮件交付 <input class="result-upload" type="file" accept="image/*,.pdf,.ppt,.pptx" /></label></div>`;
 }
 function startPayment(transaction) {
   localStorage.setItem('wonderad-payment', JSON.stringify(transaction));
   window.location.href = `payment.html?id=${encodeURIComponent(transaction.id)}`;
 }
-function renderInbox() {
-  const orders = getOrders();
-  inboxCount.textContent = orders.length;
+function renderAccountStats() {
+  const user = getCurrentUser();
+  const orders = user ? getOrders().filter(order => order.email.toLowerCase() === user.email.toLowerCase()) : [];
   document.querySelector('#accountOrderCount').textContent = orders.length;
   document.querySelector('#accountImageCount').textContent = orders.filter(order => order.result).length;
-  inboxList.innerHTML = orders.length ? orders.map(order => `
-    <article class="inbox-item admin-order" data-id="${order.id}">
-      <div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(order.status)}</span></div>
-      <p class="customer-email">${escapeHtml(order.email)} · ${escapeHtml(order.payment)} · ${escapeHtml(order.price || servicePrices[order.service] || '待确认报价')} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)}</p>
-      <p class="inbox-idea">${escapeHtml(order.idea)}</p>
-      ${adminDeliveryTools(order)}
-      ${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">查看已上传成品：${escapeHtml(order.result.name)}</a>` : ''}
-      <time class="inbox-date">订单号 ${order.id} · ${escapeHtml(order.date)}</time>
-    </article>`).join('') : '<p class="empty-inbox">还没有收到订单。<br />客户提交需求后会显示在这里。</p>';
-  applyLanguage();
 }
 function renderCustomerOrders(email) {
   const orders = getOrders().filter(order => order.email.toLowerCase() === email.toLowerCase());
@@ -137,14 +126,11 @@ document.querySelectorAll('.price-card').forEach(card => card.addEventListener('
   if (event.target.closest('button')) { service.value = card.dataset.product; updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(`已选择「${card.dataset.product}」，说说你的想法吧。`); }
 }));
 service.addEventListener('change', updateSelectedPrice);
-document.querySelector('#openInbox').addEventListener('click', () => { renderInbox(); openModal(inboxModal); });
 document.querySelector('#openOrders').addEventListener('click', () => openModal(ordersModal));
-document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录或注册账户。'); return; } renderInbox(); openModal(accountModal); });
-document.querySelector('#openAuth').addEventListener('click', () => { if (getCurrentUser()) { renderInbox(); openModal(accountModal); } else openModal(authModal); });
+document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
+document.querySelector('#openAuth').addEventListener('click', () => { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); });
 document.querySelector('#openPrivacy').addEventListener('click', () => openModal(privacyModal));
 document.querySelector('#languageToggle').addEventListener('click', () => { language = language === 'zh' ? 'en' : 'zh'; localStorage.setItem('wonderad-language', language); applyLanguage(); });
-document.querySelector('#closeInbox').addEventListener('click', () => closeModal(inboxModal));
-document.querySelector('#closeInboxButton').addEventListener('click', () => closeModal(inboxModal));
 document.querySelector('#closeOrders').addEventListener('click', () => closeModal(ordersModal));
 document.querySelector('#closeOrdersButton').addEventListener('click', () => closeModal(ordersModal));
 document.querySelector('#closeAccount').addEventListener('click', () => closeModal(accountModal));
@@ -189,30 +175,6 @@ document.querySelector('#loginForm').addEventListener('submit', async event => {
   localStorage.setItem(sessionKey, JSON.stringify({ name: account.name, email: account.email }));
   event.target.reset(); updateAccountUI(); closeModal(authModal); showToast(`欢迎回来，${account.name}。`);
 });
-document.querySelector('#clearInbox').addEventListener('click', () => { localStorage.removeItem(inboxKey); renderInbox(); showToast('本机订单记录已清空。'); });
-
-inboxList.addEventListener('change', event => {
-  const card = event.target.closest('.admin-order');
-  if (!card) return;
-  const orders = getOrders();
-  const order = orders.find(item => item.id === card.dataset.id);
-  if (!order) return;
-  if (event.target.classList.contains('status-select')) { order.status = event.target.value; saveOrders(orders); renderInbox(); showToast('订单状态已更新。'); }
-  if (event.target.classList.contains('result-upload')) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async () => {
-      order.result = { name: file.name, data: reader.result };
-      const sent = await notifyDelivery(order, order.result);
-      order.status = sent ? '已交付' : '制作中';
-      saveOrders(orders);
-      renderInbox();
-      showToast(sent ? '成品已通过邮件作为附件发送给客户。' : '邮件暂未发送成功，请检查邮件服务后重新上传交付。');
-    };
-    reader.readAsDataURL(file);
-  }
-});
 document.querySelector('#lookupForm').addEventListener('submit', event => { event.preventDefault(); renderCustomerOrders(document.querySelector('#lookupEmail').value.trim()); });
 document.querySelector('#buildPrompt').addEventListener('click', () => {
   const text = document.querySelector('#orderForm textarea').value.trim();
@@ -248,8 +210,9 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: document.querySelector('#customerEmail').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, status: '待支付', date: formatDate() };
   orders.unshift(order);
   saveOrders(orders);
+  await saveSharedOrder(order);
   const emailSent = await notifyOwner(order);
-  renderInbox();
+  renderAccountStats();
   openModal(submittedModal);
   showToast(emailSent ? '订单已提交，请在邮箱查收付款收款码。' : '订单已提交，邮件发送暂未成功，请稍后重试或联系我们。');
   form.reset();
@@ -287,6 +250,6 @@ document.querySelector('#openSupport').addEventListener('click', () => { support
 document.querySelector('#closeSupport').addEventListener('click', () => { supportPanel.classList.remove('open'); supportPanel.setAttribute('aria-hidden', 'true'); });
 document.querySelector('#supportForm').addEventListener('submit', event => { event.preventDefault(); const input = document.querySelector('#supportInput'); submitSupportQuestion(input.value); input.value = ''; });
 document.querySelectorAll('.support-suggestions button').forEach(button => button.addEventListener('click', () => submitSupportQuestion(button.textContent)));
-renderInbox();
+renderAccountStats();
 updateAccountUI();
 applyLanguage();
