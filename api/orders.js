@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     if (!storageConfigured()) return res.status(202).json({ ok: true, queued: false, setup: true });
     if (!validOrder(req.body)) return res.status(400).json({ error: 'Missing order details' });
-    const order = { ...req.body, status: req.body.status || '待支付', createdAt: new Date().toISOString() };
+    const order = { ...req.body, status: req.body.status || '审核中', createdAt: new Date().toISOString() };
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
     return res.status(201).json({ ok: true });
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const id = req.query.id; const existing = await load(id);
     if (!existing) return res.status(404).json({ error: 'Order not found' });
     const status = req.body?.status;
-    if (!['待支付', '待确认支付', '已支付', '制作中', '已交付'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    if (!['审核中', '待确认支付', '已支付', '制作中', '已交付'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
     await kv('set', `wonder:order:${id}`, JSON.stringify({ ...existing, status, updatedAt: new Date().toISOString() }));
     return res.status(200).json({ ok: true });
   }
