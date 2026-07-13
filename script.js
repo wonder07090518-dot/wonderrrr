@@ -36,7 +36,7 @@ function applyLanguage() {
   if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Advertising poster example' : '广告海报示例');
   document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
   document.querySelector('#languageToggle').textContent = language === 'en' ? '中文' : 'EN';
-  document.title = language === 'en' ? 'Wonder Ad Lab · AI Creative Studio' : 'Wonder Ad Lab · AI 创意工坊';
+  document.title = language === 'en' ? 'Wonder Ad Lab · AI Creative Studio' : 'Wonder Ad Lab · AI 创意服务工作室';
   updateSelectedPrice();
 }
 let toastTimer;
