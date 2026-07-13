@@ -3,7 +3,7 @@ const dashboard = document.querySelector('#dashboard');
 const notice = document.querySelector('#notice');
 let currentOrders = [];
 
-function statusClass(status) { return status === '已交付' ? 'is-done' : status === '制作中' ? 'is-making' : ''; }
+function statusClass(status) { return status === '已交付' ? 'is-done' : status === '制作中' ? 'is-making' : 'is-pending'; }
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; }
 function setNotice(message) { notice.textContent = message; }
 async function api(path, options = {}) { const response = await fetch(path, { credentials: 'same-origin', ...options }); const body = await response.json().catch(() => ({})); if (!response.ok) throw Object.assign(new Error(body.error || '请求失败'), { code: response.status, setup: body.setup }); return body; }
