@@ -18,7 +18,13 @@ export default async function handler(req, res) {
   });
   const qrFile = payment === '支付宝' ? 'alipay.jpg' : 'wechat.jpg';
   const qrLabel = payment === '支付宝' ? '支付宝收款码' : '微信支付收款码';
-  const qrContent = (await readFile(join(process.cwd(), 'public', 'payment', qrFile))).toString('base64');
+  let qrContent;
+  try {
+    qrContent = (await readFile(join(process.cwd(), 'public', 'payment', qrFile))).toString('base64');
+  } catch {
+    // Compatibility with the current GitHub upload, where payment images are at the repository root.
+    qrContent = (await readFile(join(process.cwd(), qrFile))).toString('base64');
+  }
   const customerResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
