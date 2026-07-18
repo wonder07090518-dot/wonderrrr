@@ -13,6 +13,18 @@ const servicePrices = {
   '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '其他需求': 'AI 评估报价',
   'Social cover': '¥4 / image', 'Marketing poster': '¥4 / image', 'E-commerce visual': '¥4 / image', 'Slide design': '¥7.5 / slide', 'AI quick image': '¥0.3 / image', 'Brand logo': '¥11.5 / mark', 'Banner design': '¥3 / image', 'Creative type sticker': '¥3 / image', 'Wallpaper design': '¥4 / image', 'Custom request': 'AI-estimated quote'
 };
+const serviceOptions = {
+  '社媒封面': { sizes: ['小红书 3:4（1242×1660）', '抖音封面 9:16（1080×1920）', '公众号首图 2.35:1（900×383）', '视频号封面 16:9（1920×1080）', '方形社媒 1:1（1080×1080）', '其他尺寸'], styles: ['极简', '清新生活', '潮流时尚', '品牌商业', '可爱插画', '其他风格'] },
+  '营销海报': { sizes: ['竖版海报 3:4（1080×1440）', '横版海报 16:9（1920×1080）', 'A4 印刷（210×297mm）', 'A3 印刷（297×420mm）', '易拉宝（80×200cm）', '其他尺寸'], styles: ['极简', '科技未来', '商务高级', '节日氛围', '国风', '其他风格'] },
+  '电商商品图': { sizes: ['主图 1:1（800×800）', '商品卡 3:4（1080×1440）', '详情页 750×1000', '横版展示 16:9（1920×1080）', '平台横幅 1200×628', '其他尺寸'], styles: ['电商质感', '干净白底', '场景氛围', '轻奢高级', '促销醒目', '其他风格'] },
+  'PPT 美化': { sizes: ['宽屏 16:9（1920×1080）', '标准 4:3（1024×768）', '竖版提案 9:16（1080×1920）', 'A4 文档（210×297mm）', '仅优化 1 页', '其他尺寸'], styles: ['商务高级', '极简', '科技未来', '学术清晰', '品牌提案', '其他风格'] },
+  'AI 快速配图': { sizes: ['方形 1:1（1024×1024）', '竖版 3:4（1024×1365）', '竖版 9:16（1080×1920）', '横版 16:9（1920×1080）', '横幅 3:1（1500×500）', '其他尺寸'], styles: ['写实摄影', '极简', '插画', '电影感', '科技未来', '其他风格'] },
+  '品牌 Logo': { sizes: ['PNG 透明底（2000px）', 'SVG 矢量源文件', '横版组合', '竖版组合', '社媒头像 1:1', '其他尺寸'], styles: ['极简', '现代几何', '轻奢高级', '可爱亲和', '国风', '其他风格'] },
+  'Banner 设计': { sizes: ['网页横幅（1920×600）', '活动横幅（1920×1080）', '广告投放（1200×628）', '方形 Banner（1080×1080）', '移动端横幅（750×400）', '其他尺寸'], styles: ['品牌商业', '极简', '科技未来', '促销醒目', '轻奢高级', '其他风格'] },
+  '创意字贴': { sizes: ['方形 1:1（1080×1080）', '竖版 3:4（1080×1440）', '竖版 9:16（1080×1920）', '横版 16:9（1920×1080）', '透明底 PNG', '其他尺寸'], styles: ['潮流字体', '可爱手写', '赛博科技', '国风书法', '极简排版', '其他风格'] },
+  '壁纸设计': { sizes: ['手机壁纸 9:16（1170×2532）', '平板壁纸 4:3（2048×1536）', '电脑壁纸 16:9（1920×1080）', '4K 桌面（3840×2160）', '锁屏 + 桌面套装', '其他尺寸'], styles: ['治愈氛围', '极简', '插画', '自然风景', '赛博科技', '其他风格'] },
+  '其他需求': { sizes: ['请在需求中说明尺寸', '按平台规范制作', '印刷文件', '网页文件', '社媒文件', '其他尺寸'], styles: ['请描述想要的风格', '极简', '商务高级', '潮流时尚', '国风', '其他风格'] }
+};
 const zhToEn = {
   '作品':'Work','价格':'Pricing','会员':'Membership','流程':'How it works','用户中心':'Account','登录 / 注册':'Sign in','我的订单':'My orders','创意收件箱':'Creative inbox','开始创作':'Start creating','把你的':'Turn your','一句话，':'one idea','变成一张好广告。':'into a great ad.','海报、广告图、PPT、日常配图。':'Posters, ads, slides and images.','输入你的想法，剩下的交给 AI 和一点审美。':'Share your idea — AI and good taste do the rest.','现在开始':'Get started','看看成品':'See our work','简单描述即可下单 · 最快 15 分钟出图':'A simple brief is enough · ready as fast as 15 minutes','AI CREATIVE STUDIO / 2026':'AI CREATIVE STUDIO / 2026','小小的预算，':'Small budget,','认真的视觉。':'serious visuals.','不需要复杂报价。选好你要的，':'No complicated quotes. Pick what you need,','告诉我一句想法。':'then tell us your idea.','最受欢迎':'Most popular','社媒封面':'Social cover','营销海报':'Marketing poster','电商商品图':'E-commerce visual','PPT 美化':'Slide design','AI 快速配图':'AI quick image','品牌 Logo':'Brand logo','Banner 设计':'Banner design','小红书、视频号、朋友圈':'Xiaohongshu, WeChat Channels and social posts','让内容在第一眼被点开。':'Make content worth the first click.','活动宣传、店铺上新、节日海报':'Campaigns, launches and seasonal posters','让信息第一眼就被看见。':'Make the message instantly visible.','商品主图、场景图、详情页配图':'Hero images, lifestyle scenes and product details','把产品放进更好的画面。':'Put your product in a better picture.','汇报、提案、课程作业':'Reports, proposals and class projects','清爽排版，让观点更有分量。':'Clean layouts that give ideas more weight.','文章插图、头像背景、氛围照片':'Article images, profile backgrounds and mood shots','随用随生成，不止是图片。':'Generate on demand — more than just an image.','店铺、个人品牌、活动标识':'Stores, personal brands and event marks','用一个清晰符号被记住。':'Be remembered by a clear symbol.','网站横幅、店铺首页、活动头图':'Website banners, storefronts and event headers','把核心信息放在最醒目的地方。':'Put your key message where it gets seen.','轻量服务':'Quick service','选这个':'Choose this','不只是生成一张图。':'More than generating one image.','AI 改图':'AI image editing','图片优化':'Image enhancement','商品视觉':'Product visuals','人物照片':'Portraits','改文字、改构图、换风格。':'Edit text, composition and style.','去背景、高清修复、扩图。':'Remove backgrounds, upscale and outpaint.','换背景、商品图、电商主图。':'New backgrounds, product images and hero shots.','头像、简历照、证件照。':'Avatars, resumes and ID photos.','为持续创作，准备的更快通道。':'A faster lane for ongoing creativity.','免费':'Free','每天 5 次生成':'5 generations per day','标准清晰度':'Standard definition','当前方案':'Current plan','月会员':'Monthly','高速生成':'Fast generation','高清无水印下载':'HD downloads without watermark','去付款':'Pay now','年会员':'Yearly','更多模型':'More models','优先队列与专属模板':'Priority queue and exclusive templates','企业版':'Business','定制':'Custom','团队协作':'Team collaboration','API 与专属支持':'API and dedicated support','联系我们':'Contact us','把你的想法，':'Bring your ideas','带进更多作品里。':'into more great work.','面向设计师、校园创作者、运营同学与合作伙伴。':'For designers, student creators, operators and partners.','你的邮箱':'Your email','学校 / 公司':'School / company','想加入的方向':'How you want to join','设计与创作':'Design & creation','校园推广':'Campus promotion','内容运营':'Content operations','商务合作':'Business partnership','自我介绍或合作需求':'Introduction or partnership brief','提交加入申请':'Submit application','每个想法，':'Every idea','都有它的样子。':'has its own look.','夏日':'Summer','冰饮':'Iced drinks','新书':'New book','上线':'Launch','一束':'A bouquet','花的事':'of flowers','现烤':'Fresh roasted','栗子':'chestnuts','秋日':'Autumn','风味':'flavour','黑金':'Black & gold','包装':'Packaging','说说你的想法':'Tell us your idea','一句文案、一张参考图，':'One line of copy, one reference image,','或只是一个模糊的感觉。':'or simply a feeling.','选择你的服务':'Choose your service','按单张或页面计费，':'Priced per image or slide,','价格在开始前就说清楚。':'with clear pricing up front.','收到你的作品':'Receive your work','AI 生成加人工精选，':'AI generation with human curation,','把好看的那一版交给你。':'delivering the version that looks best.','你的下一张好图，':'Your next great visual','从一句话开始。':'starts with one idea.','我想做':'I want to create','成品尺寸':'Output size','视觉风格':'Visual style','我的想法是':'My idea','✨ 用 AI 帮我整理需求':'✨ Shape my brief with AI','选择支付方式':'Payment method','微信支付':'WeChat Pay','支付宝':'Alipay','提交订单':'Submit order','隐私说明':'Privacy','在这里查看需求、更新进度并上传成品。上传后，成品会自动作为邮件附件发送给客户。':'Review briefs, update progress and upload final work. It is automatically emailed to the customer as an attachment.','清空本机记录':'Clear local records','输入下单时的邮箱，查看订单状态和交付成品。':'Enter the ordering email to see status and delivered files.','查询':'Search','输入邮箱后查询订单。':'Enter an email to view orders.','我的图片':'My images','下载记录':'Downloads','账户余额':'Balance','查看我的订单':'View my orders','余额充值（即将开放）':'Top up (coming soon)','邀请好友':'Invite friends','退出登录':'Sign out','欢迎来到 Wonder':'Welcome to Wonder','登录':'Sign in','注册':'Register','密码':'Password','登录账户':'Sign in','昵称':'Name','设置密码':'Set password','我已阅读并同意隐私说明':'I have read and agree to the privacy notice','创建账户':'Create account','你的隐私，值得被认真对待。':'Your privacy deserves care.','定制联系我们':'Custom contact','发送咨询':'Send enquiry','订单已提交，':'Order received,','正在审核中。':'under review.','返回首页':'Back to home','极简':'Minimal','科技':'Tech','商务':'Business','可爱':'Cute','国风':'Chinese style','横版广告':'Landscape ad','公众号':'WeChat header','抖音':'Douyin','我们做什么':'WHAT WE MAKE','AI 创意工具':'AI CREATIVE TOOLS','Wonder Ad Lab 会员':'WONDER AD LAB MEMBERSHIP','加入 Wonder Ad Lab':'JOIN WONDER AD LAB','一些灵感':'A FEW MOODS','简单三步':'EASY AS 1 · 2 · 3','准备好了吗':'READY WHEN YOU ARE','Wonder 账户':'WONDER ACCOUNT','隐私':'PRIVACY','企业 / 定制':'ENTERPRISE / CUSTOM','订单已收到':'ORDER RECEIVED','让每一句想法，都值得被看见。':'Every idea deserves to be seen.','AI 简历照片':'AI resume photo','AI 证件照':'AI ID photo','AI 去背景':'AI background removal','照片服务':'Photo service','快速工具':'Quick tool','职场头像、简历照、个人主页':'Professional headshots, resume photos and profile images','自然清晰，适合正式场景。':'Natural and clear for formal use.','换底色、尺寸裁切、清晰修复':'Change backgrounds, crop to size and enhance clarity','一张即可满足日常使用。':'One image for everyday requirements.','商品、人像、素材快速抠图':'Fast cutouts for products, portraits and assets','获得干净的透明底图。':'Get a clean transparent background.','每一次更新，':'Every update','都更接近好创意。':'gets closer to better creativity.','一句话，开始下单。':'Start an order with one idea.','付款、进度与成品。':'Payment, progress and delivery.','账户、隐私与双语。':'Accounts, privacy and bilingual mode.','上线海报、广告图、PPT 与图片服务；需求提交后通过邮箱确认订单。':'Launched posters, ads, slides and images, with email order confirmation.','加入微信、支付宝付款指引；上传成品后自动邮件交付给客户。':'Added WeChat and Alipay guidance, plus automatic email delivery after upload.','加入登录注册、隐私说明、中英文切换，以及更多轻量 AI 创意服务。':'Added sign-in, privacy notice, Chinese-English switching and more lightweight AI services.'
 };
@@ -36,7 +48,7 @@ function applyLanguage() {
   const nodes = []; let node;
   while (node = walker.nextNode()) nodes.push(node);
   nodes.forEach(item => { const raw = item.nodeValue; const key = raw.trim(); if (dictionary[key]) item.nodeValue = raw.replace(key, dictionary[key]); });
-  const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…' };
+  const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…' };
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Turn your <em>one idea</em> into a great ad.' : '把你的<br><em>一句话，</em><br>变成一张好广告。';
@@ -89,6 +101,16 @@ function updateSelectedPrice() {
   const target = document.querySelector('#selectedPrice');
   if (target) target.textContent = `${label} ${price}`;
 }
+function renderCreativeOptions() {
+  const config = serviceOptions[service.value] || serviceOptions['其他需求'];
+  const render = (targetId, name, items) => {
+    const target = document.querySelector(targetId);
+    target.innerHTML = items.map((item, index) => `<label><input type="radio" name="${name}" value="${item}" ${index === 0 ? 'checked' : ''}><span>${item}</span></label>`).join('');
+  };
+  render('#sizeOptions', 'size', config.sizes);
+  render('#styleOptions', 'style', config.styles);
+  if (language === 'en') applyLanguage();
+}
 async function notifyOwner(order) {
   try {
     const response = await fetch('/api/notify-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
@@ -132,9 +154,9 @@ function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute(
 
 document.querySelectorAll('[data-scroll]').forEach(button => button.addEventListener('click', () => document.querySelector(button.dataset.scroll).scrollIntoView({ behavior: 'smooth' })));
 document.querySelectorAll('.price-card').forEach(card => card.addEventListener('click', event => {
-  if (event.target.closest('button')) { service.value = card.dataset.product; updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(`已选择「${card.dataset.product}」，说说你的想法吧。`); }
+  if (event.target.closest('button')) { service.value = card.dataset.product; renderCreativeOptions(); updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(`已选择「${card.dataset.product}」，说说你的想法吧。`); }
 }));
-service.addEventListener('change', updateSelectedPrice);
+service.addEventListener('change', () => { renderCreativeOptions(); updateSelectedPrice(); });
 document.querySelector('#openOrders').addEventListener('click', () => openModal(ordersModal));
 document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
 document.querySelector('#openAuth').addEventListener('click', () => { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); });
@@ -222,7 +244,7 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const form = event.target;
   const orders = getOrders();
   const payment = form.querySelector('input[name="payment"]:checked').value;
-  const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: currentUser.email, idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, status: '审核中', date: formatDate() };
+  const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: currentUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, status: '审核中', date: formatDate() };
   orders.unshift(order);
   saveOrders(orders);
   await saveSharedOrder(order);
@@ -231,6 +253,8 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   openModal(submittedModal);
   showToast(emailSent ? '订单已提交，请在邮箱查收付款收款码。' : '订单已提交，邮件发送暂未成功，请稍后重试或联系我们。');
   form.reset();
+  updateAccountUI();
+  renderCreativeOptions();
   updateSelectedPrice();
 });
 
@@ -268,4 +292,5 @@ document.querySelector('#supportForm').addEventListener('submit', event => { eve
 document.querySelectorAll('.support-suggestions button').forEach(button => button.addEventListener('click', () => submitSupportQuestion(button.textContent)));
 renderAccountStats();
 updateAccountUI();
+renderCreativeOptions();
 applyLanguage();
