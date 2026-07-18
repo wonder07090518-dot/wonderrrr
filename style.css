@@ -57,3 +57,4 @@ body{background:#fff;color:#1d1d1f}.grain{display:none}.nav{height:52px;position
 .brand .brand-mark{width:22px;height:22px;flex:none;border-radius:7px;margin:0}
 .brand .brand-mark rect{fill:#171719}.brand .brand-mark path{stroke:none}.brand .brand-mark path:nth-of-type(1){fill:#fff}.brand .brand-mark path:nth-of-type(2){fill:#0071e3}
 .admin-entry{text-decoration:none;display:inline-block;padding:0;background:transparent;border:0}
+.creative-options>div{display:flex;flex-wrap:wrap;gap:8px;width:100%}
