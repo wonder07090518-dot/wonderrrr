@@ -293,6 +293,7 @@ document.querySelectorAll('.support-suggestions button').forEach(button => butto
 Object.assign(zhToEn, {
   '有想法？': 'Have an idea?',
   '直接加我微信。': 'Add me on WeChat.',
+  '加我微信': 'Add me on WeChat',
   '扫码添加 Wonder Ad Lab，沟通需求、定制项目或合作都可以。': 'Scan to add Wonder Ad Lab for briefs, custom projects or collaborations.',
   '微信号': 'WeChat ID',
   '扫码添加我为朋友': 'Scan to add me on WeChat'
