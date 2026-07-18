@@ -290,6 +290,13 @@ document.querySelector('#openSupport').addEventListener('click', () => { support
 document.querySelector('#closeSupport').addEventListener('click', () => { supportPanel.classList.remove('open'); supportPanel.setAttribute('aria-hidden', 'true'); });
 document.querySelector('#supportForm').addEventListener('submit', event => { event.preventDefault(); const input = document.querySelector('#supportInput'); submitSupportQuestion(input.value); input.value = ''; });
 document.querySelectorAll('.support-suggestions button').forEach(button => button.addEventListener('click', () => submitSupportQuestion(button.textContent)));
+Object.assign(zhToEn, {
+  '有想法？': 'Have an idea?',
+  '直接加我微信。': 'Add me on WeChat.',
+  '扫码添加 Wonder Ad Lab，沟通需求、定制项目或合作都可以。': 'Scan to add Wonder Ad Lab for briefs, custom projects or collaborations.',
+  '微信号': 'WeChat ID',
+  '扫码添加我为朋友': 'Scan to add me on WeChat'
+});
 renderAccountStats();
 updateAccountUI();
 renderCreativeOptions();
