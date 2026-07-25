@@ -9,19 +9,25 @@ const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
 const servicePrices = {
-  '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '其他需求': 'AI 评估报价',
+  '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', '电商详情页': '¥12 / 页', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '菜单与价目表': '¥8 / 张', '活动物料套装': '¥29 / 套起', '品牌视觉套装': '¥49 / 套起', '社媒月更包': '¥59 / 10 张起', '印刷物料设计': '¥15 / 张起', '其他需求': 'AI 评估报价',
   'Social cover': '¥4 / image', 'Marketing poster': '¥4 / image', 'E-commerce visual': '¥4 / image', 'Slide design': '¥7.5 / slide', 'AI quick image': '¥0.3 / image', 'Brand logo': '¥11.5 / mark', 'Banner design': '¥3 / image', 'Creative type sticker': '¥3 / image', 'Wallpaper design': '¥4 / image', 'Custom request': 'AI-estimated quote'
 };
 const serviceOptions = {
   '社媒封面': { sizes: ['小红书 3:4（1242×1660）', '抖音封面 9:16（1080×1920）', '公众号首图 2.35:1（900×383）', '视频号封面 16:9（1920×1080）', '方形社媒 1:1（1080×1080）', '其他尺寸'], styles: ['极简', '清新生活', '潮流时尚', '品牌商业', '可爱插画', '其他风格'] },
   '营销海报': { sizes: ['竖版海报 3:4（1080×1440）', '横版海报 16:9（1920×1080）', 'A4 印刷（210×297mm）', 'A3 印刷（297×420mm）', '易拉宝（80×200cm）', '其他尺寸'], styles: ['极简', '科技未来', '商务高级', '节日氛围', '国风', '其他风格'] },
   '电商商品图': { sizes: ['主图 1:1（800×800）', '商品卡 3:4（1080×1440）', '详情页 750×1000', '横版展示 16:9（1920×1080）', '平台横幅 1200×628', '其他尺寸'], styles: ['电商质感', '干净白底', '场景氛围', '轻奢高级', '促销醒目', '其他风格'] },
+  '电商详情页': { sizes: ['手机详情页 750×1000', '淘宝 / 天猫详情页', '京东详情页', '拼多多详情页', '独立站长图', '其他尺寸'], styles: ['卖点清晰', '电商质感', '轻奢高级', '促销醒目', '极简', '其他风格'] },
   'PPT 美化': { sizes: ['宽屏 16:9（1920×1080）', '标准 4:3（1024×768）', '竖版提案 9:16（1080×1920）', 'A4 文档（210×297mm）', '仅优化 1 页', '其他尺寸'], styles: ['商务高级', '极简', '科技未来', '学术清晰', '品牌提案', '其他风格'] },
   'AI 快速配图': { sizes: ['方形 1:1（1024×1024）', '竖版 3:4（1024×1365）', '竖版 9:16（1080×1920）', '横版 16:9（1920×1080）', '横幅 3:1（1500×500）', '其他尺寸'], styles: ['写实摄影', '极简', '插画', '电影感', '科技未来', '其他风格'] },
   '品牌 Logo': { sizes: ['PNG 透明底（2000px）', 'SVG 矢量源文件', '横版组合', '竖版组合', '社媒头像 1:1', '其他尺寸'], styles: ['极简', '现代几何', '轻奢高级', '可爱亲和', '国风', '其他风格'] },
   'Banner 设计': { sizes: ['网页横幅（1920×600）', '活动横幅（1920×1080）', '广告投放（1200×628）', '方形 Banner（1080×1080）', '移动端横幅（750×400）', '其他尺寸'], styles: ['品牌商业', '极简', '科技未来', '促销醒目', '轻奢高级', '其他风格'] },
   '创意字贴': { sizes: ['方形 1:1（1080×1080）', '竖版 3:4（1080×1440）', '竖版 9:16（1080×1920）', '横版 16:9（1920×1080）', '透明底 PNG', '其他尺寸'], styles: ['潮流字体', '可爱手写', '赛博科技', '国风书法', '极简排版', '其他风格'] },
   '壁纸设计': { sizes: ['手机壁纸 9:16（1170×2532）', '平板壁纸 4:3（2048×1536）', '电脑壁纸 16:9（1920×1080）', '4K 桌面（3840×2160）', '锁屏 + 桌面套装', '其他尺寸'], styles: ['治愈氛围', '极简', '插画', '自然风景', '赛博科技', '其他风格'] },
+  '菜单与价目表': { sizes: ['A4 菜单（210×297mm）', '桌牌（A5）', '竖版价目表 3:4', '手机长图 9:16', '横版展示 16:9', '其他尺寸'], styles: ['干净清晰', '餐饮氛围', '轻奢高级', '可爱亲和', '品牌商业', '其他风格'] },
+  '活动物料套装': { sizes: ['主海报 + 3 张社媒图', '主海报 + 横幅', '小红书活动套装', '门店活动套装', '电商促销套装', '其他尺寸'], styles: ['节日氛围', '促销醒目', '极简', '品牌商业', '潮流时尚', '其他风格'] },
+  '品牌视觉套装': { sizes: ['Logo + 头像 + 配色', 'Logo + 社媒模板', '基础品牌规范 PDF', '店铺开业视觉', '品牌提案 16:9', '其他尺寸'], styles: ['极简', '现代几何', '轻奢高级', '潮流时尚', '可爱亲和', '其他风格'] },
+  '社媒月更包': { sizes: ['小红书 3:4', '视频号封面 16:9', '朋友圈 1:1', '公众号首图 2.35:1', '多平台混合', '其他尺寸'], styles: ['品牌商业', '清新生活', '潮流时尚', '极简', '促销醒目', '其他风格'] },
+  '印刷物料设计': { sizes: ['A4 传单（210×297mm）', '三折页', '名片（90×54mm）', '易拉宝（80×200cm）', '桌牌（A5）', '其他尺寸'], styles: ['印刷清晰', '品牌商业', '极简', '轻奢高级', '促销醒目', '其他风格'] },
   '其他需求': { sizes: ['请在需求中说明尺寸', '按平台规范制作', '印刷文件', '网页文件', '社媒文件', '其他尺寸'], styles: ['请描述想要的风格', '极简', '商务高级', '潮流时尚', '国风', '其他风格'] }
 };
 const zhToEn = {
@@ -33,6 +39,9 @@ Object.assign(zhToEn, {
 });
 Object.assign(zhToEn, {
   '其他需求': 'Custom request', '没有合适的分类？直接写下你的想法': 'No matching category? Tell us what you need.', '我们会按需求确认报价与交付方式。': 'We will confirm the quote and delivery method for your request.', '/ 定制': '/ custom', 'AI 评估报价': 'AI-estimated quote'
+});
+Object.assign(zhToEn, {
+  '电商详情页':'E-commerce detail page','菜单与价目表':'Menu & price list','活动物料套装':'Campaign kit','品牌视觉套装':'Brand visual kit','社媒月更包':'Monthly social pack','印刷物料设计':'Print design','卖点长图、模块排版、上新详情页':'Product storytelling, modules and launch detail pages','把商品信息讲得更清楚。':'Make product information clearer.','餐饮菜单、服务价目、项目清单':'Restaurant menus, service prices and product lists','让顾客一眼看懂怎么买。':'Help customers understand what to buy at a glance.','主海报、社媒图、横幅一次配齐':'A hero poster, social images and banner — all together','适合开业、节日和促销。':'For launches, holidays and promotions.','Logo、配色、头像、社媒模板':'Logo, colours, avatar and social templates','让一个新品牌看起来更完整。':'Give a new brand a complete look.','每月固定内容图，适合店铺与博主':'Monthly visuals for shops and creators','持续更新，省下反复沟通。':'Stay consistent and save repeated briefing.','传单、折页、展架、名片与桌牌':'Flyers, brochures, stands, cards and table signs','按印刷规范交付可用文件。':'Print-ready files made to the right specs.','10 / 详情页':'10 / Detail','11 / 菜单':'11 / Menu','12 / 活动':'12 / Campaign','13 / 品牌':'13 / Brand','14 / 月更':'14 / Monthly','15 / 印刷':'15 / Print','16 / 其他':'16 / Other','/ 套起':'/ kit from','/ 10 张起':'/ 10 images from','/ 张起':'/ image from'
 });
 Object.assign(zhToEn, {
   '文章插图、商品氛围、场景配图': 'Article illustrations, product mood visuals and scene imagery',
