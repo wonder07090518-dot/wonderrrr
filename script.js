@@ -7,7 +7,6 @@ const privacyModal = document.querySelector('#privacyModal');
 const submittedModal = document.querySelector('#submittedModal');
 const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
-const accountsKey = 'wonderad-accounts';
 const sessionKey = 'wonderad-session';
 const servicePrices = {
   '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '其他需求': 'AI 评估报价',
@@ -73,12 +72,26 @@ function getOrders() {
 function saveOrders(orders) {
   localStorage.setItem(inboxKey, JSON.stringify(orders));
 }
-function getAccounts() { try { return JSON.parse(localStorage.getItem(accountsKey)) || []; } catch { return []; } }
-function getCurrentUser() { try { return JSON.parse(localStorage.getItem(sessionKey)); } catch { return null; } }
-async function passwordHash(value) {
-  const bytes = new TextEncoder().encode(value);
-  const hash = await crypto.subtle.digest('SHA-256', bytes);
-  return Array.from(new Uint8Array(hash)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+let currentUser = null;
+function getCurrentUser() { return currentUser; }
+async function accountApi(path = '/api/auth', options = {}) {
+  const response = await fetch(path, { credentials: 'same-origin', ...options });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw Object.assign(new Error(body.error || '账户服务暂时不可用'), { setup: body.setup });
+  return body;
+}
+async function refreshSession() {
+  try {
+    const data = await accountApi();
+    currentUser = data.user || null;
+    if (currentUser) localStorage.setItem(sessionKey, JSON.stringify(currentUser));
+    else localStorage.removeItem(sessionKey);
+  } catch {
+    currentUser = null;
+    localStorage.removeItem(sessionKey);
+  }
+  updateAccountUI();
+  return currentUser;
 }
 function updateAccountUI() {
   const user = getCurrentUser();
@@ -138,14 +151,21 @@ function startPayment(transaction) {
   localStorage.setItem('wonderad-payment', JSON.stringify(transaction));
   window.location.href = `payment.html?id=${encodeURIComponent(transaction.id)}`;
 }
-function renderAccountStats() {
+async function renderAccountStats() {
   const user = getCurrentUser();
-  const orders = user ? getOrders().filter(order => order.email.toLowerCase() === user.email.toLowerCase()) : [];
+  let orders = [];
+  if (user) {
+    try { orders = (await accountApi('/api/orders')).orders || []; } catch { orders = []; }
+  }
   document.querySelector('#accountOrderCount').textContent = orders.length;
   document.querySelector('#accountImageCount').textContent = orders.filter(order => order.result).length;
 }
-function renderCustomerOrders(email) {
-  const orders = getOrders().filter(order => order.email.toLowerCase() === email.toLowerCase());
+async function renderCustomerOrders() {
+  const user = getCurrentUser();
+  if (!user) { ordersList.innerHTML = '<p class="empty-inbox">请先登录，才能查看自己的订单。</p>'; return; }
+  let orders = [];
+  try { orders = (await accountApi('/api/orders')).orders || []; }
+  catch (error) { ordersList.innerHTML = `<p class="empty-inbox">暂时无法读取订单：${escapeHtml(error.message)}</p>`; return; }
   ordersList.innerHTML = orders.length ? orders.map(order => `
     <article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(order.status)}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">项目价格：${escapeHtml(order.price || servicePrices[order.service] || '待确认报价')} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · 下单于 ${escapeHtml(order.date)}</p>${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">下载你的成品</a>` : '<p class="delivery-wait">设计师完成后，成品会显示在这里。</p>'}</article>`).join('') : '<p class="empty-inbox">没有找到该邮箱的订单。</p>';
 }
@@ -157,7 +177,7 @@ document.querySelectorAll('.price-card').forEach(card => card.addEventListener('
   if (event.target.closest('button')) { service.value = card.dataset.product; renderCreativeOptions(); updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(`已选择「${card.dataset.product}」，说说你的想法吧。`); }
 }));
 service.addEventListener('change', () => { renderCreativeOptions(); updateSelectedPrice(); });
-document.querySelector('#openOrders').addEventListener('click', () => openModal(ordersModal));
+document.querySelector('#openOrders').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录后查看自己的订单。'); return; } openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
 document.querySelector('#openAuth').addEventListener('click', () => { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); });
 document.querySelector('#openPrivacy').addEventListener('click', () => openModal(privacyModal));
@@ -170,12 +190,12 @@ document.querySelector('#closeAuth').addEventListener('click', () => closeModal(
 document.querySelector('#closeAuthButton').addEventListener('click', () => closeModal(authModal));
 document.querySelector('#closePrivacy').addEventListener('click', () => closeModal(privacyModal));
 document.querySelector('#closePrivacyButton').addEventListener('click', () => closeModal(privacyModal));
-document.querySelector('#accountOrders').addEventListener('click', () => { closeModal(accountModal); openModal(ordersModal); });
+document.querySelector('#accountOrders').addEventListener('click', () => { closeModal(accountModal); openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#rechargeButton').addEventListener('click', () => showToast('余额充值会在支付商户接入后开放。'));
 document.querySelector('#inviteButton').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText('WONDER-2026'); showToast('邀请代码已复制。'); } catch { showToast('邀请代码：WONDER-2026'); }
 });
-document.querySelector('#logoutButton').addEventListener('click', () => { localStorage.removeItem(sessionKey); updateAccountUI(); closeModal(accountModal); showToast('你已退出登录。'); });
+document.querySelector('#logoutButton').addEventListener('click', async () => { try { await accountApi('/api/auth', { method: 'DELETE' }); } catch { /* Clear the local display state even if the network is unavailable. */ } currentUser = null; localStorage.removeItem(sessionKey); updateAccountUI(); closeModal(accountModal); showToast('你已退出登录。'); });
 function showAuthForm(mode) {
   const registering = mode === 'register';
   document.querySelector('#loginForm').hidden = registering;
@@ -189,24 +209,27 @@ document.querySelector('#registerForm').addEventListener('submit', async event =
   event.preventDefault();
   const name = document.querySelector('#registerName').value.trim();
   const email = document.querySelector('#registerEmail').value.trim().toLowerCase();
-  const accounts = getAccounts();
-  if (accounts.some(account => account.email === email)) { showToast('这个邮箱已经注册过，请直接登录。'); showAuthForm('login'); return; }
-  const password = await passwordHash(document.querySelector('#registerPassword').value);
-  accounts.push({ name, email, password, createdAt: new Date().toISOString() });
-  localStorage.setItem(accountsKey, JSON.stringify(accounts));
-  localStorage.setItem(sessionKey, JSON.stringify({ name, email }));
-  event.target.reset(); updateAccountUI(); closeModal(authModal); showToast('注册成功，欢迎来到 Wonder Ad Lab。');
+  const password = document.querySelector('#registerPassword').value;
+  try {
+    const data = await accountApi('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'register', name, email, password }) });
+    currentUser = data.user; localStorage.setItem(sessionKey, JSON.stringify(currentUser));
+    event.target.reset(); updateAccountUI(); closeModal(authModal); showToast('注册成功，欢迎来到 Wonder Ad Lab。');
+  } catch (error) {
+    showToast(error.setup ? '账户服务正在配置中，请稍后再试。' : error.message);
+    if (/已注册|already registered/i.test(error.message)) showAuthForm('login');
+  }
 });
 document.querySelector('#loginForm').addEventListener('submit', async event => {
   event.preventDefault();
   const email = document.querySelector('#loginEmail').value.trim().toLowerCase();
-  const password = await passwordHash(document.querySelector('#loginPassword').value);
-  const account = getAccounts().find(item => item.email === email && item.password === password);
-  if (!account) { showToast('邮箱或密码不正确。'); return; }
-  localStorage.setItem(sessionKey, JSON.stringify({ name: account.name, email: account.email }));
-  event.target.reset(); updateAccountUI(); closeModal(authModal); showToast(`欢迎回来，${account.name}。`);
+  const password = document.querySelector('#loginPassword').value;
+  try {
+    const data = await accountApi('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', email, password }) });
+    currentUser = data.user; localStorage.setItem(sessionKey, JSON.stringify(currentUser));
+    event.target.reset(); updateAccountUI(); closeModal(authModal); showToast(`欢迎回来，${currentUser.name}。`);
+  } catch (error) { showToast(error.setup ? '账户服务正在配置中，请稍后再试。' : '邮箱或密码不正确。'); }
 });
-document.querySelector('#lookupForm').addEventListener('submit', event => { event.preventDefault(); renderCustomerOrders(document.querySelector('#lookupEmail').value.trim()); });
+document.querySelector('#lookupForm').addEventListener('submit', event => { event.preventDefault(); renderCustomerOrders(); });
 document.querySelector('#buildPrompt').addEventListener('click', () => {
   const text = document.querySelector('#orderForm textarea').value.trim();
   const size = document.querySelector('input[name="size"]:checked').value;
@@ -235,19 +258,18 @@ document.querySelector('#joinForm').addEventListener('submit', async event => {
 document.querySelector('#returnHome').addEventListener('click', () => { closeModal(submittedModal); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 document.querySelector('#orderForm').addEventListener('submit', async event => {
   event.preventDefault();
-  const currentUser = getCurrentUser();
-  if (!currentUser) {
+  const signedInUser = getCurrentUser() || await refreshSession();
+  if (!signedInUser) {
     openModal(authModal);
     showToast('请先注册或登录账户，登录后才可以提交订单。');
     return;
   }
   const form = event.target;
-  const orders = getOrders();
   const payment = form.querySelector('input[name="payment"]:checked').value;
-  const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: currentUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, status: '审核中', date: formatDate() };
-  orders.unshift(order);
-  saveOrders(orders);
-  await saveSharedOrder(order);
+  const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, status: '审核中', date: formatDate() };
+  const saved = await saveSharedOrder(order);
+  if (!saved) { showToast('订单暂时无法同步，请稍后重试或联系客服。'); return; }
+  const orders = getOrders(); orders.unshift(order); saveOrders(orders);
   const emailSent = await notifyOwner(order);
   renderAccountStats();
   openModal(submittedModal);
@@ -298,7 +320,6 @@ Object.assign(zhToEn, {
   '微信号': 'WeChat ID',
   '扫码添加我为朋友': 'Scan to add me on WeChat'
 });
-renderAccountStats();
-updateAccountUI();
 renderCreativeOptions();
 applyLanguage();
+refreshSession().then(() => renderAccountStats());
