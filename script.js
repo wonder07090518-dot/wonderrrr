@@ -59,7 +59,7 @@ function applyLanguage() {
   const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…' };
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
-  if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Turn your <em>one idea</em> into a great ad.' : '把你的<br><em>一句话，</em><br>变成一张好广告。';
+  if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your brand<br><em>visible,</em><br>all year.' : '让你的品牌，<br><em>一直有内容，</em><br>一直被看见。';
   const heroArt = document.querySelector('.hero-art');
   if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Advertising poster example' : '广告海报示例');
   document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
