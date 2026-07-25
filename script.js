@@ -341,6 +341,10 @@ Object.assign(zhToEn, {
   '微信号': 'WeChat ID',
   '扫码添加我为朋友': 'Scan to add me on WeChat'
 });
+const premiumTheme = document.createElement('link');
+premiumTheme.rel = 'stylesheet';
+premiumTheme.href = 'premium.css?v=20260725';
+document.head.appendChild(premiumTheme);
 renderCreativeOptions();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
