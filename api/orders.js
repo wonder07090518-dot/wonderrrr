@@ -1,4 +1,5 @@
 import { configured, isAdmin, kv, storageConfigured } from './_admin.js';
+import { getCurrentUser } from './_user.js';
 
 const availableServices = new Set(['社媒封面', '营销海报', '电商商品图', 'PPT 美化', 'AI 快速配图', '品牌 Logo', 'Banner 设计', '创意字贴', '壁纸设计', '其他需求']);
 function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝'].includes(order.payment); }
@@ -6,20 +7,31 @@ async function load(id) { const raw = await kv('get', `wonder:order:${id}`); ret
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    if (!storageConfigured()) return res.status(202).json({ ok: true, queued: false, setup: true });
+    if (!storageConfigured()) return res.status(503).json({ error: 'Order storage is not configured', setup: true });
     if (!validOrder(req.body)) return res.status(400).json({ error: 'Missing order details' });
-    const order = { ...req.body, status: req.body.status || '审核中', createdAt: new Date().toISOString() };
+    const user = await getCurrentUser(req);
+    if (!user) return res.status(401).json({ error: 'Please sign in before submitting an order' });
+    if (String(req.body.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'Order email does not match the signed-in account' });
+    const order = { ...req.body, email: user.email, status: req.body.status || '审核中', createdAt: new Date().toISOString() };
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
     return res.status(201).json({ ok: true });
   }
-  if (!configured() || !storageConfigured()) return res.status(503).json({ error: 'Admin storage is not configured', setup: true });
-  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin authentication required' });
   if (req.method === 'GET') {
+    if (!storageConfigured()) return res.status(503).json({ error: 'Order storage is not configured', setup: true });
+    if (isAdmin(req)) {
+      const ids = await kv('zrevrange', 'wonder:orders', 0, 199);
+      const orders = (await Promise.all((ids || []).map(load))).filter(Boolean);
+      return res.status(200).json({ orders });
+    }
+    const user = await getCurrentUser(req);
+    if (!user) return res.status(401).json({ error: 'Please sign in to view your orders' });
     const ids = await kv('zrevrange', 'wonder:orders', 0, 199);
-    const orders = (await Promise.all((ids || []).map(load))).filter(Boolean);
+    const orders = (await Promise.all((ids || []).map(load))).filter(order => order && String(order.email).toLowerCase() === user.email);
     return res.status(200).json({ orders });
   }
+  if (!configured() || !storageConfigured()) return res.status(503).json({ error: 'Admin storage is not configured', setup: true });
+  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin authentication required' });
   if (req.method === 'PUT') {
     const id = req.query.id; const existing = await load(id);
     if (!existing) return res.status(404).json({ error: 'Order not found' });
