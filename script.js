@@ -60,6 +60,14 @@ function applyLanguage() {
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your brand<br><em>visible,</em><br>all year.' : '让你的品牌，<br><em>一直有内容，</em><br>一直被看见。';
+  const partnerTitle = document.querySelector('.business-partner .section-head h2');
+  const partnerIntro = document.querySelector('.business-partner .section-head > p:last-child');
+  const singleTitle = document.querySelector('.services .section-head h2');
+  const singleIntro = document.querySelector('.services .section-head > p:last-child');
+  if (partnerTitle) partnerTitle.innerHTML = language === 'en' ? 'A creative team when you need one.<br>Not just a one-off design.' : '长期合作，<br>也不耽误你随时做一张。';
+  if (partnerIntro) partnerIntro.innerHTML = language === 'en' ? 'For brands that need a steady content rhythm — and for every project that simply needs to look right.' : '月更、上新、活动可以长期合作；海报、PPT、Banner 和日常配图也都能单次下单。';
+  if (singleTitle) singleTitle.innerHTML = language === 'en' ? 'One project.<br>Done beautifully.' : '普通单次设计，<br>也认真做到位。';
+  if (singleIntro) singleIntro.innerHTML = language === 'en' ? 'Choose what you need today. Clear pricing, quick briefing and a polished final file.' : '临时要一张海报、一次 PPT 美化，或一套活动物料，都可以直接开始。';
   const heroArt = document.querySelector('.hero-art');
   if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Advertising poster example' : '广告海报示例');
   document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
