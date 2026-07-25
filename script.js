@@ -181,7 +181,11 @@ async function renderCustomerOrders() {
 function openModal(modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }
 function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
 
-document.querySelectorAll('[data-scroll]').forEach(button => button.addEventListener('click', () => document.querySelector(button.dataset.scroll).scrollIntoView({ behavior: 'smooth' })));
+document.querySelectorAll('[data-scroll]').forEach(button => button.addEventListener('click', () => {
+  const chosenService = button.dataset.choose;
+  if (chosenService && [...service.options].some(option => option.value === chosenService)) { service.value = chosenService; renderCreativeOptions(); updateSelectedPrice(); }
+  document.querySelector(button.dataset.scroll).scrollIntoView({ behavior: 'smooth' });
+}));
 document.querySelectorAll('.price-card').forEach(card => card.addEventListener('click', event => {
   if (event.target.closest('button')) { service.value = card.dataset.product; renderCreativeOptions(); updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(`已选择「${card.dataset.product}」，说说你的想法吧。`); }
 }));
