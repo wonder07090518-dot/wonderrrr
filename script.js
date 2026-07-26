@@ -339,12 +339,30 @@ Object.assign(zhToEn, {
   '加我微信': 'Add me on WeChat',
   '扫码添加 Wonder Ad Lab，沟通需求、定制项目或合作都可以。': 'Scan to add Wonder Ad Lab for briefs, custom projects or collaborations.',
   '微信号': 'WeChat ID',
-  '扫码添加我为朋友': 'Scan to add me on WeChat'
+  '扫码添加我为朋友': 'Scan to add me on WeChat',
+  '持续内容': 'Always-on content',
+  '为品牌准备的视觉系统。': 'A visual system made for brands.',
+  '社媒月更、内容封面与活动视觉。': 'Monthly social content, covers and campaign visuals.',
+  '电商上新': 'E-commerce launch',
+  '从主图到详情页，一次上新。': 'From the hero image to the detail page, one complete launch.',
+  '品牌活动': 'Brand campaign',
+  '把一次活动，做成被记住的画面。': 'Turn one campaign into a visual people remember.',
+  '了解服务': 'Explore services'
 });
 const premiumTheme = document.createElement('link');
 premiumTheme.rel = 'stylesheet';
 premiumTheme.href = 'premium.css?v=20260725';
 document.head.appendChild(premiumTheme);
+const homeTheme = document.createElement('link');
+homeTheme.rel = 'stylesheet';
+homeTheme.href = 'home-v2.css?v=20260725';
+document.head.appendChild(homeTheme);
+const heroVisual = document.querySelector('.hero-art');
+if (heroVisual) heroVisual.insertAdjacentHTML('beforeend', '<div class="hero-product-meta"><div><small>WONDER AD LAB / 01</small><strong>Creative, in its own light.</strong></div><i>↗</i></div>');
+const launchRail = document.createElement('section');
+launchRail.className = 'wrap launch-rail';
+launchRail.innerHTML = '<article class="launch-card launch-card--content"><span class="launch-label">ALWAYS-ON / 01</span><div><h3>持续内容</h3><p>为品牌准备的视觉系统。<br>社媒月更、内容封面与活动视觉。</p></div><a href="#business">了解服务 <span>→</span></a></article><article class="launch-card launch-card--shop"><span class="launch-label">LAUNCH / 02</span><div><h3>电商上新</h3><p>从主图到详情页，一次上新。</p></div><a href="#business">了解服务 <span>→</span></a></article><article class="launch-card launch-card--campaign"><span class="launch-label">CAMPAIGN / 03</span><div><h3>品牌活动</h3><p>把一次活动，做成被记住的画面。</p></div><a href="#work">了解服务 <span>→</span></a></article>';
+document.querySelector('.ticker')?.insertAdjacentElement('afterend', launchRail);
 renderCreativeOptions();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
