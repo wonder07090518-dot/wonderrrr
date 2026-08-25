@@ -123,8 +123,8 @@ function applyLanguage() {
   const singleIntro = document.querySelector('.services .section-head > p:last-child');
   if (partnerTitle) partnerTitle.innerHTML = language === 'en' ? 'Need steady content?<br>Choose ongoing support.' : '需要稳定更新？<br>选择长期合作。';
   if (partnerIntro) partnerIntro.innerHTML = language === 'en' ? 'For businesses publishing regularly, launching products or preparing campaigns.<br>A clear contact, a fixed schedule and planned delivery.' : '适合持续发内容、稳定上新或准备活动的商家。<br>固定沟通、固定排期、按计划交付。';
-  if (singleTitle) singleTitle.innerHTML = language === 'en' ? 'Start with what<br>you need today.' : '今天需要什么，<br>就从这里开始。';
-  if (singleIntro) singleIntro.innerHTML = language === 'en' ? 'The six most-used services appear first.<br>Expand the rest whenever you need them.' : '先展示最常用的 6 项服务。<br>其他项目可以随时展开查看。';
+  if (singleTitle) singleTitle.innerHTML = language === 'en' ? '16 creative protocols<br><em>Launch by objective</em>' : '16 条创意能力<br><em>按目标直接启动</em>';
+  if (singleIntro) singleIntro.innerHTML = language === 'en' ? 'Every service has its own visual symbol and delivery direction<br>Select one to enter its matching order flow' : '每项服务都有独立的视觉符号与交付方向<br>选择一项即可进入对应下单流程';
   document.querySelectorAll('h1, h2').forEach(heading => {
     const headingWalker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
     let headingNode;
@@ -136,6 +136,8 @@ function applyLanguage() {
   document.querySelector('#languageToggle').textContent = language === 'en' ? '中文' : 'EN';
   const menuToggle = document.querySelector('#menuToggle');
   if (menuToggle) menuToggle.setAttribute('aria-label', language === 'en' ? 'Open menu' : '打开菜单');
+  const serviceGrid = document.querySelector('.price-grid');
+  if (serviceGrid) serviceGrid.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab services and pricing' : 'Wonder Ad Lab 服务与报价');
   document.title = language === 'en' ? 'Wonder Ad Lab · AI Creative Studio' : '奇迹创意工作室 · Wonder Ad Lab';
   renderCreativeOptions();
   updateSelectedPrice();
@@ -278,7 +280,14 @@ function updateServiceView() {
     card.classList.toggle('service-primary', primaryServices.includes(product));
     card.hidden = activeServiceFilter === 'all' ? (!showAllServices && !primaryServices.includes(product)) : category !== activeServiceFilter;
   });
-  document.querySelectorAll('[data-service-filter]').forEach(button => button.classList.toggle('active', button.dataset.serviceFilter === activeServiceFilter));
+  document.querySelectorAll('[data-service-filter]').forEach(button => {
+    const active = button.dataset.serviceFilter === activeServiceFilter;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  document.querySelectorAll('[data-service-group]').forEach(label => {
+    label.hidden = activeServiceFilter !== 'all' && label.dataset.serviceGroup !== activeServiceFilter;
+  });
   const toggle = document.querySelector('#toggleAllServices');
   if (toggle) {
     toggle.hidden = activeServiceFilter !== 'all';
@@ -345,6 +354,15 @@ document.querySelectorAll('[data-service-filter]').forEach(button => button.addE
   activeServiceFilter = button.dataset.serviceFilter;
   updateServiceView();
 }));
+document.querySelectorAll('[data-service-filter]').forEach(button => button.addEventListener('keydown', event => {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  event.preventDefault();
+  const filters = [...document.querySelectorAll('[data-service-filter]')];
+  const current = filters.indexOf(button);
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? filters.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + filters.length) % filters.length;
+  filters[next].focus();
+  filters[next].click();
+}));
 document.querySelectorAll('[data-process-step]').forEach(button => button.addEventListener('click', () => {
   processManualUntil = Date.now() + 4200;
   updateProcessStep(button.dataset.processStep);
@@ -365,9 +383,26 @@ menuToggle?.addEventListener('click', () => {
   siteNav?.classList.toggle('open', !open);
 });
 siteNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMobileMenu));
-document.querySelectorAll('.price-card').forEach(card => card.addEventListener('click', event => {
-  if (event.target.closest('button')) { service.value = card.dataset.product; renderCreativeOptions(); updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(language === 'en' ? `${zhToEn[card.dataset.product] || card.dataset.product} selected. Tell us your idea.` : `已选择「${card.dataset.product}」，说说你的想法吧。`); }
-}));
+function chooseServiceCard(card) {
+  service.value = card.dataset.product;
+  renderCreativeOptions();
+  updateSelectedPrice();
+  document.querySelector('#order').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  showToast(language === 'en' ? `${zhToEn[card.dataset.product] || card.dataset.product} selected. Tell us your idea.` : `已选择「${card.dataset.product}」，说说你的想法吧。`);
+}
+document.querySelectorAll('.price-card').forEach(card => {
+  card.addEventListener('click', () => chooseServiceCard(card));
+  card.addEventListener('keydown', event => {
+    if (event.target.closest('button')) return;
+    if (!['Enter', ' '].includes(event.key)) return;
+    event.preventDefault();
+    chooseServiceCard(card);
+  });
+  card.addEventListener('pointerdown', () => {
+    card.classList.add('is-touched');
+    window.setTimeout(() => card.classList.remove('is-touched'), 300);
+  });
+});
 service.addEventListener('change', () => { renderCreativeOptions(); updateSelectedPrice(); });
 document.querySelector('#openOrders').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in to view your orders.' : '请先登录后查看自己的订单。'); return; } openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in or create an account first.' : '请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
@@ -564,6 +599,34 @@ Object.assign(zhToEn, {
   ,'顾客收到可直接使用的成品，确认后开心完成合作': 'The customer receives a ready-to-use design and happily confirms delivery'
   ,'你的设计已送达': 'Your design has arrived'
   ,'制作流程动画步骤': 'Workflow story steps'
+});
+Object.assign(zhToEn, {
+  '16 条创意能力': '16 creative protocols',
+  '按目标直接启动': 'Launch by objective',
+  '每项服务都有独立的视觉符号与交付方向': 'Every service has its own visual symbol and delivery direction',
+  '选择一项即可进入对应下单流程': 'Select one to enter its matching order flow',
+  '公开报价 · 下单直达': 'PUBLIC PRICING · DIRECT ORDER',
+  '内容与社媒': 'Content & social',
+  '电商与产品': 'Commerce & product',
+  '品牌与表达': 'Brand & expression',
+  '延展与定制': 'Extensions & custom',
+  'Wonder Ad Lab 服务与报价': 'Wonder Ad Lab services and pricing',
+  '让内容在第一眼被点开': 'Make content worth the first click',
+  '让信息第一眼就被看见': 'Make the message instantly visible',
+  '把产品放进更好的画面': 'Put your product in a better picture',
+  '清爽排版，让观点更有分量': 'Clean layouts that give ideas more weight',
+  '随用随生成，不止是图片': 'Generate on demand — more than an image',
+  '用一个清晰符号被记住': 'Be remembered by a clear symbol',
+  '把核心信息放在最醒目的地方': 'Put your key message where it gets seen',
+  '让一句话更有记忆点': 'Make one line more memorable',
+  '把喜欢的氛围留在屏幕上': 'Keep the mood you love on screen',
+  '把商品信息讲得更清楚': 'Make product information clearer',
+  '让顾客一眼看懂怎么买': 'Help customers understand what to buy at a glance',
+  '适合开业、节日和促销': 'For launches, holidays and promotions',
+  '让一个新品牌看起来更完整': 'Give a new brand a complete look',
+  '持续更新，省下反复沟通': 'Stay consistent and save repeated briefing',
+  '按印刷规范交付可用文件': 'Print-ready files made to the right specs',
+  '我们会按需求确认报价与交付方式': 'We will confirm the quote and delivery method for your request'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
 
