@@ -213,6 +213,7 @@ const primaryServices = ['社媒封面', '营销海报', '电商商品图', 'PPT
 let activeServiceFilter = 'all';
 let showAllServices = false;
 let activeProcessStep = 'brief';
+let processManualUntil = 0;
 const processStepData = {
   brief: {
     image: 'portfolio-coffee.jpg', tag: 'BRIEF / FRAME 01', number: 'STEP 01',
@@ -241,6 +242,7 @@ const processStepData = {
 };
 function updateProcessStep(step) {
   const data = processStepData[step] || processStepData.brief;
+  const changed = activeProcessStep !== step;
   activeProcessStep = step;
   document.querySelectorAll('[data-process-step]').forEach(button => {
     const active = button.dataset.processStep === step;
@@ -252,6 +254,12 @@ function updateProcessStep(step) {
   const preview = document.querySelector('#processPreviewImage');
   if (preview) { preview.src = data.image; preview.alt = language === 'en' ? 'Creative workflow preview' : '制作流程画面预览'; }
   setText('#processPreviewTag', data.tag); setText('#processProjectLabel', localized(data.project)); setText('#processGoal', localized(data.goal)); setText('#processPlatform', localized(data.platform)); setText('#processStyle', localized(data.style)); setText('#processStatus', localized(data.status)); setText('#processCaptionNumber', data.number); setText('#processCaptionTitle', localized(data.title)); setText('#processCaptionText', localized(data.text));
+  if (changed && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const consoleElement = document.querySelector('.process-console');
+    consoleElement?.classList.remove('step-changing');
+    window.requestAnimationFrame(() => consoleElement?.classList.add('step-changing'));
+    window.setTimeout(() => consoleElement?.classList.remove('step-changing'), 950);
+  }
 }
 function updateServiceView() {
   const cards = [...document.querySelectorAll('.price-card')];
@@ -329,7 +337,10 @@ document.querySelectorAll('[data-service-filter]').forEach(button => button.addE
   activeServiceFilter = button.dataset.serviceFilter;
   updateServiceView();
 }));
-document.querySelectorAll('[data-process-step]').forEach(button => button.addEventListener('click', () => updateProcessStep(button.dataset.processStep)));
+document.querySelectorAll('[data-process-step]').forEach(button => button.addEventListener('click', () => {
+  processManualUntil = Date.now() + 4200;
+  updateProcessStep(button.dataset.processStep);
+}));
 document.querySelector('#toggleAllServices')?.addEventListener('click', () => {
   showAllServices = !showAllServices;
   updateServiceView();
@@ -525,6 +536,149 @@ function initStudioCutMotion() {
     }));
   }
 }
+function initCinematicMotion() {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const root = document.documentElement;
+  const header = document.querySelector('.site-header');
+  const progressBar = document.querySelector('#scrollProgress');
+  const hero = document.querySelector('.flow-hero');
+  const heroCopy = hero?.querySelector('.hero-copy');
+  const heroStudio = hero?.querySelector('.hero-studio');
+  const heroCanvas = hero?.querySelector('.studio-canvas > img');
+  const processSection = document.querySelector('.production-process');
+  const processConsole = document.querySelector('.process-console');
+  const processOrder = ['brief', 'board', 'refine', 'deliver'];
+  const workCards = [...document.querySelectorAll('.work')];
+  root.classList.add('motion-ready');
+
+  document.querySelectorAll('.hero-actions button, .hero-actions a, .nav-order, .choose, .expand-services, .membership button, .prompt-helper, form .primary').forEach(element => element.classList.add('magnetic'));
+  document.querySelectorAll('.price-grid, .business-grid, .tool-grid, .member-grid, .update-grid, .stats-grid').forEach(group => {
+    [...group.querySelectorAll('[data-reveal]')].forEach((item, index) => item.style.transitionDelay = `${Math.min(index, 7) * 65}ms`);
+  });
+
+  if (reduceMotion) return;
+
+  const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+  let framePending = false;
+  const updateScrollMotion = () => {
+    framePending = false;
+    const scrollTop = window.scrollY || root.scrollTop;
+    const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
+    progressBar?.style.setProperty('transform', `scaleX(${clamp(scrollTop / scrollRange)})`);
+    header?.classList.toggle('is-compact', scrollTop > 28);
+
+    if (hero && heroStudio && heroCanvas) {
+      const rect = hero.getBoundingClientRect();
+      const heroProgress = clamp(-rect.top / Math.max(1, rect.height * .82));
+      hero.style.setProperty('--hero-grid-y', `${heroProgress * 54}px`);
+      heroStudio.style.setProperty('--studio-y', `${heroProgress * 68}px`);
+      heroStudio.style.setProperty('--studio-scale', String(1 - heroProgress * .07));
+      heroCanvas.style.setProperty('--canvas-y', `${heroProgress * 22}px`);
+      heroCanvas.style.setProperty('--canvas-scale', String(1.035 + heroProgress * .05));
+      if (heroCopy) {
+        heroCopy.style.transform = `translate3d(0,${heroProgress * 32}px,0)`;
+        heroCopy.style.opacity = String(1 - heroProgress * .42);
+      }
+    }
+
+    if (processSection && processConsole) {
+      const rect = processSection.getBoundingClientRect();
+      const travel = Math.max(1, rect.height - window.innerHeight * .34);
+      const progress = clamp((window.innerHeight * .44 - rect.top) / travel);
+      processConsole.style.setProperty('--process-progress', `${progress * 100}%`);
+      const stepIndex = Math.min(3, Math.floor(clamp(progress, 0, .9999) * 4));
+      if (Date.now() > processManualUntil && processOrder[stepIndex] !== activeProcessStep) updateProcessStep(processOrder[stepIndex]);
+    }
+
+    if (window.innerWidth > 760) {
+      workCards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const distance = (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight;
+        card.style.setProperty('--card-y', `${clamp(distance * -24 + (index - 1) * 4, -22, 22)}px`);
+      });
+    }
+  };
+  const requestScrollMotion = () => {
+    if (framePending) return;
+    framePending = true;
+    window.requestAnimationFrame(updateScrollMotion);
+  };
+  window.addEventListener('scroll', requestScrollMotion, { passive: true });
+  window.addEventListener('resize', requestScrollMotion, { passive: true });
+  updateScrollMotion();
+
+  if (finePointer && hero && heroStudio) {
+    hero.addEventListener('pointermove', event => {
+      const heroRect = hero.getBoundingClientRect();
+      hero.style.setProperty('--pointer-x', `${event.clientX - heroRect.left}px`);
+      hero.style.setProperty('--pointer-y', `${event.clientY - heroRect.top}px`);
+      const studioRect = heroStudio.getBoundingClientRect();
+      const x = clamp((event.clientX - studioRect.left) / studioRect.width, 0, 1) - .5;
+      const y = clamp((event.clientY - studioRect.top) / studioRect.height, 0, 1) - .5;
+      heroStudio.style.setProperty('--tilt-x', `${y * -3.8}deg`);
+      heroStudio.style.setProperty('--tilt-y', `${x * 4.6}deg`);
+    });
+    hero.addEventListener('pointerleave', () => {
+      heroStudio.style.setProperty('--tilt-x', '0deg');
+      heroStudio.style.setProperty('--tilt-y', '0deg');
+    });
+  }
+
+  if (finePointer) {
+    document.querySelectorAll('.work, .price-card, .tool-grid article, .member-grid article, .stats-grid article').forEach(card => {
+      card.addEventListener('pointermove', event => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - .5;
+        const y = (event.clientY - rect.top) / rect.height - .5;
+        card.style.setProperty('--card-rx', `${y * -4.2}deg`);
+        card.style.setProperty('--card-ry', `${x * 5.2}deg`);
+        card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+        card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+      });
+      card.addEventListener('pointerleave', () => {
+        card.style.setProperty('--card-rx', '0deg');
+        card.style.setProperty('--card-ry', '0deg');
+      });
+    });
+    document.querySelectorAll('.magnetic').forEach(element => {
+      element.addEventListener('pointermove', event => {
+        const rect = element.getBoundingClientRect();
+        element.style.setProperty('--magnetic-x', `${((event.clientX - rect.left) / rect.width - .5) * 10}px`);
+        element.style.setProperty('--magnetic-y', `${((event.clientY - rect.top) / rect.height - .5) * 8}px`);
+      });
+      element.addEventListener('pointerleave', () => {
+        element.style.setProperty('--magnetic-x', '0px');
+        element.style.setProperty('--magnetic-y', '0px');
+      });
+    });
+  }
+
+  const countTargets = [...document.querySelectorAll('[data-stat="visitors"], [data-stat="online"], #runningDays')];
+  const animateCount = target => {
+    const finalValue = Number.parseInt(target.textContent, 10);
+    if (!Number.isFinite(finalValue)) return;
+    target.dataset.counting = 'true';
+    const start = performance.now();
+    const duration = 1150;
+    const tick = now => {
+      const progress = clamp((now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 4);
+      target.textContent = String(Math.round(finalValue * eased));
+      if (progress < 1) window.requestAnimationFrame(tick);
+      else delete target.dataset.counting;
+    };
+    window.requestAnimationFrame(tick);
+  };
+  if ('IntersectionObserver' in window) {
+    const counterObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      animateCount(entry.target);
+      counterObserver.unobserve(entry.target);
+    }), { threshold: .55 });
+    countTargets.forEach(target => counterObserver.observe(target));
+  }
+}
 function updateRunningDays() {
   const launchDate = new Date(2026, 6, 12);
   const today = new Date();
@@ -536,5 +690,6 @@ function updateRunningDays() {
 updateServiceView();
 initStudioCutMotion();
 updateRunningDays();
+initCinematicMotion();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
