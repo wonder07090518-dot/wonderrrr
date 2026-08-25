@@ -95,6 +95,11 @@ Object.assign(zhToEn, {
   '你正在找的 AI 设计，':'Looking for a specific','这里可能刚好能做。':'AI design service?','按具体需求找服务，比只搜“AI 生图”更容易找到合适的作品与报价。':'Browse by a specific need to find the right format and price more easily.','展开查看 120+ 项 AI 创意服务与搜索场景':'View 120+ AI creative services and use cases','海报与广告图':'Posters and ads','社媒与内容封面':'Social and content covers','电商与产品视觉':'E-commerce and product visuals','PPT 与品牌设计':'Slides and brand design','壁纸与定制场景':'Wallpapers and custom work',
   '收到你的作品。':'Receive your work.','微信号（可选）':'WeChat ID (optional)',
   '网站小记录':'Site snapshot','演示数据 · 已预留真实统计接口':'Demo data · ready for a real analytics integration','网站访问人数':'Website visitors','初始演示值':'Initial demo value','最近访问地区':'Recent visitor region','浙江':'Zhejiang','地区示例，不代表真实 IP':'Region example, not a real IP address','在线访客数':'Visitors online','演示数据':'Demo data','网站运行天数':'Days online','天':'days','按 2026-07-12 上线日期计算':'Calculated from the 2026-07-12 launch date'
+  ,'制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','固定价格可见':'Visible fixed pricing','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
+  '一句需求，':'One brief.','拆成每一帧':'Every frame.','能用的内容。':'Ready to publish.','从想法、画面拆解到最终交付，把海报、社媒、电商和品牌视觉放进一套清楚的制作流程。':'From the first idea to final delivery, posters, social content, e-commerce and brand visuals move through one clear production workflow.',
+  '不是按一下生成。':'More than one click.','是把需求拆清楚。':'A brief, made clear.','参考视频制作和剪辑软件的逻辑：每一步都能看懂、每个画面都有用途，最后再整理成适合发布的成品。':'Built like a video-production workflow: every step is visible, every frame has a purpose, and each final file is ready to publish.',
+  '需求拆解':'Brief breakdown','分镜与构图':'Storyboard & layout','设计与调整':'Design & refine','尺寸与交付':'Export & delivery','目标':'Goal','平台':'Platform','风格':'Style','状态':'Status','新品咖啡上线':'New coffee launch','小红书 / 朋友圈':'Xiaohongshu / Moments','暖色 · 极简 · 生活感':'Warm · minimal · lifestyle','需求已整理':'Brief organized','核心标题':'Hero headline','卖点与行动按钮':'Selling points & CTA',
+  '先把模糊的想法，整理成能执行的方向。':'Turn a rough idea into a direction we can execute.','确认用途、尺寸、文案重点和参考风格，避免做完才发现方向不对。':'Confirm the use, format, key copy and visual reference before production begins.'
 });
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 let language = localStorage.getItem('wonderad-language') || 'zh';
@@ -108,6 +113,10 @@ function applyLanguage() {
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your content<br><em>worth seeing.</em>' : '让品牌内容，<br><em>持续被看见。</em>';
+  const flowHeroTitle = document.querySelector('.flow-hero h1');
+  if (flowHeroTitle) flowHeroTitle.innerHTML = language === 'en' ? 'One brief.<br>Every frame.<br><em>Ready to publish.</em>' : '一句需求，<br>拆成每一帧<br><em>能用的内容。</em>';
+  const processTitle = document.querySelector('.process-head h2');
+  if (processTitle) processTitle.innerHTML = language === 'en' ? 'More than one click.<br><em>A brief, made clear.</em>' : '不是按一下生成。<br><em>是把需求拆清楚。</em>';
   const partnerTitle = document.querySelector('.business-partner .section-head h2');
   const partnerIntro = document.querySelector('.business-partner .section-head > p:last-child');
   const singleTitle = document.querySelector('.services .section-head h2');
@@ -126,6 +135,7 @@ function applyLanguage() {
   renderCreativeOptions();
   updateSelectedPrice();
   updateServiceView();
+  updateProcessStep(activeProcessStep);
 }
 let toastTimer;
 
@@ -202,6 +212,47 @@ const serviceCategories = {
 const primaryServices = ['社媒封面', '营销海报', '电商商品图', 'PPT 美化', 'AI 快速配图', '品牌 Logo'];
 let activeServiceFilter = 'all';
 let showAllServices = false;
+let activeProcessStep = 'brief';
+const processStepData = {
+  brief: {
+    image: 'portfolio-coffee.jpg', tag: 'BRIEF / FRAME 01', number: 'STEP 01',
+    project: { zh: '01 / 需求拆解', en: '01 / BRIEF BREAKDOWN' },
+    goal: { zh: '新品咖啡上线', en: 'New coffee launch' }, platform: { zh: '小红书 / 朋友圈', en: 'Xiaohongshu / Moments' }, style: { zh: '暖色 · 极简 · 生活感', en: 'Warm · minimal · lifestyle' }, status: { zh: '需求已整理', en: 'Brief organized' },
+    title: { zh: '先把模糊的想法，整理成能执行的方向。', en: 'Turn a rough idea into a direction we can execute.' }, text: { zh: '确认用途、尺寸、文案重点和参考风格，避免做完才发现方向不对。', en: 'Confirm the use, format, key copy and visual reference before production begins.' }
+  },
+  board: {
+    image: 'portfolio-skincare.jpg', tag: 'STORYBOARD / FRAME 02', number: 'STEP 02',
+    project: { zh: '02 / 分镜与构图', en: '02 / STORYBOARD' },
+    goal: { zh: '建立画面顺序', en: 'Build the frame order' }, platform: { zh: '主视觉 / 社媒延展', en: 'Hero visual / social' }, style: { zh: '留白 · 产品聚焦', en: 'Whitespace · product focus' }, status: { zh: '构图已确认', en: 'Layout approved' },
+    title: { zh: '先看画面顺序，再决定每一张该说什么。', en: 'Plan the visual sequence before designing each frame.' }, text: { zh: '用分镜拆出主画面、卖点画面和行动画面，让整套内容看起来像同一个品牌。', en: 'Separate the hero, selling-point and action frames so the whole set feels like one brand.' }
+  },
+  refine: {
+    image: 'portfolio-travel.jpg', tag: 'REFINE / FRAME 03', number: 'STEP 03',
+    project: { zh: '03 / 设计与调整', en: '03 / BUILD & REFINE' },
+    goal: { zh: '完成视觉系统', en: 'Complete the visual system' }, platform: { zh: '多平台同步', en: 'Multi-platform' }, style: { zh: '清晰 · 有记忆点', en: 'Clear · memorable' }, status: { zh: '细节调整中', en: 'Refining details' },
+    title: { zh: '调整文字、颜色和重点，直到信息一眼能看懂。', en: 'Refine type, colour and hierarchy until the message reads instantly.' }, text: { zh: '保留好看的同时检查文字层级、商品比例和品牌一致性，不靠特效掩盖信息。', en: 'Balance visual polish with clear hierarchy, product scale and brand consistency.' }
+  },
+  deliver: {
+    image: 'portfolio-coffee.jpg', tag: 'EXPORT / FINAL', number: 'STEP 04',
+    project: { zh: '04 / 尺寸与交付', en: '04 / EXPORT & DELIVERY' },
+    goal: { zh: '输出发布文件', en: 'Export publish-ready files' }, platform: { zh: '社媒 / 网页 / 印刷', en: 'Social / web / print' }, style: { zh: '高清 · 格式正确', en: 'High-res · correct format' }, status: { zh: '等待邮件交付', en: 'Ready for email delivery' },
+    title: { zh: '同一套视觉，整理成每个平台真正能用的尺寸。', en: 'Turn one visual system into the formats each platform actually needs.' }, text: { zh: '检查清晰度、裁切安全区和文件格式，完成后通过邮箱交付，不把预览图当成最终成品。', en: 'Check resolution, safe crops and file formats, then deliver the real final files by email.' }
+  }
+};
+function updateProcessStep(step) {
+  const data = processStepData[step] || processStepData.brief;
+  activeProcessStep = step;
+  document.querySelectorAll('[data-process-step]').forEach(button => {
+    const active = button.dataset.processStep === step;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  const setText = (selector, value) => { const target = document.querySelector(selector); if (target) target.textContent = value; };
+  const localized = value => value[language === 'en' ? 'en' : 'zh'];
+  const preview = document.querySelector('#processPreviewImage');
+  if (preview) { preview.src = data.image; preview.alt = language === 'en' ? 'Creative workflow preview' : '制作流程画面预览'; }
+  setText('#processPreviewTag', data.tag); setText('#processProjectLabel', localized(data.project)); setText('#processGoal', localized(data.goal)); setText('#processPlatform', localized(data.platform)); setText('#processStyle', localized(data.style)); setText('#processStatus', localized(data.status)); setText('#processCaptionNumber', data.number); setText('#processCaptionTitle', localized(data.title)); setText('#processCaptionText', localized(data.text));
+}
 function updateServiceView() {
   const cards = [...document.querySelectorAll('.price-card')];
   cards.forEach(card => {
@@ -278,6 +329,7 @@ document.querySelectorAll('[data-service-filter]').forEach(button => button.addE
   activeServiceFilter = button.dataset.serviceFilter;
   updateServiceView();
 }));
+document.querySelectorAll('[data-process-step]').forEach(button => button.addEventListener('click', () => updateProcessStep(button.dataset.processStep)));
 document.querySelector('#toggleAllServices')?.addEventListener('click', () => {
   showAllServices = !showAllServices;
   updateServiceView();
@@ -450,7 +502,7 @@ Object.assign(zhToEn, {
   '了解服务': 'Explore services'
 });
 function initStudioCutMotion() {
-  const revealTargets = document.querySelectorAll('.hero-copy, .hero-art, .works-title, .work, .section-head, .business-grid article, .price-card, .tool-grid article, .member-grid article, .process-grid article, .wechat-contact > *, .join-us > *, .update-grid article, .stats-heading, .stats-grid article');
+  const revealTargets = document.querySelectorAll('.hero-copy, .hero-studio, .process-head, .process-console, .process-caption, .works-title, .work, .section-head, .business-grid article, .price-card, .tool-grid article, .member-grid article, .wechat-contact > *, .join-us > *, .update-grid article, .stats-heading, .stats-grid article');
   revealTargets.forEach(target => target.setAttribute('data-reveal', ''));
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
     document.documentElement.classList.add('js-ready');
