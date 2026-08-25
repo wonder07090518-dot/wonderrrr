@@ -94,8 +94,7 @@ Object.assign(zhToEn, {
   '关于 AI 创意服务':'About our AI creative services','Wonder Ad Lab 可以做哪些 AI 设计？':'What can Wonder Ad Lab design?','可制作 AI 生图、海报、广告图、小红书封面、电商主图与详情页、菜单价目表、活动物料、品牌视觉、印刷物料、Banner、创意字贴、壁纸与 PPT 美化。':'We create AI images, posters, ads, social covers, e-commerce hero images and detail pages, menus, campaign materials, brand visuals, print files, banners, creative type, wallpapers and refined slides.','AI 海报和广告图怎么收费？':'How are AI posters and ads priced?','常规社媒封面、营销海报和电商商品图为 ¥4 / 张；PPT 美化为 ¥7.5 / 页。套装与印刷项目显示起步价，其他项目会按需求确认报价。':'Standard social covers, marketing posters and product visuals are ¥4 per image; slide refinement is ¥7.5 per slide. Kits and print work show a starting price, while custom work is quoted after the brief is confirmed.','下单后如何获得成品？':'How will I receive the final files?','提交需求后会收到订单与付款指引。完成制作后，成品会通过邮箱交付给客户。':'After submitting your brief, you will receive order and payment instructions. Final files are delivered by email when complete.',
   '你正在找的 AI 设计，':'Looking for a specific','这里可能刚好能做。':'AI design service?','按具体需求找服务，比只搜“AI 生图”更容易找到合适的作品与报价。':'Browse by a specific need to find the right format and price more easily.','展开查看 120+ 项 AI 创意服务与搜索场景':'View 120+ AI creative services and use cases','海报与广告图':'Posters and ads','社媒与内容封面':'Social and content covers','电商与产品视觉':'E-commerce and product visuals','PPT 与品牌设计':'Slides and brand design','壁纸与定制场景':'Wallpapers and custom work',
   '收到你的作品。':'Receive your work.','微信号（可选）':'WeChat ID (optional)','让每一句想法，都值得被看见':'Every idea deserves to be seen',
-  '网站小记录':'Site snapshot','演示数据 · 已预留真实统计接口':'Demo data · ready for a real analytics integration','网站访问人数':'Website visitors','初始演示值':'Initial demo value','最近访问地区':'Recent visitor region','浙江':'Zhejiang','地区示例，不代表真实 IP':'Region example, not a real IP address','在线访客数':'Visitors online','演示数据':'Demo data','网站运行天数':'Days online','天':'days','按 2026-07-12 上线日期计算':'Calculated from the 2026-07-12 launch date'
-  ,'制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','固定价格可见':'Visible fixed pricing','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
+  '制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','固定价格可见':'Visible fixed pricing','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
   '观看制作流程':'Watch the workflow','浏览作品':'Explore work','海报、社媒、电商与品牌视觉，从一句需求开始，变成真正能够发布的内容':'Posters, social content, e-commerce and brand visuals — one brief becomes content ready to publish','品牌片头':'Brand film','轻盈护肤':'Light Skincare','海岸假日':'Coastal Holiday','让创意先被看见':'Make creativity visible first','画面会说话，':'Images can speak.','作品就是答案。':'The work is the answer.','三组品牌视觉实验。每一组都从一句需求开始，再拆成适合发布的画面。':'Three brand-visual studies. Each begins with one brief and becomes a set of publish-ready frames.','新品主视觉 · 社媒延展 · 生活方式氛围':'Launch visual · social extensions · lifestyle mood','产品发布 · 留白构图 · 柔和品牌语言':'Product launch · spacious layout · soft brand language','旅行企划 · 夏日色彩 · 多平台宣传画面':'Travel campaign · summer colour · multi-platform visuals',
   '一句需求，':'One brief.','拆成每一帧':'Every frame.','能用的内容。':'Ready to publish.','从想法、画面拆解到最终交付，把海报、社媒、电商和品牌视觉放进一套清楚的制作流程。':'From the first idea to final delivery, posters, social content, e-commerce and brand visuals move through one clear production workflow.',
   '不是按一下生成。':'More than one click.','是把需求拆清楚。':'A brief, made clear.','参考视频制作和剪辑软件的逻辑：每一步都能看懂、每个画面都有用途，最后再整理成适合发布的成品。':'Built like a video-production workflow: every step is visible, every frame has a purpose, and each final file is ready to publish.',
@@ -142,6 +141,7 @@ function applyLanguage() {
   updateSelectedPrice();
   updateServiceView();
   updateProcessStep(activeProcessStep);
+  if (typeof updateLabMode === 'function') updateLabMode(activeLabMode);
 }
 let toastTimer;
 
@@ -514,6 +514,17 @@ Object.assign(zhToEn, {
   '选择服务': 'Choose a service',
   '填写方向': 'Set the direction',
   '确认交付': 'Confirm delivery',
+  '把一句需求拆成可以发布的画面': 'Turn one brief into publish-ready visuals',
+  '生成': 'Generate',
+  '改图': 'Retouch',
+  '排版': 'Layout',
+  '延展': 'Extend',
+  '视觉生成': 'Visual generation',
+  '版式分析': 'Layout analysis',
+  '品牌一致性': 'Brand consistency',
+  '创意强度': 'Creative strength',
+  '画面细节': 'Visual detail',
+  '运行演示': 'Run demo',
   '有想法？': 'Have an idea?',
   '直接加我微信。': 'Add me on WeChat.',
   '加我微信': 'Add me on WeChat',
@@ -529,6 +540,57 @@ Object.assign(zhToEn, {
   '把一次活动，做成被记住的画面。': 'Turn one campaign into a visual people remember.',
   '了解服务': 'Explore services'
 });
+Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
+
+const labModes = {
+  generate: {
+    mode: { zh: '视觉生成', en: 'VISUAL GENERATION' },
+    title: { zh: '从一句需求生成视觉方向', en: 'Turn one brief into a visual direction' },
+    description: { zh: '识别主题、平台和风格，把模糊想法整理成可以继续制作的画面', en: 'Identify the subject, platform and style, then shape a rough idea into a workable visual.' },
+    prompt: { zh: '夏日咖啡新品海报 · 清爽 · 社交媒体', en: 'Summer coffee launch · fresh · social media' }
+  },
+  retouch: {
+    mode: { zh: '智能改图', en: 'AI RETOUCH' },
+    title: { zh: '保留主体，重新设计画面', en: 'Keep the subject, redesign the image' },
+    description: { zh: '调整背景、文字、构图与色彩，让已有素材更适合发布', en: 'Refine the background, copy, composition and color for a publish-ready result.' },
+    prompt: { zh: '保留商品 · 换成蓝色科技背景 · 增加留白', en: 'Keep product · blue tech background · add whitespace' }
+  },
+  layout: {
+    mode: { zh: '版式分析', en: 'LAYOUT ANALYSIS' },
+    title: { zh: '把复杂信息排得清楚', en: 'Make complex information clear' },
+    description: { zh: '分析标题、卖点和行动按钮，建立可以快速阅读的视觉层级', en: 'Analyze headlines, selling points and calls to action to build a clear hierarchy.' },
+    prompt: { zh: '三项卖点 · 一个主标题 · 商务高级排版', en: 'Three benefits · one headline · premium layout' }
+  },
+  extend: {
+    mode: { zh: '视觉延展', en: 'VISUAL EXTENSION' },
+    title: { zh: '一套主视觉适配多个平台', en: 'One key visual, adapted everywhere' },
+    description: { zh: '从主海报继续生成社媒封面、横幅和商品图，保持品牌一致', en: 'Extend a key poster into covers, banners and product visuals with brand consistency.' },
+    prompt: { zh: '主海报 → 小红书 3:4 → 横幅 16:9 → 方形商品图', en: 'Poster → social 3:4 → banner 16:9 → square product' }
+  }
+};
+let activeLabMode = 'generate';
+function updateLabMode(mode = activeLabMode) {
+  const data = labModes[mode] || labModes.generate;
+  activeLabMode = mode;
+  const locale = language === 'en' ? 'en' : 'zh';
+  document.querySelectorAll('[data-lab-mode]').forEach(button => button.classList.toggle('active', button.dataset.labMode === mode));
+  const setLabText = (selector, value) => { const target = document.querySelector(selector); if (target) target.textContent = value; };
+  setLabText('#labMode', data.mode[locale]);
+  setLabText('#labTitle', data.title[locale]);
+  setLabText('#labDescription', data.description[locale]);
+  setLabText('#labPrompt', data.prompt[locale]);
+}
+function initAiLab() {
+  const lab = document.querySelector('.ai-lab');
+  if (!lab) return;
+  document.querySelectorAll('[data-lab-mode]').forEach(button => button.addEventListener('click', () => updateLabMode(button.dataset.labMode)));
+  document.querySelector('#labRun')?.addEventListener('click', () => {
+    lab.classList.remove('is-running');
+    window.requestAnimationFrame(() => lab.classList.add('is-running'));
+    window.setTimeout(() => lab.classList.remove('is-running'), 950);
+  });
+  updateLabMode();
+}
 function initStudioCutMotion() {
   const revealTargets = document.querySelectorAll('.flow-hero:not(.showreel-hero) .hero-copy, .hero-studio, .process-head, .process-console, .process-caption, .works-title, .section-head, .business-grid article, .price-card, .tool-grid article, .member-grid article, .wechat-contact > *, .join-us > *, .update-grid article, .stats-heading, .stats-grid article');
   revealTargets.forEach(target => target.setAttribute('data-reveal', ''));
@@ -635,25 +697,6 @@ function initCinematicMotion() {
   window.addEventListener('resize', requestMeasuredMotion, { passive: true });
   updateMeasuredMotion();
 
-  const measuredCountTargets = [...document.querySelectorAll('[data-stat="visitors"], [data-stat="online"], #runningDays')];
-  if (!reduceMotion && 'IntersectionObserver' in window) {
-    const measuredCounterObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      const target = entry.target;
-      const finalValue = Number.parseInt(target.textContent, 10);
-      if (Number.isFinite(finalValue)) {
-        const start = performance.now();
-        const tick = now => {
-          const progress = measuredClamp((now - start) / 800);
-          target.textContent = String(Math.round(finalValue * (1 - Math.pow(1 - progress, 3))));
-          if (progress < 1) window.requestAnimationFrame(tick);
-        };
-        window.requestAnimationFrame(tick);
-      }
-      measuredCounterObserver.unobserve(target);
-    }), { threshold: .5 });
-    measuredCountTargets.forEach(target => measuredCounterObserver.observe(target));
-  }
   return;
 
   document.querySelectorAll('.hero-actions button, .hero-actions a, .nav-order, .choose, .expand-services, .membership button, .prompt-helper, form .primary').forEach(element => element.classList.add('magnetic'));
@@ -766,43 +809,11 @@ function initCinematicMotion() {
     });
   }
 
-  const countTargets = [...document.querySelectorAll('[data-stat="visitors"], [data-stat="online"], #runningDays')];
-  const animateCount = target => {
-    const finalValue = Number.parseInt(target.textContent, 10);
-    if (!Number.isFinite(finalValue)) return;
-    target.dataset.counting = 'true';
-    const start = performance.now();
-    const duration = 1150;
-    const tick = now => {
-      const progress = clamp((now - start) / duration);
-      const eased = 1 - Math.pow(1 - progress, 4);
-      target.textContent = String(Math.round(finalValue * eased));
-      if (progress < 1) window.requestAnimationFrame(tick);
-      else delete target.dataset.counting;
-    };
-    window.requestAnimationFrame(tick);
-  };
-  if ('IntersectionObserver' in window) {
-    const counterObserver = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      animateCount(entry.target);
-      counterObserver.unobserve(entry.target);
-    }), { threshold: .55 });
-    countTargets.forEach(target => counterObserver.observe(target));
-  }
-}
-function updateRunningDays() {
-  const launchDate = new Date(2026, 6, 12);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const days = Math.max(1, Math.floor((today - launchDate) / 86400000) + 1);
-  const target = document.querySelector('#runningDays');
-  if (target) target.textContent = String(days);
 }
 updateServiceView();
 initStudioCutMotion();
-updateRunningDays();
 initShowreel();
 initCinematicMotion();
+initAiLab();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
