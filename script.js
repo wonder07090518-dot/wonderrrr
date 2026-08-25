@@ -142,6 +142,7 @@ function applyLanguage() {
   updateServiceView();
   updateProcessStep(activeProcessStep);
   if (typeof updateLabMode === 'function') updateLabMode(activeLabMode);
+  if (typeof updateScrollStoryCopy === 'function') updateScrollStoryCopy();
 }
 let toastTimer;
 
@@ -539,8 +540,94 @@ Object.assign(zhToEn, {
   '品牌活动': 'Brand campaign',
   '把一次活动，做成被记住的画面。': 'Turn one campaign into a visual people remember.',
   '了解服务': 'Explore services'
+  ,'一张订单，怎样变成成品': 'How One Order Becomes a Design'
+  ,'继续向下滑，跟着这一枚订单数据包走完整个制作流程': 'Keep scrolling and follow one order packet through the entire workflow'
+  ,'想法变成需求': 'Idea Becomes a Brief'
+  ,'顾客在电脑前写下用途、尺寸和想要的感觉': 'The customer writes the purpose, format and desired feeling on their computer'
+  ,'设计需求': 'Design brief'
+  ,'制作一张新品咖啡海报': 'Create a new coffee launch poster'
+  ,'一键发出订单': 'Send With One Click'
+  ,'确认需求后点击发送，订单开始进入制作通道': 'After confirming the brief, one click sends the order into production'
+  ,'发送订单': 'Send order'
+  ,'需求打包上路': 'Packed and In Transit'
+  ,'订单变成加密数据包，沿线路传输到 Wonder 工作台': 'The order becomes a secure packet and travels to the Wonder workstation'
+  ,'我先检查需求是否完整，再把清晰的任务交给 AI': 'I check that the brief is complete, then hand a clear task to AI'
+  ,'AI 核心开始思考': 'The Core Starts Thinking'
+  ,'理解文案、构图、配色和平台尺寸，组合成可执行方案': 'It understands the copy, layout, colour and format, then builds an executable direction'
+  ,'构图 / LAYOUT': 'LAYOUT'
+  ,'配色 / COLOR': 'COLOR'
+  ,'文案 / COPY': 'COPY'
+  ,'尺寸 / FORMAT': 'FORMAT'
+  ,'AI 出稿，人工把关': 'AI Drafts, We Refine'
+  ,'生成初稿、调整排版并美化，我检查后再通过邮件发送': 'AI drafts and refines the layout; I review it before sending it by email'
+  ,'好设计如期而至': 'Your Design Arrives'
+  ,'顾客收到可直接使用的成品，确认后开心完成合作': 'The customer receives a ready-to-use design and happily confirms delivery'
+  ,'你的设计已送达': 'Your design has arrived'
+  ,'制作流程动画步骤': 'Workflow story steps'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
+
+let activeStoryIndex = 0;
+const storySystemStates = {
+  zh: ['输入 / 整理需求', '发送 / 订单确认', '传输 / 数据上路', '接单 / 人工检查', '思考 / AI 分析', '制作 / 人工把关', '交付 / 已送达'],
+  en: ['INPUT / BRIEFING', 'SEND / CONFIRMED', 'TRANSFER / IN TRANSIT', 'WONDER / REVIEW', 'THINK / AI ANALYSIS', 'BUILD / HUMAN CHECK', 'DELIVER / RECEIVED']
+};
+const storyAriaLabels = {
+  zh: ['第 1 幕：想法变成需求', '第 2 幕：一键发出订单', '第 3 幕：需求打包上路', '第 4 幕：Wonder 接单确认', '第 5 幕：AI 核心开始思考', '第 6 幕：AI 出稿，人工把关', '第 7 幕：好设计如期而至'],
+  en: ['Scene 1: Idea becomes a brief', 'Scene 2: Send with one click', 'Scene 3: Packed and in transit', 'Scene 4: Wonder confirms it', 'Scene 5: The AI core thinks', 'Scene 6: AI drafts, we refine', 'Scene 7: Your design arrives']
+};
+function updateScrollStoryCopy() {
+  const state = document.querySelector('#storySystemState');
+  if (state) state.textContent = storySystemStates[language][activeStoryIndex];
+  document.querySelector('.rail-nav')?.setAttribute('aria-label', language === 'en' ? 'Workflow story steps' : '制作流程动画步骤');
+  document.querySelectorAll('[data-story-goto]').forEach((button, index) => button.setAttribute('aria-label', storyAriaLabels[language][index]));
+}
+function initScrollStory() {
+  const section = document.querySelector('.process-rail');
+  const strip = section?.querySelector('.rail-strip');
+  const scenes = [...(section?.querySelectorAll('[data-story-scene]') || [])];
+  const dots = [...(section?.querySelectorAll('[data-story-goto]') || [])];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!section || !strip || scenes.length !== 7) return;
+  let framePending = false;
+  const clamp = value => Math.min(1, Math.max(0, value));
+  const render = () => {
+    framePending = false;
+    const rect = section.getBoundingClientRect();
+    const total = Math.max(1, section.offsetHeight - window.innerHeight);
+    const progress = clamp(-rect.top / total);
+    const mobile = window.innerWidth <= 900;
+    activeStoryIndex = Math.min(6, Math.round(progress * 6));
+    section.dataset.storyIndex = String(activeStoryIndex);
+    section.style.setProperty('--story-progress', String(progress));
+    if (!reduceMotion && !mobile) strip.style.transform = `translate3d(${-progress * 600}vw,0,0)`;
+    else strip.style.removeProperty('transform');
+    scenes.forEach((scene, index) => {
+      const active = index === activeStoryIndex;
+      scene.classList.toggle('is-active', active);
+      scene.setAttribute('aria-hidden', String(!active && !reduceMotion));
+    });
+    dots.forEach((dot, index) => {
+      const active = index === activeStoryIndex;
+      dot.classList.toggle('is-current', active);
+      dot.setAttribute('aria-pressed', String(active));
+    });
+    updateScrollStoryCopy();
+  };
+  const requestRender = () => {
+    if (framePending) return;
+    framePending = true;
+    window.requestAnimationFrame(render);
+  };
+  dots.forEach((dot, index) => dot.addEventListener('click', () => {
+    const total = Math.max(1, section.offsetHeight - window.innerHeight);
+    const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: sectionTop + total * (index / 6), behavior: reduceMotion ? 'auto' : 'smooth' });
+  }));
+  window.addEventListener('scroll', requestRender, { passive: true });
+  window.addEventListener('resize', requestRender, { passive: true });
+  render();
+}
 
 const labModes = {
   generate: {
@@ -814,6 +901,7 @@ updateServiceView();
 initStudioCutMotion();
 initShowreel();
 initCinematicMotion();
+initScrollStory();
 initAiLab();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
