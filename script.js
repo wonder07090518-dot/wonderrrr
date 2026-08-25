@@ -9,14 +9,15 @@ const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
 const servicePrices = {
-  '社媒封面': '¥4 / 张', '营销海报': '¥4 / 张', '电商商品图': '¥4 / 张', '电商详情页': '¥12 / 页', 'PPT 美化': '¥7.5 / 页', 'AI 快速配图': '¥0.3 / 张', '品牌 Logo': '¥11.5 / 个', 'Banner 设计': '¥3 / 张', '创意字贴': '¥3 / 张', '壁纸设计': '¥4 / 张', '菜单与价目表': '¥8 / 张', '活动物料套装': '¥29 / 套起', '品牌视觉套装': '¥49 / 套起', '社媒月更包': '¥59 / 10 张起', '印刷物料设计': '¥15 / 张起', '其他需求': 'AI 评估报价',
-  'Social cover': '¥4 / image', 'Marketing poster': '¥4 / image', 'E-commerce visual': '¥4 / image', 'Slide design': '¥7.5 / slide', 'AI quick image': '¥0.3 / image', 'Brand logo': '¥11.5 / mark', 'Banner design': '¥3 / image', 'Creative type sticker': '¥3 / image', 'Wallpaper design': '¥4 / image', 'Custom request': 'AI-estimated quote'
+  '社媒封面': '¥79 / 张', '营销海报': '¥199 / 张', '电商商品图': '¥129 / 张', '电商详情页': '¥299 / 页起', '电商上新套装': '¥1299 / 套起', 'PPT 美化': '¥50 / 页起', 'AI 快速配图': '¥59 / 张', '品牌 Logo': '¥399 / 个起', 'Banner 设计': '¥159 / 张', '创意字贴': '¥99 / 张', '壁纸设计': '¥129 / 张', '菜单与价目表': '¥199 / 张', '活动物料套装': '¥999 / 套起', '品牌视觉套装': '¥1999 / 套起', '社媒月更包': '¥699 / 10 张起', '印刷物料设计': '¥199 / 张起', '其他需求': 'AI 评估报价',
+  'Social cover': '¥79 / image', 'Marketing poster': '¥199 / image', 'E-commerce visual': '¥129 / image', 'E-commerce detail page': '¥299 / page from', 'E-commerce launch kit': '¥1299 / kit from', 'Slide design': '¥50 / slide from', 'AI quick image': '¥59 / image', 'Brand logo': '¥399 / mark from', 'Banner design': '¥159 / image', 'Creative type sticker': '¥99 / image', 'Wallpaper design': '¥129 / image', 'Custom request': 'AI-estimated quote'
 };
 const serviceOptions = {
   '社媒封面': { sizes: ['小红书 3:4（1242×1660）', '抖音封面 9:16（1080×1920）', '公众号首图 2.35:1（900×383）', '视频号封面 16:9（1920×1080）', '方形社媒 1:1（1080×1080）', '其他尺寸'], styles: ['极简', '清新生活', '潮流时尚', '品牌商业', '可爱插画', '其他风格'] },
   '营销海报': { sizes: ['竖版海报 3:4（1080×1440）', '横版海报 16:9（1920×1080）', 'A4 印刷（210×297mm）', 'A3 印刷（297×420mm）', '易拉宝（80×200cm）', '其他尺寸'], styles: ['极简', '科技未来', '商务高级', '节日氛围', '国风', '其他风格'] },
   '电商商品图': { sizes: ['主图 1:1（800×800）', '商品卡 3:4（1080×1440）', '详情页 750×1000', '横版展示 16:9（1920×1080）', '平台横幅 1200×628', '其他尺寸'], styles: ['电商质感', '干净白底', '场景氛围', '轻奢高级', '促销醒目', '其他风格'] },
   '电商详情页': { sizes: ['手机详情页 750×1000', '淘宝 / 天猫详情页', '京东详情页', '拼多多详情页', '独立站长图', '其他尺寸'], styles: ['卖点清晰', '电商质感', '轻奢高级', '促销醒目', '极简', '其他风格'] },
+  '电商上新套装': { sizes: ['5 张商品主图 + 详情页结构', '3 张商品主图 + 2 张场景图', '主图 + 详情页 + Banner', '淘宝 / 天猫上新', '独立站上新', '其他尺寸'], styles: ['电商质感', '轻奢高级', '品牌商业', '促销醒目', '极简', '其他风格'] },
   'PPT 美化': { sizes: ['宽屏 16:9（1920×1080）', '标准 4:3（1024×768）', '竖版提案 9:16（1080×1920）', 'A4 文档（210×297mm）', '仅优化 1 页', '其他尺寸'], styles: ['商务高级', '极简', '科技未来', '学术清晰', '品牌提案', '其他风格'] },
   'AI 快速配图': { sizes: ['方形 1:1（1024×1024）', '竖版 3:4（1024×1365）', '竖版 9:16（1080×1920）', '横版 16:9（1920×1080）', '横幅 3:1（1500×500）', '其他尺寸'], styles: ['写实摄影', '极简', '插画', '电影感', '科技未来', '其他风格'] },
   '品牌 Logo': { sizes: ['PNG 透明底（2000px）', 'SVG 矢量源文件', '横版组合', '竖版组合', '社媒头像 1:1', '其他尺寸'], styles: ['极简', '现代几何', '轻奢高级', '可爱亲和', '国风', '其他风格'] },
@@ -91,7 +92,7 @@ Object.assign(zhToEn, {
   '电商上新套装':'E-commerce launch kit','从主图、详情页到促销 Banner，一次把新品发布需要的视觉准备好。':'Prepare the hero image, detail page and promotional banners for one complete product launch.','主图与场景图':'Hero and lifestyle images','详情页视觉模块':'Detail-page visual modules','活动与店铺 Banner':'Campaign and shop banners',
   '开业与节日活动':'Launch and seasonal campaign','开业、上新、促销、节日营销，一次配齐线上传播和线下印刷物料。':'A complete set of digital and print visuals for openings, launches, promotions and seasonal campaigns.','主海报与社媒图':'Hero poster and social visuals','优惠活动宣传物料':'Promotion materials','横幅、桌牌与印刷文件':'Banners, table signs and print files',
   'AI 生图与配图':'AI images and illustrations','适合文章插图、活动氛围图、壁纸和日常内容配图。':'For article illustrations, campaign mood images, wallpapers and everyday content.','AI 海报与广告图':'AI posters and ads','适合新品发布、门店活动、节日营销、朋友圈与社交媒体传播。':'For product launches, retail campaigns, seasonal marketing, Moments and social media.','小红书封面与电商主图':'Social covers and e-commerce hero images','为内容点击率和商品展示而设计，尺寸与风格可按平台选择。':'Designed for content clicks and product presentation, with platform-ready formats.','PPT 美化与品牌视觉':'Slide refinement and brand visuals','把提案、汇报和品牌信息做得更清楚、更有记忆点。':'Make proposals, reports and brand messages clearer and more memorable.',
-  '关于 AI 创意服务':'About our AI creative services','Wonder Ad Lab 可以做哪些 AI 设计？':'What can Wonder Ad Lab design?','可制作 AI 生图、海报、广告图、小红书封面、电商主图与详情页、菜单价目表、活动物料、品牌视觉、印刷物料、Banner、创意字贴、壁纸与 PPT 美化。':'We create AI images, posters, ads, social covers, e-commerce hero images and detail pages, menus, campaign materials, brand visuals, print files, banners, creative type, wallpapers and refined slides.','AI 海报和广告图怎么收费？':'How are AI posters and ads priced?','常规社媒封面、营销海报和电商商品图为 ¥4 / 张；PPT 美化为 ¥7.5 / 页。套装与印刷项目显示起步价，其他项目会按需求确认报价。':'Standard social covers, marketing posters and product visuals are ¥4 per image; slide refinement is ¥7.5 per slide. Kits and print work show a starting price, while custom work is quoted after the brief is confirmed.','下单后如何获得成品？':'How will I receive the final files?','提交需求后会收到订单与付款指引。完成制作后，成品会通过邮箱交付给客户。':'After submitting your brief, you will receive order and payment instructions. Final files are delivered by email when complete.',
+  '关于 AI 创意服务':'About our AI creative services','Wonder Ad Lab 可以做哪些 AI 设计？':'What can Wonder Ad Lab design?','可制作 AI 生图、海报、广告图、小红书封面、电商主图与详情页、菜单价目表、活动物料、品牌视觉、印刷物料、Banner、创意字贴、壁纸与 PPT 美化。':'We create AI images, posters, ads, social covers, e-commerce hero images and detail pages, menus, campaign materials, brand visuals, print files, banners, creative type, wallpapers and refined slides.','AI 海报和广告图怎么收费？':'How are AI posters and ads priced?','下单后如何获得成品？':'How will I receive the final files?','提交需求后会收到订单与付款指引。完成制作后，成品会通过邮箱交付给客户。':'After submitting your brief, you will receive order and payment instructions. Final files are delivered by email when complete.',
   '你正在找的 AI 设计，':'Looking for a specific','这里可能刚好能做。':'AI design service?','按具体需求找服务，比只搜“AI 生图”更容易找到合适的作品与报价。':'Browse by a specific need to find the right format and price more easily.','展开查看 120+ 项 AI 创意服务与搜索场景':'View 120+ AI creative services and use cases','海报与广告图':'Posters and ads','社媒与内容封面':'Social and content covers','电商与产品视觉':'E-commerce and product visuals','PPT 与品牌设计':'Slides and brand design','壁纸与定制场景':'Wallpapers and custom work',
   '收到你的作品。':'Receive your work.','微信号（可选）':'WeChat ID (optional)','让每一句想法，都值得被看见':'Every idea deserves to be seen',
   '制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','固定价格可见':'Visible fixed pricing','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
@@ -100,6 +101,17 @@ Object.assign(zhToEn, {
   '不是按一下生成。':'More than one click.','是把需求拆清楚。':'A brief, made clear.','参考视频制作和剪辑软件的逻辑：每一步都能看懂、每个画面都有用途，最后再整理成适合发布的成品。':'Built like a video-production workflow: every step is visible, every frame has a purpose, and each final file is ready to publish.',
   '需求拆解':'Brief breakdown','分镜与构图':'Storyboard & layout','设计与调整':'Design & refine','尺寸与交付':'Export & delivery','目标':'Goal','平台':'Platform','风格':'Style','状态':'Status','新品咖啡上线':'New coffee launch','小红书 / 朋友圈':'Xiaohongshu / Moments','暖色 · 极简 · 生活感':'Warm · minimal · lifestyle','需求已整理':'Brief organized','核心标题':'Hero headline','卖点与行动按钮':'Selling points & CTA',
   '先把模糊的想法，整理成能执行的方向。':'Turn a rough idea into a direction we can execute.','确认用途、尺寸、文案重点和参考风格，避免做完才发现方向不对。':'Confirm the use, format, key copy and visual reference before production begins.'
+});
+Object.assign(zhToEn, {
+  '基础美化 ¥50 / 页起，复杂页另报价':'Basic refinement from ¥50 per slide; complex slides are quoted separately',
+  'AI 生成 + 人工筛选与检查':'AI generation + human selection and review',
+  '品牌 Logo 概念':'Brand logo concept',
+  '从一个清晰视觉方向开始':'Start with one clear visual direction',
+  '以上为明确范围的起步价。数量、复杂合成、文案整理、额外尺寸与源文件会在开工前确认，不临时加价。':'These are starting prices for a defined scope. Quantity, complex compositing, copy work, extra formats and source files are confirmed before work begins.',
+  'AI 快速配图 ¥59 / 张，社媒封面 ¥79 / 张，电商商品图 ¥129 / 张，Banner ¥159 / 张，营销海报 ¥199 / 张，PPT 基础美化 ¥50 / 页起。套装与复杂项目显示起步价，开工前确认最终范围与价格。':'AI quick images are ¥59 each, social covers ¥79, e-commerce visuals ¥129, banners ¥159, marketing posters ¥199, and basic slide refinement starts at ¥50 per slide. Kit and complex-project pricing is confirmed before work begins.',
+  '为什么价格不是几元一张？':'Why are prices not just a few yuan per image?',
+  '报价包含需求整理、AI 生成、人工筛选、排版检查和清晰文件交付，不采用无法覆盖实际制作的低价引流方式。':'Pricing includes brief preparation, AI generation, human selection, layout review and clear final-file delivery. We do not use unrealistically low bait pricing.',
+  '5 张商品主图 + 详情页结构':'5 product hero images + detail structure','3 张商品主图 + 2 张场景图':'3 product hero images + 2 lifestyle images','主图 + 详情页 + Banner':'Hero image + detail page + banner','淘宝 / 天猫上新':'Taobao / Tmall launch','独立站上新':'Independent shop launch'
 });
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 let language = localStorage.getItem('wonderad-language') || 'zh';
@@ -197,8 +209,8 @@ function formatDate() {
   return new Intl.DateTimeFormat(language === 'en' ? 'en-CA' : 'zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
 }
 function updateSelectedPrice() {
-  let price = servicePrices[service.value] || '¥4 / 张';
-  if (language === 'en') price = price.replace('/ 10 张起', '/ 10 images from').replace('/ 张起', '/ image from').replace('/ 套起', '/ kit from').replace('/ 张', '/ image').replace('/ 页', '/ slide').replace('/ 个', '/ mark').replace('AI 评估报价', 'AI-estimated quote');
+  let price = servicePrices[service.value] || '¥79 / 张';
+  if (language === 'en') price = price.replace('/ 10 张起', '/ 10 images from').replace('/ 页起', '/ slide from').replace('/ 个起', '/ mark from').replace('/ 张起', '/ image from').replace('/ 套起', '/ kit from').replace('/ 张', '/ image').replace('/ 页', '/ slide').replace('/ 个', '/ mark').replace('AI 评估报价', 'AI-estimated quote');
   const label = language === 'en' ? 'Project price:' : '本次项目价格：';
   const target = document.querySelector('#selectedPrice');
   if (target) target.textContent = `${label} ${price}`;
@@ -520,10 +532,10 @@ function answerSupport(question) {
   const text = question.toLowerCase();
   const english = language === 'en';
   if (/其他|custom|定制|需求/.test(text)) return english ? 'Choose “Custom request” and describe what you need. We will review it and send a confirmed quote before payment.' : '选择“其他需求”，把你想做的内容写清楚。我们审核后会先发确认报价，再安排制作。';
-  if (/ppt|slide|汇报|提案/.test(text)) return english ? 'PPT design is ¥7.5 per slide. Send your topic and page count in the order form.' : 'PPT 美化固定 ¥7.5 / 页。下单时写上主题和页数即可。';
-  if (/海报|poster|广告|ad/.test(text)) return english ? 'Marketing posters are ¥4 per image. Pick “Marketing poster” and share your copy, size and style.' : '营销海报固定 ¥4 / 张。选择“营销海报”，写上文案、尺寸和风格即可。';
-  if (/字贴|type|文字/.test(text)) return english ? 'Creative type stickers are ¥3 per image. They work well for campaign headlines and social text.' : '创意字贴固定 ¥3 / 张，适合活动标题、社媒文字和醒目短句。';
-  if (/壁纸|wallpaper/.test(text)) return english ? 'Wallpaper design is ¥4 per image for phone, desktop or event backgrounds.' : '壁纸设计固定 ¥4 / 张，可做手机、电脑或活动背景。';
+  if (/ppt|slide|汇报|提案/.test(text)) return english ? 'Basic PPT refinement starts at ¥50 per slide; complex slides are quoted after the content is reviewed.' : 'PPT 基础美化 ¥50 / 页起；复杂图表、定制版式或动画页会先看内容再确认价格。';
+  if (/海报|poster|广告|ad/.test(text)) return english ? 'Marketing posters are ¥199 per image. Share the copy, format and visual direction in the order form.' : '营销海报 ¥199 / 张。选择“营销海报”，写上文案、尺寸和风格即可。';
+  if (/字贴|type|文字/.test(text)) return english ? 'Creative type stickers are ¥99 per image. They work well for campaign headlines and social text.' : '创意字贴 ¥99 / 张，适合活动标题、社媒文字和醒目短句。';
+  if (/壁纸|wallpaper/.test(text)) return english ? 'Wallpaper design is ¥129 per image for phone, desktop or event backgrounds.' : '壁纸设计 ¥129 / 张，可做手机、电脑或活动背景。';
   if (/支付|付款|pay|alipay|wechat/.test(text)) return english ? 'After you submit, we email a WeChat Pay or Alipay QR code together with your exact project price.' : '提交订单后，系统会把微信或支付宝收款码和你的固定项目价格一起发到邮箱。';
   if (/多久|交付|deliver|time/.test(text)) return english ? 'Most simple visual projects are reviewed first, then delivered by email after payment and completion.' : '订单会先审核；确认付款并完成制作后，成品会通过邮件交付。';
   if (/价格|多少钱|price|cost/.test(text)) return english ? 'Prices are fixed and displayed before you order. Choose a service and I can tell you the exact amount.' : '每项服务都是固定价格。选择项目后，页面会立即显示本次应付金额。';
