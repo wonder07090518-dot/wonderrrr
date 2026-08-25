@@ -30,6 +30,24 @@ const serviceOptions = {
   '印刷物料设计': { sizes: ['A4 传单（210×297mm）', '三折页', '名片（90×54mm）', '易拉宝（80×200cm）', '桌牌（A5）', '其他尺寸'], styles: ['印刷清晰', '品牌商业', '极简', '轻奢高级', '促销醒目', '其他风格'] },
   '其他需求': { sizes: ['请在需求中说明尺寸', '按平台规范制作', '印刷文件', '网页文件', '社媒文件', '其他尺寸'], styles: ['请描述想要的风格', '极简', '商务高级', '潮流时尚', '国风', '其他风格'] }
 };
+const creativeOptionTranslations = {
+  '小红书 3:4（1242×1660）':'Xiaohongshu 3:4 (1242×1660)','抖音封面 9:16（1080×1920）':'Douyin cover 9:16 (1080×1920)','公众号首图 2.35:1（900×383）':'WeChat header 2.35:1 (900×383)','视频号封面 16:9（1920×1080）':'Channels cover 16:9 (1920×1080)','方形社媒 1:1（1080×1080）':'Square social 1:1 (1080×1080)','其他尺寸':'Other size',
+  '极简':'Minimal','清新生活':'Fresh lifestyle','潮流时尚':'Fashion-forward','品牌商业':'Brand commercial','可爱插画':'Cute illustration','其他风格':'Other style',
+  '竖版海报 3:4（1080×1440）':'Portrait poster 3:4 (1080×1440)','横版海报 16:9（1920×1080）':'Landscape poster 16:9 (1920×1080)','A4 印刷（210×297mm）':'A4 print (210×297mm)','A3 印刷（297×420mm）':'A3 print (297×420mm)','易拉宝（80×200cm）':'Roll-up banner (80×200cm)','科技未来':'Future tech','商务高级':'Premium business','节日氛围':'Festive','国风':'Chinese-inspired',
+  '主图 1:1（800×800）':'Hero image 1:1 (800×800)','商品卡 3:4（1080×1440）':'Product card 3:4 (1080×1440)','详情页 750×1000':'Detail page 750×1000','横版展示 16:9（1920×1080）':'Landscape display 16:9 (1920×1080)','平台横幅 1200×628':'Platform banner 1200×628','电商质感':'E-commerce polish','干净白底':'Clean white background','场景氛围':'Lifestyle scene','轻奢高级':'Quiet luxury','促销醒目':'Bold promotion',
+  '手机详情页 750×1000':'Mobile detail page 750×1000','淘宝 / 天猫详情页':'Taobao / Tmall detail page','京东详情页':'JD detail page','拼多多详情页':'Pinduoduo detail page','独立站长图':'Independent shop long image','卖点清晰':'Clear selling points',
+  '宽屏 16:9（1920×1080）':'Widescreen 16:9 (1920×1080)','标准 4:3（1024×768）':'Standard 4:3 (1024×768)','竖版提案 9:16（1080×1920）':'Portrait proposal 9:16 (1080×1920)','A4 文档（210×297mm）':'A4 document (210×297mm)','仅优化 1 页':'Refine one slide','学术清晰':'Academic clarity','品牌提案':'Brand proposal',
+  '方形 1:1（1024×1024）':'Square 1:1 (1024×1024)','竖版 3:4（1024×1365）':'Portrait 3:4 (1024×1365)','竖版 9:16（1080×1920）':'Portrait 9:16 (1080×1920)','横版 16:9（1920×1080）':'Landscape 16:9 (1920×1080)','横幅 3:1（1500×500）':'Banner 3:1 (1500×500)','写实摄影':'Photoreal','插画':'Illustration','电影感':'Cinematic',
+  'PNG 透明底（2000px）':'Transparent PNG (2000px)','SVG 矢量源文件':'SVG vector source','横版组合':'Horizontal lockup','竖版组合':'Vertical lockup','社媒头像 1:1':'Social avatar 1:1','现代几何':'Modern geometric','可爱亲和':'Cute and friendly',
+  '网页横幅（1920×600）':'Web banner (1920×600)','活动横幅（1920×1080）':'Campaign banner (1920×1080)','广告投放（1200×628）':'Ad placement (1200×628)','方形 Banner（1080×1080）':'Square banner (1080×1080)','移动端横幅（750×400）':'Mobile banner (750×400)',
+  '方形 1:1（1080×1080）':'Square 1:1 (1080×1080)','竖版 3:4（1080×1440）':'Portrait 3:4 (1080×1440)','透明底 PNG':'Transparent PNG','潮流字体':'Trend type','可爱手写':'Cute handwriting','赛博科技':'Cyber tech','国风书法':'Chinese calligraphy','极简排版':'Minimal typography',
+  '手机壁纸 9:16（1170×2532）':'Phone wallpaper 9:16 (1170×2532)','平板壁纸 4:3（2048×1536）':'Tablet wallpaper 4:3 (2048×1536)','电脑壁纸 16:9（1920×1080）':'Desktop wallpaper 16:9 (1920×1080)','4K 桌面（3840×2160）':'4K desktop (3840×2160)','锁屏 + 桌面套装':'Lock screen + desktop set','治愈氛围':'Calming mood','自然风景':'Natural landscape',
+  'A4 菜单（210×297mm）':'A4 menu (210×297mm)','桌牌（A5）':'Table sign (A5)','竖版价目表 3:4':'Portrait price list 3:4','手机长图 9:16':'Mobile long image 9:16','横版展示 16:9':'Landscape display 16:9','干净清晰':'Clean and clear','餐饮氛围':'Food and beverage mood',
+  '主海报 + 3 张社媒图':'Hero poster + 3 social images','主海报 + 横幅':'Hero poster + banner','小红书活动套装':'Xiaohongshu campaign kit','门店活动套装':'Retail campaign kit','电商促销套装':'E-commerce promo kit',
+  'Logo + 头像 + 配色':'Logo + avatar + palette','Logo + 社媒模板':'Logo + social templates','基础品牌规范 PDF':'Basic brand guide PDF','店铺开业视觉':'Store launch visuals','品牌提案 16:9':'Brand proposal 16:9',
+  '小红书 3:4':'Xiaohongshu 3:4','视频号封面 16:9':'Channels cover 16:9','朋友圈 1:1':'WeChat Moments 1:1','公众号首图 2.35:1':'WeChat header 2.35:1','多平台混合':'Mixed platforms',
+  'A4 传单（210×297mm）':'A4 flyer (210×297mm)','三折页':'Tri-fold brochure','名片（90×54mm）':'Business card (90×54mm)','印刷清晰':'Print clarity','请在需求中说明尺寸':'Describe the size in your brief','按平台规范制作':'Follow platform specs','印刷文件':'Print file','网页文件':'Web file','社媒文件':'Social file','请描述想要的风格':'Describe your preferred style'
+};
 const zhToEn = {
   '作品':'Work','价格':'Pricing','会员':'Membership','流程':'How it works','用户中心':'Account','登录 / 注册':'Sign in','我的订单':'My orders','创意收件箱':'Creative inbox','开始创作':'Start creating','把你的':'Turn your','一句话，':'one idea','变成一张好广告。':'into a great ad.','海报、广告图、PPT、日常配图。':'Posters, ads, slides and images.','输入你的想法，剩下的交给 AI 和一点审美。':'Share your idea — AI and good taste do the rest.','现在开始':'Get started','看看成品':'See our work','简单描述即可下单 · 最快 15 分钟出图':'A simple brief is enough · ready as fast as 15 minutes','AI CREATIVE STUDIO / 2026':'AI CREATIVE STUDIO / 2026','小小的预算，':'Small budget,','认真的视觉。':'serious visuals.','不需要复杂报价。选好你要的，':'No complicated quotes. Pick what you need,','告诉我一句想法。':'then tell us your idea.','最受欢迎':'Most popular','社媒封面':'Social cover','营销海报':'Marketing poster','电商商品图':'E-commerce visual','PPT 美化':'Slide design','AI 快速配图':'AI quick image','品牌 Logo':'Brand logo','Banner 设计':'Banner design','小红书、视频号、朋友圈':'Xiaohongshu, WeChat Channels and social posts','让内容在第一眼被点开。':'Make content worth the first click.','活动宣传、店铺上新、节日海报':'Campaigns, launches and seasonal posters','让信息第一眼就被看见。':'Make the message instantly visible.','商品主图、场景图、详情页配图':'Hero images, lifestyle scenes and product details','把产品放进更好的画面。':'Put your product in a better picture.','汇报、提案、课程作业':'Reports, proposals and class projects','清爽排版，让观点更有分量。':'Clean layouts that give ideas more weight.','文章插图、头像背景、氛围照片':'Article images, profile backgrounds and mood shots','随用随生成，不止是图片。':'Generate on demand — more than just an image.','店铺、个人品牌、活动标识':'Stores, personal brands and event marks','用一个清晰符号被记住。':'Be remembered by a clear symbol.','网站横幅、店铺首页、活动头图':'Website banners, storefronts and event headers','把核心信息放在最醒目的地方。':'Put your key message where it gets seen.','轻量服务':'Quick service','选这个':'Choose this','不只是生成一张图。':'More than generating one image.','AI 改图':'AI image editing','图片优化':'Image enhancement','商品视觉':'Product visuals','人物照片':'Portraits','改文字、改构图、换风格。':'Edit text, composition and style.','去背景、高清修复、扩图。':'Remove backgrounds, upscale and outpaint.','换背景、商品图、电商主图。':'New backgrounds, product images and hero shots.','头像、简历照、证件照。':'Avatars, resumes and ID photos.','为持续创作，准备的更快通道。':'A faster lane for ongoing creativity.','免费':'Free','每天 5 次生成':'5 generations per day','标准清晰度':'Standard definition','当前方案':'Current plan','月会员':'Monthly','高速生成':'Fast generation','高清无水印下载':'HD downloads without watermark','去付款':'Pay now','年会员':'Yearly','更多模型':'More models','优先队列与专属模板':'Priority queue and exclusive templates','企业版':'Business','定制':'Custom','团队协作':'Team collaboration','API 与专属支持':'API and dedicated support','联系我们':'Contact us','把你的想法，':'Bring your ideas','带进更多作品里。':'into more great work.','面向设计师、校园创作者、运营同学与合作伙伴。':'For designers, student creators, operators and partners.','你的邮箱':'Your email','学校 / 公司':'School / company','想加入的方向':'How you want to join','设计与创作':'Design & creation','校园推广':'Campus promotion','内容运营':'Content operations','商务合作':'Business partnership','自我介绍或合作需求':'Introduction or partnership brief','提交加入申请':'Submit application','每个想法，':'Every idea','都有它的样子。':'has its own look.','夏日':'Summer','冰饮':'Iced drinks','新书':'New book','上线':'Launch','一束':'A bouquet','花的事':'of flowers','现烤':'Fresh roasted','栗子':'chestnuts','秋日':'Autumn','风味':'flavour','黑金':'Black & gold','包装':'Packaging','说说你的想法':'Tell us your idea','一句文案、一张参考图，':'One line of copy, one reference image,','或只是一个模糊的感觉。':'or simply a feeling.','选择你的服务':'Choose your service','按单张或页面计费，':'Priced per image or slide,','价格在开始前就说清楚。':'with clear pricing up front.','收到你的作品':'Receive your work','AI 生成加人工精选，':'AI generation with human curation,','把好看的那一版交给你。':'delivering the version that looks best.','你的下一张好图，':'Your next great visual','从一句话开始。':'starts with one idea.','我想做':'I want to create','成品尺寸':'Output size','视觉风格':'Visual style','我的想法是':'My idea','✨ 用 AI 帮我整理需求':'✨ Shape my brief with AI','选择支付方式':'Payment method','微信支付':'WeChat Pay','支付宝':'Alipay','提交订单':'Submit order','隐私说明':'Privacy','在这里查看需求、更新进度并上传成品。上传后，成品会自动作为邮件附件发送给客户。':'Review briefs, update progress and upload final work. It is automatically emailed to the customer as an attachment.','清空本机记录':'Clear local records','输入下单时的邮箱，查看订单状态和交付成品。':'Enter the ordering email to see status and delivered files.','查询':'Search','输入邮箱后查询订单。':'Enter an email to view orders.','我的图片':'My images','下载记录':'Downloads','账户余额':'Balance','查看我的订单':'View my orders','余额充值（即将开放）':'Top up (coming soon)','邀请好友':'Invite friends','退出登录':'Sign out','欢迎来到 Wonder':'Welcome to Wonder','登录':'Sign in','注册':'Register','密码':'Password','登录账户':'Sign in','昵称':'Name','设置密码':'Set password','我已阅读并同意隐私说明':'I have read and agree to the privacy notice','创建账户':'Create account','你的隐私，值得被认真对待。':'Your privacy deserves care.','定制联系我们':'Custom contact','发送咨询':'Send enquiry','订单已提交，':'Order received,','正在审核中。':'under review.','返回首页':'Back to home','极简':'Minimal','科技':'Tech','商务':'Business','可爱':'Cute','国风':'Chinese style','横版广告':'Landscape ad','公众号':'WeChat header','抖音':'Douyin','我们做什么':'WHAT WE MAKE','AI 创意工具':'AI CREATIVE TOOLS','Wonder Ad Lab 会员':'WONDER AD LAB MEMBERSHIP','加入 Wonder Ad Lab':'JOIN WONDER AD LAB','一些灵感':'A FEW MOODS','简单三步':'EASY AS 1 · 2 · 3','准备好了吗':'READY WHEN YOU ARE','Wonder 账户':'WONDER ACCOUNT','隐私':'PRIVACY','企业 / 定制':'ENTERPRISE / CUSTOM','订单已收到':'ORDER RECEIVED','让每一句想法，都值得被看见。':'Every idea deserves to be seen.','AI 简历照片':'AI resume photo','AI 证件照':'AI ID photo','AI 去背景':'AI background removal','照片服务':'Photo service','快速工具':'Quick tool','职场头像、简历照、个人主页':'Professional headshots, resume photos and profile images','自然清晰，适合正式场景。':'Natural and clear for formal use.','换底色、尺寸裁切、清晰修复':'Change backgrounds, crop to size and enhance clarity','一张即可满足日常使用。':'One image for everyday requirements.','商品、人像、素材快速抠图':'Fast cutouts for products, portraits and assets','获得干净的透明底图。':'Get a clean transparent background.','每一次更新，':'Every update','都更接近好创意。':'gets closer to better creativity.','一句话，开始下单。':'Start an order with one idea.','付款、进度与成品。':'Payment, progress and delivery.','账户、隐私与双语。':'Accounts, privacy and bilingual mode.','上线海报、广告图、PPT 与图片服务；需求提交后通过邮箱确认订单。':'Launched posters, ads, slides and images, with email order confirmation.','加入微信、支付宝付款指引；上传成品后自动邮件交付给客户。':'Added WeChat and Alipay guidance, plus automatic email delivery after upload.','加入登录注册、隐私说明、中英文切换，以及更多轻量 AI 创意服务。':'Added sign-in, privacy notice, Chinese-English switching and more lightweight AI services.'
 };
@@ -48,6 +66,36 @@ Object.assign(zhToEn, {
   '版式优化': 'Layout refinement', '信息梳理、视觉层级、清晰排版。': 'Information structure, visual hierarchy and clear layouts.',
   '创意延展': 'Creative extensions', '把一张主视觉延展成多种宣传物料。': 'Extend one key visual into multiple promotional assets.'
 });
+Object.assign(zhToEn, {
+  '服务与报价':'Services & pricing','立即下单':'Order now','查看服务与报价':'See services & pricing','先看案例':'See work first',
+  '面向商家与小品牌的长期内容外包和单次视觉设计。':'Ongoing content support and one-off visual design for shops and small brands.',
+  '报价清楚、沟通简单、完成后通过邮箱交付。':'Clear prices, simple communication and final delivery by email.',
+  '长期合作 · 单次设计 · 中英双语 · 邮件交付':'Ongoing support · One-off design · Bilingual · Email delivery',
+  '长期内容合作':'Ongoing content','固定价格可见':'Visible fixed pricing','多平台尺寸适配':'Multi-platform formats','成品邮箱交付':'Final files by email','支持中英双语':'Chinese & English',
+  '先看作品，':'See the work.','再谈合作。':'Then let’s collaborate.','案例示例 · 你的项目也可以从一句想法开始。':'Concept examples · your project can begin with one idea, too.',
+  '需要稳定更新？':'Need steady content?','选择长期合作。':'Choose ongoing support.',
+  '适合持续发内容、稳定上新或准备活动的商家。':'For businesses publishing regularly, launching products or preparing campaigns.',
+  '固定沟通、固定排期、按计划交付。':'A clear contact, a fixed schedule and planned delivery.',
+  '今天需要什么，':'Start with what','就从这里开始。':'you need today.',
+  '先展示最常用的 6 项服务。':'The six most-used services appear first.','其他项目可以随时展开查看。':'Expand the rest whenever you need them.',
+  '推荐':'Featured','社媒':'Social','电商':'Commerce','品牌':'Brand','更多':'More','价格在下单前清楚显示':'Prices are shown clearly before ordering',
+  '查看全部 16 项服务':'View all 16 services','收起服务':'Show fewer services','了解我们的 AI 设计方式':'How we use AI in design',
+  '下一张好图，':'Your next visual','账户':'Account','支持':'Support','网站':'Website','微信联系':'WeChat contact',
+  '让品牌内容，':'Keep your content','持续被看见。':'worth seeing.','从一句想法，到一套被记住的画面。':'From one idea to a visual people remember.',
+  '案例示例':'Concept example','选择月更包':'Choose monthly pack','选择上新套装':'Choose launch kit','选择活动套装':'Choose campaign kit',
+  '需要 Logo、品牌规范、更多数量或不同类型内容？选择「其他需求」，先确认清楚再报价。':'Need a logo, brand guide, larger quantity or another format? Choose “Custom request” and we will confirm the scope before quoting.',
+  '有想法？':'Have an idea?','直接加我微信。':'Add me on WeChat.','加我微信':'Add me on WeChat',
+  '扫码添加 Wonder Ad Lab，沟通需求、定制项目或合作都可以。':'Scan to add Wonder Ad Lab for briefs, custom projects or collaborations.','微信号':'WeChat ID','扫码添加我为朋友':'Scan to add me on WeChat',
+  '小红书、视频号、朋友圈、公众号图文持续更新。适合门店、博主和小品牌。':'Ongoing visuals for Xiaohongshu, Channels, Moments and WeChat articles — ideal for shops, creators and small brands.',
+  '每月内容视觉排期':'Monthly visual schedule','统一品牌风格':'Consistent brand style','适配多平台尺寸':'Formats for multiple platforms',
+  '电商上新套装':'E-commerce launch kit','从主图、详情页到促销 Banner，一次把新品发布需要的视觉准备好。':'Prepare the hero image, detail page and promotional banners for one complete product launch.','主图与场景图':'Hero and lifestyle images','详情页视觉模块':'Detail-page visual modules','活动与店铺 Banner':'Campaign and shop banners',
+  '开业与节日活动':'Launch and seasonal campaign','开业、上新、促销、节日营销，一次配齐线上传播和线下印刷物料。':'A complete set of digital and print visuals for openings, launches, promotions and seasonal campaigns.','主海报与社媒图':'Hero poster and social visuals','优惠活动宣传物料':'Promotion materials','横幅、桌牌与印刷文件':'Banners, table signs and print files',
+  'AI 生图与配图':'AI images and illustrations','适合文章插图、活动氛围图、壁纸和日常内容配图。':'For article illustrations, campaign mood images, wallpapers and everyday content.','AI 海报与广告图':'AI posters and ads','适合新品发布、门店活动、节日营销、朋友圈与社交媒体传播。':'For product launches, retail campaigns, seasonal marketing, Moments and social media.','小红书封面与电商主图':'Social covers and e-commerce hero images','为内容点击率和商品展示而设计，尺寸与风格可按平台选择。':'Designed for content clicks and product presentation, with platform-ready formats.','PPT 美化与品牌视觉':'Slide refinement and brand visuals','把提案、汇报和品牌信息做得更清楚、更有记忆点。':'Make proposals, reports and brand messages clearer and more memorable.',
+  '关于 AI 创意服务':'About our AI creative services','Wonder Ad Lab 可以做哪些 AI 设计？':'What can Wonder Ad Lab design?','可制作 AI 生图、海报、广告图、小红书封面、电商主图与详情页、菜单价目表、活动物料、品牌视觉、印刷物料、Banner、创意字贴、壁纸与 PPT 美化。':'We create AI images, posters, ads, social covers, e-commerce hero images and detail pages, menus, campaign materials, brand visuals, print files, banners, creative type, wallpapers and refined slides.','AI 海报和广告图怎么收费？':'How are AI posters and ads priced?','常规社媒封面、营销海报和电商商品图为 ¥4 / 张；PPT 美化为 ¥7.5 / 页。套装与印刷项目显示起步价，其他项目会按需求确认报价。':'Standard social covers, marketing posters and product visuals are ¥4 per image; slide refinement is ¥7.5 per slide. Kits and print work show a starting price, while custom work is quoted after the brief is confirmed.','下单后如何获得成品？':'How will I receive the final files?','提交需求后会收到订单与付款指引。完成制作后，成品会通过邮箱交付给客户。':'After submitting your brief, you will receive order and payment instructions. Final files are delivered by email when complete.',
+  '你正在找的 AI 设计，':'Looking for a specific','这里可能刚好能做。':'AI design service?','按具体需求找服务，比只搜“AI 生图”更容易找到合适的作品与报价。':'Browse by a specific need to find the right format and price more easily.','展开查看 120+ 项 AI 创意服务与搜索场景':'View 120+ AI creative services and use cases','海报与广告图':'Posters and ads','社媒与内容封面':'Social and content covers','电商与产品视觉':'E-commerce and product visuals','PPT 与品牌设计':'Slides and brand design','壁纸与定制场景':'Wallpapers and custom work',
+  '收到你的作品。':'Receive your work.','微信号（可选）':'WeChat ID (optional)',
+  '网站小记录':'Site snapshot','演示数据 · 已预留真实统计接口':'Demo data · ready for a real analytics integration','网站访问人数':'Website visitors','初始演示值':'Initial demo value','最近访问地区':'Recent visitor region','浙江':'Zhejiang','地区示例，不代表真实 IP':'Region example, not a real IP address','在线访客数':'Visitors online','演示数据':'Demo data','网站运行天数':'Days online','天':'days','按 2026-07-12 上线日期计算':'Calculated from the 2026-07-12 launch date'
+});
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 let language = localStorage.getItem('wonderad-language') || 'zh';
 function applyLanguage() {
@@ -59,21 +107,25 @@ function applyLanguage() {
   const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…' };
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
-  if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your brand<br><em>visible,</em><br>all year.' : '让你的品牌，<br><em>一直有内容，</em><br>一直被看见。';
+  if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your content<br><em>worth seeing.</em>' : '让品牌内容，<br><em>持续被看见。</em>';
   const partnerTitle = document.querySelector('.business-partner .section-head h2');
   const partnerIntro = document.querySelector('.business-partner .section-head > p:last-child');
   const singleTitle = document.querySelector('.services .section-head h2');
   const singleIntro = document.querySelector('.services .section-head > p:last-child');
-  if (partnerTitle) partnerTitle.innerHTML = language === 'en' ? 'A creative team when you need one.<br>Not just a one-off design.' : '长期合作，<br>也不耽误你随时做一张。';
-  if (partnerIntro) partnerIntro.innerHTML = language === 'en' ? 'For brands that need a steady content rhythm — and for every project that simply needs to look right.' : '月更、上新、活动可以长期合作；海报、PPT、Banner 和日常配图也都能单次下单。';
-  if (singleTitle) singleTitle.innerHTML = language === 'en' ? 'One project.<br>Done beautifully.' : '普通单次设计，<br>也认真做到位。';
-  if (singleIntro) singleIntro.innerHTML = language === 'en' ? 'Choose what you need today. Clear pricing, quick briefing and a polished final file.' : '临时要一张海报、一次 PPT 美化，或一套活动物料，都可以直接开始。';
+  if (partnerTitle) partnerTitle.innerHTML = language === 'en' ? 'Need steady content?<br>Choose ongoing support.' : '需要稳定更新？<br>选择长期合作。';
+  if (partnerIntro) partnerIntro.innerHTML = language === 'en' ? 'For businesses publishing regularly, launching products or preparing campaigns.<br>A clear contact, a fixed schedule and planned delivery.' : '适合持续发内容、稳定上新或准备活动的商家。<br>固定沟通、固定排期、按计划交付。';
+  if (singleTitle) singleTitle.innerHTML = language === 'en' ? 'Start with what<br>you need today.' : '今天需要什么，<br>就从这里开始。';
+  if (singleIntro) singleIntro.innerHTML = language === 'en' ? 'The six most-used services appear first.<br>Expand the rest whenever you need them.' : '先展示最常用的 6 项服务。<br>其他项目可以随时展开查看。';
   const heroArt = document.querySelector('.hero-art');
-  if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Advertising poster example' : '广告海报示例');
+  if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab creative examples' : 'Wonder Ad Lab 创意案例');
   document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
   document.querySelector('#languageToggle').textContent = language === 'en' ? '中文' : 'EN';
+  const menuToggle = document.querySelector('#menuToggle');
+  if (menuToggle) menuToggle.setAttribute('aria-label', language === 'en' ? 'Open menu' : '打开菜单');
   document.title = language === 'en' ? 'Wonder Ad Lab · AI Creative Studio' : '奇迹创意工作室 · Wonder Ad Lab';
+  renderCreativeOptions();
   updateSelectedPrice();
+  updateServiceView();
 }
 let toastTimer;
 
@@ -113,8 +165,8 @@ async function refreshSession() {
 function updateAccountUI() {
   const user = getCurrentUser();
   const accountButton = document.querySelector('#openAuth');
-  accountButton.textContent = user ? user.name : '登录 / 注册';
-  document.querySelector('#accountTitle').textContent = user ? `${user.name} 的账户` : '用户中心';
+  accountButton.textContent = user ? user.name : (language === 'en' ? 'Sign in' : '登录 / 注册');
+  document.querySelector('#accountTitle').textContent = user ? (language === 'en' ? `${user.name}’s account` : `${user.name} 的账户`) : (language === 'en' ? 'Account' : '用户中心');
   const orderEmail = document.querySelector('#customerEmail');
   if (user) { orderEmail.value = user.email; orderEmail.readOnly = true; }
   else orderEmail.readOnly = false;
@@ -123,10 +175,11 @@ function escapeHtml(value = '') {
   return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
 }
 function formatDate() {
-  return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+  return new Intl.DateTimeFormat(language === 'en' ? 'en-CA' : 'zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
 }
 function updateSelectedPrice() {
-  const price = servicePrices[service.value] || '¥4 / 张';
+  let price = servicePrices[service.value] || '¥4 / 张';
+  if (language === 'en') price = price.replace('/ 10 张起', '/ 10 images from').replace('/ 张起', '/ image from').replace('/ 套起', '/ kit from').replace('/ 张', '/ image').replace('/ 页', '/ slide').replace('/ 个', '/ mark').replace('AI 评估报价', 'AI-estimated quote');
   const label = language === 'en' ? 'Project price:' : '本次项目价格：';
   const target = document.querySelector('#selectedPrice');
   if (target) target.textContent = `${label} ${price}`;
@@ -135,11 +188,38 @@ function renderCreativeOptions() {
   const config = serviceOptions[service.value] || serviceOptions['其他需求'];
   const render = (targetId, name, items) => {
     const target = document.querySelector(targetId);
-    target.innerHTML = items.map((item, index) => `<label><input type="radio" name="${name}" value="${item}" ${index === 0 ? 'checked' : ''}><span>${item}</span></label>`).join('');
+    target.innerHTML = items.map((item, index) => `<label><input type="radio" name="${name}" value="${item}" ${index === 0 ? 'checked' : ''}><span>${language === 'en' ? (creativeOptionTranslations[item] || item) : item}</span></label>`).join('');
   };
   render('#sizeOptions', 'size', config.sizes);
   render('#styleOptions', 'style', config.styles);
-  if (language === 'en') applyLanguage();
+}
+const serviceCategories = {
+  social: ['社媒封面', '营销海报', '创意字贴', '壁纸设计', '社媒月更包'],
+  commerce: ['电商商品图', '电商详情页', 'Banner 设计', '菜单与价目表', '活动物料套装', '印刷物料设计'],
+  brand: ['PPT 美化', '品牌 Logo', '品牌视觉套装'],
+  other: ['AI 快速配图', '其他需求']
+};
+const primaryServices = ['社媒封面', '营销海报', '电商商品图', 'PPT 美化', 'AI 快速配图', '品牌 Logo'];
+let activeServiceFilter = 'all';
+let showAllServices = false;
+function updateServiceView() {
+  const cards = [...document.querySelectorAll('.price-card')];
+  cards.forEach(card => {
+    const product = card.dataset.product;
+    const category = Object.keys(serviceCategories).find(key => serviceCategories[key].includes(product)) || 'other';
+    card.dataset.serviceCategory = category;
+    card.classList.toggle('service-primary', primaryServices.includes(product));
+    card.hidden = activeServiceFilter === 'all' ? (!showAllServices && !primaryServices.includes(product)) : category !== activeServiceFilter;
+  });
+  document.querySelectorAll('[data-service-filter]').forEach(button => button.classList.toggle('active', button.dataset.serviceFilter === activeServiceFilter));
+  const toggle = document.querySelector('#toggleAllServices');
+  if (toggle) {
+    toggle.hidden = activeServiceFilter !== 'all';
+    toggle.setAttribute('aria-expanded', String(showAllServices));
+    toggle.innerHTML = showAllServices
+      ? `${language === 'en' ? 'Show fewer services' : '收起服务'} <span>−</span>`
+      : `${language === 'en' ? 'View all 16 services' : '查看全部 16 项服务'} <span>＋</span>`;
+  }
 }
 async function notifyOwner(order) {
   try {
@@ -179,7 +259,7 @@ async function renderAccountStats() {
 }
 async function renderCustomerOrders() {
   const user = getCurrentUser();
-  if (!user) { ordersList.innerHTML = '<p class="empty-inbox">请先登录，才能查看自己的订单。</p>'; return; }
+  if (!user) { ordersList.innerHTML = `<p class="empty-inbox">${language === 'en' ? 'Sign in to view your orders.' : '请先登录，才能查看自己的订单。'}</p>`; return; }
   let orders = [];
   try { orders = (await accountApi('/api/orders')).orders || []; }
   catch (error) { ordersList.innerHTML = `<p class="empty-inbox">暂时无法读取订单：${escapeHtml(error.message)}</p>`; return; }
@@ -194,12 +274,32 @@ document.querySelectorAll('[data-scroll]').forEach(button => button.addEventList
   if (chosenService && [...service.options].some(option => option.value === chosenService)) { service.value = chosenService; renderCreativeOptions(); updateSelectedPrice(); }
   document.querySelector(button.dataset.scroll).scrollIntoView({ behavior: 'smooth' });
 }));
+document.querySelectorAll('[data-service-filter]').forEach(button => button.addEventListener('click', () => {
+  activeServiceFilter = button.dataset.serviceFilter;
+  updateServiceView();
+}));
+document.querySelector('#toggleAllServices')?.addEventListener('click', () => {
+  showAllServices = !showAllServices;
+  updateServiceView();
+});
+const menuToggle = document.querySelector('#menuToggle');
+const siteNav = document.querySelector('#siteNav');
+function closeMobileMenu() {
+  menuToggle?.setAttribute('aria-expanded', 'false');
+  siteNav?.classList.remove('open');
+}
+menuToggle?.addEventListener('click', () => {
+  const open = menuToggle.getAttribute('aria-expanded') === 'true';
+  menuToggle.setAttribute('aria-expanded', String(!open));
+  siteNav?.classList.toggle('open', !open);
+});
+siteNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMobileMenu));
 document.querySelectorAll('.price-card').forEach(card => card.addEventListener('click', event => {
-  if (event.target.closest('button')) { service.value = card.dataset.product; renderCreativeOptions(); updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(`已选择「${card.dataset.product}」，说说你的想法吧。`); }
+  if (event.target.closest('button')) { service.value = card.dataset.product; renderCreativeOptions(); updateSelectedPrice(); document.querySelector('#order').scrollIntoView({ behavior: 'smooth' }); showToast(language === 'en' ? `${zhToEn[card.dataset.product] || card.dataset.product} selected. Tell us your idea.` : `已选择「${card.dataset.product}」，说说你的想法吧。`); }
 }));
 service.addEventListener('change', () => { renderCreativeOptions(); updateSelectedPrice(); });
-document.querySelector('#openOrders').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录后查看自己的订单。'); return; } openModal(ordersModal); renderCustomerOrders(); });
-document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast('请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
+document.querySelector('#openOrders').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in to view your orders.' : '请先登录后查看自己的订单。'); return; } openModal(ordersModal); renderCustomerOrders(); });
+document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in or create an account first.' : '请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
 document.querySelector('#openAuth').addEventListener('click', () => { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); });
 document.querySelector('#openPrivacy').addEventListener('click', () => openModal(privacyModal));
 document.querySelector('#languageToggle').addEventListener('click', () => { language = language === 'zh' ? 'en' : 'zh'; localStorage.setItem('wonderad-language', language); applyLanguage(); });
@@ -256,8 +356,8 @@ document.querySelector('#buildPrompt').addEventListener('click', () => {
   const size = document.querySelector('input[name="size"]:checked').value;
   const style = document.querySelector('input[name="style"]:checked').value;
   const output = document.querySelector('#promptOutput');
-  if (!text) { output.textContent = '先写下一句你的想法，我会帮你整理成清晰的创意需求。'; return; }
-  output.textContent = `创意摘要：制作 ${size} 的${style}风格作品。核心需求：${text}。建议突出一个主视觉与一句关键信息。`;
+  if (!text) { output.textContent = language === 'en' ? 'Write one sentence about your idea and I will turn it into a clear creative brief.' : '先写下一句你的想法，我会帮你整理成清晰的创意需求。'; return; }
+  output.textContent = language === 'en' ? `Creative summary: make a ${creativeOptionTranslations[size] || size} visual in a ${creativeOptionTranslations[style] || style} style. Core request: ${text}. Keep one clear hero visual and one key message.` : `创意摘要：制作 ${size} 的${style}风格作品。核心需求：${text}。建议突出一个主视觉与一句关键信息。`;
 });
 document.querySelectorAll('.membership-pay').forEach(button => button.addEventListener('click', () => startPayment({ id: `MB${Date.now().toString().slice(-7)}`, kind: 'membership', title: button.dataset.plan, amount: button.dataset.amount, payment: '微信支付' })));
 const contactModal = document.querySelector('#contactModal');
@@ -282,7 +382,7 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const signedInUser = getCurrentUser() || await refreshSession();
   if (!signedInUser) {
     openModal(authModal);
-    showToast('请先注册或登录账户，登录后才可以提交订单。');
+    showToast(language === 'en' ? 'Create an account or sign in before submitting an order.' : '请先注册或登录账户，登录后才可以提交订单。');
     return;
   }
   const form = event.target;
@@ -349,20 +449,40 @@ Object.assign(zhToEn, {
   '把一次活动，做成被记住的画面。': 'Turn one campaign into a visual people remember.',
   '了解服务': 'Explore services'
 });
-const premiumTheme = document.createElement('link');
-premiumTheme.rel = 'stylesheet';
-premiumTheme.href = 'premium.css?v=20260725';
-document.head.appendChild(premiumTheme);
-const homeTheme = document.createElement('link');
-homeTheme.rel = 'stylesheet';
-homeTheme.href = 'home-v2.css?v=20260725';
-document.head.appendChild(homeTheme);
-const heroVisual = document.querySelector('.hero-art');
-if (heroVisual) heroVisual.insertAdjacentHTML('beforeend', '<div class="hero-product-meta"><div><small>WONDER AD LAB / 01</small><strong>Creative, in its own light.</strong></div><i>↗</i></div>');
-const launchRail = document.createElement('section');
-launchRail.className = 'wrap launch-rail';
-launchRail.innerHTML = '<article class="launch-card launch-card--content"><span class="launch-label">ALWAYS-ON / 01</span><div><h3>持续内容</h3><p>为品牌准备的视觉系统。<br>社媒月更、内容封面与活动视觉。</p></div><a href="#business">了解服务 <span>→</span></a></article><article class="launch-card launch-card--shop"><span class="launch-label">LAUNCH / 02</span><div><h3>电商上新</h3><p>从主图到详情页，一次上新。</p></div><a href="#business">了解服务 <span>→</span></a></article><article class="launch-card launch-card--campaign"><span class="launch-label">CAMPAIGN / 03</span><div><h3>品牌活动</h3><p>把一次活动，做成被记住的画面。</p></div><a href="#work">了解服务 <span>→</span></a></article>';
-document.querySelector('.ticker')?.insertAdjacentElement('afterend', launchRail);
-renderCreativeOptions();
+function initStudioCutMotion() {
+  const revealTargets = document.querySelectorAll('.hero-copy, .hero-art, .works-title, .work, .section-head, .business-grid article, .price-card, .tool-grid article, .member-grid article, .process-grid article, .wechat-contact > *, .join-us > *, .update-grid article, .stats-heading, .stats-grid article');
+  revealTargets.forEach(target => target.setAttribute('data-reveal', ''));
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('js-ready');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: .08, rootMargin: '0px 0px -24px' });
+    revealTargets.forEach(target => observer.observe(target));
+  } else {
+    revealTargets.forEach(target => target.classList.add('is-visible'));
+  }
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.querySelectorAll('.price-card, .business-grid article').forEach(card => card.addEventListener('pointermove', event => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+      card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+    }));
+  }
+}
+function updateRunningDays() {
+  const launchDate = new Date(2026, 6, 12);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.max(1, Math.floor((today - launchDate) / 86400000) + 1);
+  const target = document.querySelector('#runningDays');
+  if (target) target.textContent = String(days);
+}
+updateServiceView();
+initStudioCutMotion();
+updateRunningDays();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
