@@ -115,7 +115,7 @@ function applyLanguage() {
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your content<br><em>worth seeing.</em>' : '让品牌内容，<br><em>持续被看见。</em>';
   const flowHeroTitle = document.querySelector('.flow-hero h1');
-  if (flowHeroTitle) flowHeroTitle.innerHTML = language === 'en' ? 'Ideas in motion<br><em>Brands in focus</em>' : '让想法进入镜头<br><em>让品牌被看见</em>';
+  if (flowHeroTitle) flowHeroTitle.innerHTML = language === 'en' ? 'Turn ideas into visuals<br><em>Make brands memorable</em>' : '把想法做成画面<br><em>让品牌被记住</em>';
   const processTitle = document.querySelector('.process-head h2');
   if (processTitle) processTitle.innerHTML = language === 'en' ? 'More than one click.<br><em>A brief, made clear.</em>' : '不是按一下生成。<br><em>是把需求拆清楚。</em>';
   const partnerTitle = document.querySelector('.business-partner .section-head h2');
@@ -126,6 +126,11 @@ function applyLanguage() {
   if (partnerIntro) partnerIntro.innerHTML = language === 'en' ? 'For businesses publishing regularly, launching products or preparing campaigns.<br>A clear contact, a fixed schedule and planned delivery.' : '适合持续发内容、稳定上新或准备活动的商家。<br>固定沟通、固定排期、按计划交付。';
   if (singleTitle) singleTitle.innerHTML = language === 'en' ? 'Start with what<br>you need today.' : '今天需要什么，<br>就从这里开始。';
   if (singleIntro) singleIntro.innerHTML = language === 'en' ? 'The six most-used services appear first.<br>Expand the rest whenever you need them.' : '先展示最常用的 6 项服务。<br>其他项目可以随时展开查看。';
+  document.querySelectorAll('h1, h2').forEach(heading => {
+    const headingWalker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+    let headingNode;
+    while (headingNode = headingWalker.nextNode()) headingNode.nodeValue = headingNode.nodeValue.replaceAll('。', '');
+  });
   const heroArt = document.querySelector('.hero-art');
   if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab creative examples' : 'Wonder Ad Lab 创意案例');
   document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
@@ -264,6 +269,7 @@ function updateProcessStep(step) {
 }
 function updateServiceView() {
   const cards = [...document.querySelectorAll('.price-card')];
+  document.querySelector('.price-grid')?.classList.toggle('is-expanded', showAllServices || activeServiceFilter !== 'all');
   cards.forEach(card => {
     const product = card.dataset.product;
     const category = Object.keys(serviceCategories).find(key => serviceCategories[key].includes(product)) || 'other';
@@ -498,6 +504,16 @@ document.querySelector('#closeSupport').addEventListener('click', () => { suppor
 document.querySelector('#supportForm').addEventListener('submit', event => { event.preventDefault(); const input = document.querySelector('#supportInput'); submitSupportQuestion(input.value); input.value = ''; });
 document.querySelectorAll('.support-suggestions button').forEach(button => button.addEventListener('click', () => submitSupportQuestion(button.textContent)));
 Object.assign(zhToEn, {
+  '奇迹创意工作室': 'Wonder Creative Studio',
+  '正在接单': 'Now taking projects',
+  '海报、社媒、电商与品牌视觉，从一句需求到可以直接发布的成品': 'Posters, social, commerce and brand visuals — from one brief to ready-to-publish work',
+  '开始一个项目': 'Start a project',
+  '查看工作室作品': 'View studio work',
+  '把需求写清楚': 'Write a clear brief',
+  '项目就从这里开始': 'The project starts here',
+  '选择服务': 'Choose a service',
+  '填写方向': 'Set the direction',
+  '确认交付': 'Confirm delivery',
   '有想法？': 'Have an idea?',
   '直接加我微信。': 'Add me on WeChat.',
   '加我微信': 'Add me on WeChat',
@@ -558,10 +574,7 @@ function initShowreel() {
     if (counter) counter.textContent = `${String(activeIndex + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`;
   };
   const stopReel = () => window.clearInterval(reelTimer);
-  const startReel = () => {
-    stopReel();
-    if (!reduceMotion && reelVisible && !document.hidden) reelTimer = window.setInterval(() => showFrame(activeIndex + 1), 6600);
-  };
+  const startReel = () => stopReel();
   controls.forEach(control => control.addEventListener('click', () => {
     showFrame(Number(control.dataset.reelTarget));
     startReel();
@@ -603,6 +616,45 @@ function initCinematicMotion() {
   const processOrder = ['brief', 'board', 'refine', 'deliver'];
   const workCards = [...document.querySelectorAll('.work')];
   root.classList.add('motion-ready');
+
+  const measuredClamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+  let measuredFramePending = false;
+  const updateMeasuredMotion = () => {
+    measuredFramePending = false;
+    const scrollTop = window.scrollY || root.scrollTop;
+    const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
+    progressBar?.style.setProperty('transform', `scaleX(${measuredClamp(scrollTop / scrollRange)})`);
+    header?.classList.toggle('is-compact', scrollTop > 72);
+  };
+  const requestMeasuredMotion = () => {
+    if (measuredFramePending) return;
+    measuredFramePending = true;
+    window.requestAnimationFrame(updateMeasuredMotion);
+  };
+  window.addEventListener('scroll', requestMeasuredMotion, { passive: true });
+  window.addEventListener('resize', requestMeasuredMotion, { passive: true });
+  updateMeasuredMotion();
+
+  const measuredCountTargets = [...document.querySelectorAll('[data-stat="visitors"], [data-stat="online"], #runningDays')];
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    const measuredCounterObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const target = entry.target;
+      const finalValue = Number.parseInt(target.textContent, 10);
+      if (Number.isFinite(finalValue)) {
+        const start = performance.now();
+        const tick = now => {
+          const progress = measuredClamp((now - start) / 800);
+          target.textContent = String(Math.round(finalValue * (1 - Math.pow(1 - progress, 3))));
+          if (progress < 1) window.requestAnimationFrame(tick);
+        };
+        window.requestAnimationFrame(tick);
+      }
+      measuredCounterObserver.unobserve(target);
+    }), { threshold: .5 });
+    measuredCountTargets.forEach(target => measuredCounterObserver.observe(target));
+  }
+  return;
 
   document.querySelectorAll('.hero-actions button, .hero-actions a, .nav-order, .choose, .expand-services, .membership button, .prompt-helper, form .primary').forEach(element => element.classList.add('magnetic'));
   document.querySelectorAll('.price-grid, .business-grid, .tool-grid, .member-grid, .update-grid, .stats-grid').forEach(group => {
