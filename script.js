@@ -96,6 +96,7 @@ Object.assign(zhToEn, {
   '收到你的作品。':'Receive your work.','微信号（可选）':'WeChat ID (optional)',
   '网站小记录':'Site snapshot','演示数据 · 已预留真实统计接口':'Demo data · ready for a real analytics integration','网站访问人数':'Website visitors','初始演示值':'Initial demo value','最近访问地区':'Recent visitor region','浙江':'Zhejiang','地区示例，不代表真实 IP':'Region example, not a real IP address','在线访客数':'Visitors online','演示数据':'Demo data','网站运行天数':'Days online','天':'days','按 2026-07-12 上线日期计算':'Calculated from the 2026-07-12 launch date'
   ,'制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','固定价格可见':'Visible fixed pricing','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
+  '观看制作流程':'Watch the workflow','浏览作品':'Explore work','海报、社媒、电商与品牌视觉，从一句需求开始，变成真正能够发布的内容。':'Posters, social content, e-commerce and brand visuals — one brief becomes content ready to publish.','品牌片头':'Brand film','轻盈护肤':'Light Skincare','海岸假日':'Coastal Holiday','让创意先被看见':'Make creativity visible first','画面会说话，':'Images can speak.','作品就是答案。':'The work is the answer.','三组品牌视觉实验。每一组都从一句需求开始，再拆成适合发布的画面。':'Three brand-visual studies. Each begins with one brief and becomes a set of publish-ready frames.','新品主视觉 · 社媒延展 · 生活方式氛围':'Launch visual · social extensions · lifestyle mood','产品发布 · 留白构图 · 柔和品牌语言':'Product launch · spacious layout · soft brand language','旅行企划 · 夏日色彩 · 多平台宣传画面':'Travel campaign · summer colour · multi-platform visuals',
   '一句需求，':'One brief.','拆成每一帧':'Every frame.','能用的内容。':'Ready to publish.','从想法、画面拆解到最终交付，把海报、社媒、电商和品牌视觉放进一套清楚的制作流程。':'From the first idea to final delivery, posters, social content, e-commerce and brand visuals move through one clear production workflow.',
   '不是按一下生成。':'More than one click.','是把需求拆清楚。':'A brief, made clear.','参考视频制作和剪辑软件的逻辑：每一步都能看懂、每个画面都有用途，最后再整理成适合发布的成品。':'Built like a video-production workflow: every step is visible, every frame has a purpose, and each final file is ready to publish.',
   '需求拆解':'Brief breakdown','分镜与构图':'Storyboard & layout','设计与调整':'Design & refine','尺寸与交付':'Export & delivery','目标':'Goal','平台':'Platform','风格':'Style','状态':'Status','新品咖啡上线':'New coffee launch','小红书 / 朋友圈':'Xiaohongshu / Moments','暖色 · 极简 · 生活感':'Warm · minimal · lifestyle','需求已整理':'Brief organized','核心标题':'Hero headline','卖点与行动按钮':'Selling points & CTA',
@@ -114,7 +115,7 @@ function applyLanguage() {
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your content<br><em>worth seeing.</em>' : '让品牌内容，<br><em>持续被看见。</em>';
   const flowHeroTitle = document.querySelector('.flow-hero h1');
-  if (flowHeroTitle) flowHeroTitle.innerHTML = language === 'en' ? 'One brief.<br>Every frame.<br><em>Ready to publish.</em>' : '一句需求，<br>拆成每一帧<br><em>能用的内容。</em>';
+  if (flowHeroTitle) flowHeroTitle.innerHTML = language === 'en' ? 'Ideas in motion.<br><em>Brands in focus.</em>' : '让想法进入镜头，<br><em>让品牌被看见。</em>';
   const processTitle = document.querySelector('.process-head h2');
   if (processTitle) processTitle.innerHTML = language === 'en' ? 'More than one click.<br><em>A brief, made clear.</em>' : '不是按一下生成。<br><em>是把需求拆清楚。</em>';
   const partnerTitle = document.querySelector('.business-partner .section-head h2');
@@ -513,7 +514,7 @@ Object.assign(zhToEn, {
   '了解服务': 'Explore services'
 });
 function initStudioCutMotion() {
-  const revealTargets = document.querySelectorAll('.hero-copy, .hero-studio, .process-head, .process-console, .process-caption, .works-title, .work, .section-head, .business-grid article, .price-card, .tool-grid article, .member-grid article, .wechat-contact > *, .join-us > *, .update-grid article, .stats-heading, .stats-grid article');
+  const revealTargets = document.querySelectorAll('.flow-hero:not(.showreel-hero) .hero-copy, .hero-studio, .process-head, .process-console, .process-caption, .works-title, .section-head, .business-grid article, .price-card, .tool-grid article, .member-grid article, .wechat-contact > *, .join-us > *, .update-grid article, .stats-heading, .stats-grid article');
   revealTargets.forEach(target => target.setAttribute('data-reveal', ''));
   if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
     document.documentElement.classList.add('js-ready');
@@ -536,6 +537,56 @@ function initStudioCutMotion() {
     }));
   }
 }
+function initShowreel() {
+  const hero = document.querySelector('.showreel-hero');
+  const frames = [...document.querySelectorAll('[data-reel-frame]')];
+  const controls = [...document.querySelectorAll('[data-reel-target]')];
+  const counter = document.querySelector('#reelCounter');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!hero || frames.length < 2) return;
+  let activeIndex = 0;
+  let reelTimer;
+  let reelVisible = true;
+  const showFrame = index => {
+    activeIndex = (index + frames.length) % frames.length;
+    frames.forEach((frame, frameIndex) => frame.classList.toggle('is-active', frameIndex === activeIndex));
+    controls.forEach((control, controlIndex) => {
+      const active = controlIndex === activeIndex;
+      control.classList.toggle('is-active', active);
+      control.setAttribute('aria-pressed', String(active));
+    });
+    if (counter) counter.textContent = `${String(activeIndex + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`;
+  };
+  const stopReel = () => window.clearInterval(reelTimer);
+  const startReel = () => {
+    stopReel();
+    if (!reduceMotion && reelVisible && !document.hidden) reelTimer = window.setInterval(() => showFrame(activeIndex + 1), 6600);
+  };
+  controls.forEach(control => control.addEventListener('click', () => {
+    showFrame(Number(control.dataset.reelTarget));
+    startReel();
+  }));
+  document.addEventListener('visibilitychange', startReel);
+  if ('IntersectionObserver' in window) {
+    const reelObserver = new IntersectionObserver(entries => {
+      reelVisible = entries[0]?.isIntersecting ?? true;
+      startReel();
+    }, { threshold: .08 });
+    reelObserver.observe(hero);
+  }
+  const caseCards = [...document.querySelectorAll('.work')];
+  if (reduceMotion || !('IntersectionObserver' in window)) caseCards.forEach(card => card.classList.add('case-visible'));
+  else {
+    const caseObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('case-visible');
+      caseObserver.unobserve(entry.target);
+    }), { threshold: .14, rootMargin: '0px 0px -8%' });
+    caseCards.forEach(card => caseObserver.observe(card));
+  }
+  showFrame(0);
+  startReel();
+}
 function initCinematicMotion() {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -546,6 +597,7 @@ function initCinematicMotion() {
   const heroCopy = hero?.querySelector('.hero-copy');
   const heroStudio = hero?.querySelector('.hero-studio');
   const heroCanvas = hero?.querySelector('.studio-canvas > img');
+  const heroReel = hero?.querySelector('.hero-reel');
   const processSection = document.querySelector('.production-process');
   const processConsole = document.querySelector('.process-console');
   const processOrder = ['brief', 'board', 'refine', 'deliver'];
@@ -566,9 +618,17 @@ function initCinematicMotion() {
     const scrollTop = window.scrollY || root.scrollTop;
     const scrollRange = Math.max(1, root.scrollHeight - window.innerHeight);
     progressBar?.style.setProperty('transform', `scaleX(${clamp(scrollTop / scrollRange)})`);
-    header?.classList.toggle('is-compact', scrollTop > 28);
+    const headerSwitchPoint = hero?.classList.contains('showreel-hero') ? Math.max(96, hero.offsetHeight - 120) : 28;
+    header?.classList.toggle('is-compact', scrollTop > headerSwitchPoint);
 
-    if (hero && heroStudio && heroCanvas) {
+    if (hero && heroReel) {
+      const rect = hero.getBoundingClientRect();
+      const heroProgress = clamp(-rect.top / Math.max(1, rect.height * .88));
+      hero.style.setProperty('--reel-scale', String(1 - heroProgress * .12));
+      hero.style.setProperty('--reel-y', `${heroProgress * 78}px`);
+      hero.style.setProperty('--reel-copy-y', `${heroProgress * 92}px`);
+      hero.style.setProperty('--reel-copy-opacity', String(1 - heroProgress * 1.18));
+    } else if (hero && heroStudio && heroCanvas) {
       const rect = hero.getBoundingClientRect();
       const heroProgress = clamp(-rect.top / Math.max(1, rect.height * .82));
       hero.style.setProperty('--hero-grid-y', `${heroProgress * 54}px`);
@@ -690,6 +750,7 @@ function updateRunningDays() {
 updateServiceView();
 initStudioCutMotion();
 updateRunningDays();
+initShowreel();
 initCinematicMotion();
 applyLanguage();
 refreshSession().then(() => renderAccountStats());
