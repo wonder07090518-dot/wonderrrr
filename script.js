@@ -113,6 +113,20 @@ Object.assign(zhToEn, {
   '报价包含需求整理、AI 生成、人工筛选、排版检查和清晰文件交付，不采用无法覆盖实际制作的低价引流方式。':'Pricing includes brief preparation, AI generation, human selection, layout review and clear final-file delivery. We do not use unrealistically low bait pricing.',
   '5 张商品主图 + 详情页结构':'5 product hero images + detail structure','3 张商品主图 + 2 张场景图':'3 product hero images + 2 lifestyle images','主图 + 详情页 + Banner':'Hero image + detail page + banner','淘宝 / 天猫上新':'Taobao / Tmall launch','独立站上新':'Independent shop launch'
 });
+Object.assign(zhToEn, {
+  '把想法做成画面':'Turn ideas into visuals','让品牌被记住':'Make brands memorable','需求先拆清楚':'Start with a clear brief','适配发布尺寸':'Publish-ready formats','中英双语支持':'Chinese and English support',
+  'AI 海报':'AI poster','极简 · 暖色':'Minimal · warm','Wonder 接单确认':'Wonder confirms the brief','新品咖啡海报':'New coffee poster','3:4 · 极简 · 暖色':'3:4 · minimal · warm','01 / 需求拆解':'01 / Brief breakdown','/ 页起':'/ slide from','/ 个起':'/ mark from',
+  '不只是生成一张图':'More than generating one image','从一句需求生成视觉方向':'Turn one brief into a visual direction','识别主题、平台和风格，把模糊想法整理成可以继续制作的画面':'Identify the subject, platform and style, then turn a rough idea into a production-ready direction','夏日咖啡新品海报 · 清爽 · 社交媒体':'Summer coffee launch · fresh · social media',
+  '为持续创作，准备的更快通道':'A faster lane for ongoing creativity','直接加我微信':'Add me on WeChat','选择项目、写下需求，提交后会发送确认邮件与付款指引':'Choose a service, share your brief, then receive an email confirmation and payment instructions','提交后显示“正在审核中”，付款二维码与固定项目价格将发送至你的邮箱':'Your order will be reviewed. A payment QR code and the fixed project price will be emailed to you.',
+  '你的隐私，值得被认真对待':'Your privacy deserves care','我们仅使用你提交的邮箱与创意需求来处理订单、发送付款指引及交付成品。':'We only use the email address and creative brief you submit to process the order, send payment instructions and deliver the final files.','不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至':'We never sell your personal information. Order email is handled by Wonder Ad Lab at','处理。':'for order processing.','定制需求':'Custom brief','请在你的邮箱查收付款方式与订单确认信息。':'Check your email for payment instructions and order confirmation.',
+  '移动端快捷操作':'Mobile quick actions','主导航':'Main navigation','打开 AI 在线客服':'Open AI support','关闭客服':'Close support','发送':'Send',
+  'AI 生图、AI 图像生成、AI 图片生成、AI 绘图、AI 配图、AI 创意配图、AI 文章插图、AI 博客配图、AI 公众号配图、AI 内容配图、AI 场景图、AI 氛围图、AI 视觉生成、AI 设计图片、AI 商业配图、AI 宣传配图、AI 活动配图、AI 品牌配图、AI 素材图、AI 高清配图':'AI image generation, AI illustration, article visuals, blog images, WeChat article images, scene visuals, mood images, commercial visuals, campaign images, brand images and high-resolution creative assets',
+  'AI 海报、AI 海报设计、AI 广告图、AI 广告设计、AI 宣传图、AI 营销海报、AI 活动海报、AI 产品海报、AI 门店海报、AI 节日海报、AI 新品海报、AI 品牌海报、AI 社媒海报、AI 促销海报、AI 招生活动海报、AI 开业海报、AI 展会海报、在线海报设计、低价海报设计、广告投放素材':'AI posters, advertising visuals, campaign posters, product posters, retail posters, seasonal posters, launch posters, brand posters, social ads, promotion posters, opening posters, exhibition posters and ad-placement assets',
+  '小红书封面设计、小红书图文封面、小红书笔记封面、小红书配图、小红书海报、抖音封面设计、视频号封面设计、公众号首图设计、公众号头图设计、朋友圈海报设计、社交媒体配图、社媒视觉设计、社媒运营配图、内容封面设计、方形海报设计、竖版海报设计、横版广告图、活动头图设计、社交封面设计、品牌社媒素材':'Xiaohongshu covers, Douyin covers, Channels covers, WeChat article headers, Moments posters, social media visuals, content covers, square posters, portrait posters, landscape ads, campaign headers and branded social assets',
+  '电商商品图、电商主图设计、商品主图设计、商品场景图、商品详情页配图、产品宣传图、产品卖点图、电商 Banner、电商活动图、店铺首页图、淘宝主图设计、京东商品图、拼多多主图、亚马逊产品图、独立站商品图、产品展示图、上新商品图、促销商品图、品牌商品视觉、AI 电商设计':'E-commerce hero images, product scene images, detail-page visuals, selling-point graphics, e-commerce banners, shop home graphics, Taobao, JD, Pinduoduo and Amazon product images, independent-store visuals, launch images and promotional product graphics',
+  'AI PPT 美化、PPT 美化设计、PPT 排版设计、PPT 模板设计、商务 PPT、美化汇报 PPT、提案 PPT 设计、答辩 PPT 美化、课程 PPT 设计、融资 PPT 美化、产品发布 PPT、品牌提案 PPT、品牌 Logo 设计、AI Logo 设计、品牌视觉设计、活动视觉设计、Banner 设计、网站横幅设计、创意字贴设计、标题字设计':'AI slide refinement, presentation layout, slide templates, business decks, proposals, academic presentations, course slides, pitch decks, product launches, brand proposals, logo concepts, brand visuals, campaign visuals, banners and creative typography',
+  'AI 壁纸设计、手机壁纸设计、电脑壁纸设计、活动背景壁纸、桌面壁纸设计、品牌壁纸设计、节日壁纸设计、AI 视觉定制、AI 商业设计、AI 创意服务、定制海报设计、定制广告图、定制电商图、定制社媒封面、定制 PPT 设计、杭州 AI 设计、杭州海报设计、杭州广告设计、奇迹创意工作室、Wonder Ad Lab':'AI wallpapers, phone and desktop wallpapers, campaign backgrounds, branded and seasonal wallpapers, custom AI visuals, commercial design, custom posters, ads, e-commerce graphics, social covers, slide design and Wonder Ad Lab creative services'
+});
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 let language = localStorage.getItem('wonderad-language') || 'zh';
 function applyLanguage() {
@@ -120,7 +134,12 @@ function applyLanguage() {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = []; let node;
   while (node = walker.nextNode()) nodes.push(node);
-  nodes.forEach(item => { const raw = item.nodeValue; const key = raw.trim(); if (dictionary[key]) item.nodeValue = raw.replace(key, dictionary[key]); });
+  nodes.forEach(item => {
+    const raw = item.nodeValue;
+    const key = raw.trim();
+    const translated = dictionary[key] || dictionary[`${key}。`] || dictionary[`${key}.`];
+    if (translated !== undefined) item.nodeValue = raw.replace(key, translated);
+  });
   const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…' };
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
@@ -145,9 +164,13 @@ function applyLanguage() {
   const heroArt = document.querySelector('.hero-art');
   if (heroArt) heroArt.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab creative examples' : 'Wonder Ad Lab 创意案例');
   document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
-  document.querySelector('#languageToggle').textContent = language === 'en' ? '中文' : 'EN';
+  document.querySelectorAll('#languageToggle, #mobileLanguageToggle').forEach(button => { button.textContent = language === 'en' ? '中文' : 'EN'; });
   const menuToggle = document.querySelector('#menuToggle');
   if (menuToggle) menuToggle.setAttribute('aria-label', language === 'en' ? 'Open menu' : '打开菜单');
+  const siteNav = document.querySelector('#siteNav');
+  if (siteNav) siteNav.setAttribute('aria-label', language === 'en' ? 'Main navigation' : '主导航');
+  const mobileActions = document.querySelector('.mobile-nav-actions');
+  if (mobileActions) mobileActions.setAttribute('aria-label', language === 'en' ? 'Mobile quick actions' : '移动端快捷操作');
   const serviceGrid = document.querySelector('.price-grid');
   if (serviceGrid) serviceGrid.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab services and pricing' : 'Wonder Ad Lab 服务与报价');
   document.title = language === 'en' ? 'Wonder Ad Lab · AI Creative Studio' : '奇迹创意工作室 · Wonder Ad Lab';
@@ -157,6 +180,7 @@ function applyLanguage() {
   updateProcessStep(activeProcessStep);
   if (typeof updateLabMode === 'function') updateLabMode(activeLabMode);
   if (typeof updateScrollStoryCopy === 'function') updateScrollStoryCopy();
+  updateAccountUI();
 }
 let toastTimer;
 
@@ -195,8 +219,7 @@ async function refreshSession() {
 }
 function updateAccountUI() {
   const user = getCurrentUser();
-  const accountButton = document.querySelector('#openAuth');
-  accountButton.textContent = user ? user.name : (language === 'en' ? 'Sign in' : '登录 / 注册');
+  document.querySelectorAll('#openAuth, #mobileOpenAuth').forEach(accountButton => { accountButton.textContent = user ? user.name : (language === 'en' ? 'Sign in' : '登录 / 注册'); });
   document.querySelector('#accountTitle').textContent = user ? (language === 'en' ? `${user.name}’s account` : `${user.name} 的账户`) : (language === 'en' ? 'Account' : '用户中心');
   const orderEmail = document.querySelector('#customerEmail');
   if (user) { orderEmail.value = user.email; orderEmail.readOnly = true; }
@@ -332,9 +355,11 @@ async function saveSharedOrder(order) {
 function statusClass(status) {
   return ({ '审核中': 'pending', '待支付': 'pending', '待确认支付': 'pending', '已支付': 'paid', '制作中': 'making', '已交付': 'done' })[status] || 'pending';
 }
-function startPayment(transaction) {
+function startPayment(transaction, destination = 'payment.html') {
   localStorage.setItem('wonderad-payment', JSON.stringify(transaction));
-  window.location.href = `payment.html?id=${encodeURIComponent(transaction.id)}`;
+  const paymentUrl = new URL(destination, window.location.href);
+  paymentUrl.searchParams.set('id', transaction.id);
+  window.location.assign(paymentUrl.href);
 }
 async function renderAccountStats() {
   const user = getCurrentUser();
@@ -418,9 +443,10 @@ document.querySelectorAll('.price-card').forEach(card => {
 service.addEventListener('change', () => { renderCreativeOptions(); updateSelectedPrice(); });
 document.querySelector('#openOrders').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in to view your orders.' : '请先登录后查看自己的订单。'); return; } openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in or create an account first.' : '请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
-document.querySelector('#openAuth').addEventListener('click', () => { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); });
+function openAuthOrAccount() { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); }
+document.querySelectorAll('#openAuth, #mobileOpenAuth').forEach(button => button.addEventListener('click', () => { closeMobileMenu(); openAuthOrAccount(); }));
 document.querySelector('#openPrivacy').addEventListener('click', () => openModal(privacyModal));
-document.querySelector('#languageToggle').addEventListener('click', () => { language = language === 'zh' ? 'en' : 'zh'; localStorage.setItem('wonderad-language', language); applyLanguage(); });
+document.querySelectorAll('#languageToggle, #mobileLanguageToggle').forEach(button => button.addEventListener('click', () => { language = language === 'zh' ? 'en' : 'zh'; localStorage.setItem('wonderad-language', language); applyLanguage(); closeMobileMenu(); }));
 document.querySelector('#closeOrders').addEventListener('click', () => closeModal(ordersModal));
 document.querySelector('#closeOrdersButton').addEventListener('click', () => closeModal(ordersModal));
 document.querySelector('#closeAccount').addEventListener('click', () => closeModal(accountModal));
@@ -477,7 +503,10 @@ document.querySelector('#buildPrompt').addEventListener('click', () => {
   if (!text) { output.textContent = language === 'en' ? 'Write one sentence about your idea and I will turn it into a clear creative brief.' : '先写下一句你的想法，我会帮你整理成清晰的创意需求。'; return; }
   output.textContent = language === 'en' ? `Creative summary: make a ${creativeOptionTranslations[size] || size} visual in a ${creativeOptionTranslations[style] || style} style. Core request: ${text}. Keep one clear hero visual and one key message.` : `创意摘要：制作 ${size} 的${style}风格作品。核心需求：${text}。建议突出一个主视觉与一句关键信息。`;
 });
-document.querySelectorAll('.membership-pay').forEach(button => button.addEventListener('click', () => startPayment({ id: `MB${Date.now().toString().slice(-7)}`, kind: 'membership', title: button.dataset.plan, amount: button.dataset.amount, payment: '微信支付' })));
+document.querySelectorAll('.membership-pay').forEach(link => link.addEventListener('click', event => {
+  event.preventDefault();
+  startPayment({ id: `MB${Date.now().toString().slice(-7)}`, kind: 'membership', title: link.dataset.plan, amount: link.dataset.amount, payment: '微信支付' }, link.getAttribute('href'));
+}));
 const contactModal = document.querySelector('#contactModal');
 document.querySelector('#openContact').addEventListener('click', () => openModal(contactModal));
 document.querySelector('#closeContact').addEventListener('click', () => closeModal(contactModal));
