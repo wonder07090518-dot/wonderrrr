@@ -44,3 +44,8 @@ test('closed account modals cannot cover mobile navigation', async () => {
   assert.match(css, /\.inbox-modal\.open \{[^}]*display: block;[^}]*pointer-events: auto;/);
   assert.match(script, /document\.querySelectorAll\('\[data-scroll\]'\)[\s\S]*?closeMobileMenu\(\);[\s\S]*?scrollIntoView/);
 });
+
+test('desktop AI HUD stays inside the viewport at common laptop widths', async () => {
+  const css = await read('ai-interface.css');
+  assert.match(css, /@media \(max-width: 1324px\) \{\s*\.hud-model \{ right: -20px; \}/);
+});

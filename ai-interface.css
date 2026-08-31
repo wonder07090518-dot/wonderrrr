@@ -314,7 +314,7 @@ body::after {
 @keyframes ui-meter { 0%,100% { filter: brightness(.85); } 50% { filter: brightness(1.35); } }
 @keyframes ui-boost { 0% { transform: scale(.84); filter: brightness(1); } 55% { transform: scale(1.08); filter: brightness(1.55); } 100% { transform: scale(1); filter: brightness(1); } }
 
-@media (max-width: 1200px) {
+@media (max-width: 1324px) {
   .hud-model { right: -20px; }
   .hud-flow { left: -50px; }
 }
