@@ -385,6 +385,7 @@ function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute(
 document.querySelectorAll('[data-scroll]').forEach(button => button.addEventListener('click', () => {
   const chosenService = button.dataset.choose;
   if (chosenService && [...service.options].some(option => option.value === chosenService)) { service.value = chosenService; renderCreativeOptions(); updateSelectedPrice(); }
+  closeMobileMenu();
   document.querySelector(button.dataset.scroll).scrollIntoView({ behavior: 'smooth' });
 }));
 document.querySelectorAll('[data-service-filter]').forEach(button => button.addEventListener('click', () => {

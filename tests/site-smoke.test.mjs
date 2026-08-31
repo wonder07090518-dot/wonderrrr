@@ -37,3 +37,10 @@ test('English mode covers previously untranslated key sections', async () => {
   assert.match(payment, /wechat: 'WeChat Pay'/);
   assert.match(payment, /notice: 'After you confirm/);
 });
+
+test('closed account modals cannot cover mobile navigation', async () => {
+  const [css, script] = await Promise.all([read('manuscript.css'), read('script.js')]);
+  assert.match(css, /\.inbox-modal \{[^}]*display: none;[^}]*pointer-events: none;/);
+  assert.match(css, /\.inbox-modal\.open \{[^}]*display: block;[^}]*pointer-events: auto;/);
+  assert.match(script, /document\.querySelectorAll\('\[data-scroll\]'\)[\s\S]*?closeMobileMenu\(\);[\s\S]*?scrollIntoView/);
+});
