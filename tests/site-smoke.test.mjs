@@ -49,3 +49,8 @@ test('desktop AI HUD stays inside the viewport at common laptop widths', async (
   const css = await read('ai-interface.css');
   assert.match(css, /@media \(max-width: 1324px\) \{\s*\.hud-model \{ right: -20px; \}/);
 });
+
+test('service matrix background stays inside the viewport', async () => {
+  const css = await read('service-matrix.css');
+  assert.match(css, /inset: 62px max\(-70px, calc\(\(100vw - var\(--wrap\)\) \/ -2 \+ 4px\)\) 40px;/);
+});

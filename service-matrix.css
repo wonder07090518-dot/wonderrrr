@@ -13,7 +13,7 @@
   content: "";
   position: absolute;
   z-index: -1;
-  inset: 62px -70px 40px;
+  inset: 62px max(-70px, calc((100vw - var(--wrap)) / -2 + 4px)) 40px;
   pointer-events: none;
   background:
     radial-gradient(circle at 10% 4%, rgba(36, 87, 255, .13), transparent 24%),
