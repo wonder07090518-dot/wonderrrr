@@ -60,6 +60,8 @@
 }
 
 .references {
+  display: grid;
+  gap: 7px;
   margin: 10px 0;
   padding: 9px 11px;
   border-left: 3px solid var(--blue);
@@ -68,6 +70,35 @@
   font-size: 11px;
   line-height: 1.6;
   overflow-wrap: anywhere;
+}
+
+.references strong {
+  color: var(--ink);
+}
+
+.reference-download {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #d8e7f6;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--blue);
+  text-align: left;
+}
+
+.reference-download span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-download small {
+  color: var(--muted);
+  font-size: 10px;
 }
 
 @media (max-width: 900px) {

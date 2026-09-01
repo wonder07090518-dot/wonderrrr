@@ -115,23 +115,36 @@ test('ordinary orders can open the payment QR and confirm to the shared backend'
   assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
 });
 
-test('orders accept multiple reference files and email them safely to the studio', async () => {
-  const [html, script, css, notify, orders, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('admin.js')]);
+test('orders upload up to 1 GB of reference files directly into private storage', async () => {
+  const [html, script, css, notify, orders, uploadApi, downloadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('api/reference-download.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
   assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
   assert.match(html, /id="orderReferenceFolder"[^>]*webkitdirectory/);
-  assert.match(html, /最多 8 个文件，合计不超过 2\.5 MB/);
-  assert.match(script, /MAX_ORDER_REFERENCE_FILES = 8/);
-  assert.match(script, /referenceAttachments: references/);
-  assert.match(script, /readOrderReferenceFile/);
+  assert.match(html, /最多 20 个文件，每个订单合计不超过 1GB/);
+  assert.match(script, /MAX_ORDER_REFERENCE_FILES = 20/);
+  assert.match(script, /MAX_ORDER_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
+  assert.match(script, /uploadOrderReferenceFiles/);
+  assert.doesNotMatch(script, /function readOrderReferenceFile/);
   assert.match(css, /\.reference-file-list/);
-  assert.match(notify, /MAX_REFERENCE_FILES = 8/);
-  assert.match(notify, /ownerPayload\.attachments = references/);
+  assert.match(css, /\.reference-progress/);
+  assert.match(uploadClient, /multipart: file\.size > MULTIPART_THRESHOLD/);
+  assert.match(uploadClient, /access: 'private'/);
+  assert.match(uploadApi, /handleUpload/);
+  assert.match(uploadApi, /maximumSizeInBytes: MAX_FILE_BYTES/);
+  assert.match(uploadApi, /MAX_ORDER_BYTES = 1024 \* 1024 \* 1024/);
+  assert.match(notify, /已安全存入私有空间/);
+  assert.doesNotMatch(notify, /ownerPayload\.attachments = references/);
   assert.match(notify, /Idempotency-Key/);
   assert.match(notify, /getCurrentUser/);
   assert.match(notify, /wonder:order:/);
   assert.match(orders, /referenceMetadata/);
+  assert.match(orders, /await head\(item\.blobUrl\)/);
+  assert.match(orders, /MAX_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
   assert.match(orders, /delete order\.referenceAttachments/);
-  assert.match(admin, /参考样板（已随订单邮件发送）/);
+  assert.match(downloadApi, /issueSignedToken/);
+  assert.match(downloadApi, /validUntil = Date\.now\(\) \+ 10 \* 60 \* 1000/);
+  assert.match(downloadApi, /isAdmin/);
+  assert.match(admin, /参考样板（私有存储）/);
+  assert.match(admin, /downloadReference/);
 });
 
 test('AI brief helper calls a real protected model instead of a local template', async () => {

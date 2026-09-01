@@ -7,6 +7,20 @@ function statusClass(status) { return status === '已交付' ? 'is-done' : ['制
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; }
 function setNotice(message) { notice.textContent = message; }
 async function api(path, options = {}) { const response = await fetch(path, { credentials: 'same-origin', ...options }); const body = await response.json().catch(() => ({})); if (!response.ok) throw Object.assign(new Error(body.error || '请求失败'), { code: response.status, setup: body.setup }); return body; }
+function formatBytes(bytes) { if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`; if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`; if (bytes >= 1024) return `${Math.ceil(bytes / 1024)} KB`; return `${bytes || 0} B`; }
+async function downloadReference(order, index) {
+  const downloadWindow = window.open('about:blank', '_blank');
+  if (downloadWindow) downloadWindow.opener = null;
+  try {
+    setNotice('正在生成安全下载链接…');
+    const data = await api('/api/reference-download', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, index }) });
+    if (downloadWindow) downloadWindow.location.replace(data.url); else window.location.assign(data.url);
+    setNotice(`已为 ${data.name} 生成 10 分钟有效的下载链接。`);
+  } catch (error) {
+    downloadWindow?.close();
+    setNotice(`参考文件下载失败：${error.message}`);
+  }
+}
 function renderOrders() {
   const list = document.querySelector('#orders'); list.innerHTML = '';
   const counts = { pending: 0, revisions: 0, making: 0, done: 0 };
@@ -16,7 +30,7 @@ function renderOrders() {
   setNotice(`已加载 ${currentOrders.length} 个订单${counts.revisions ? `，其中 ${counts.revisions} 个修改申请待处理` : ''}。`);
   const template = document.querySelector('#orderTemplate');
   currentOrders.forEach(order => {
-    const node = template.content.cloneNode(true); const card = node.querySelector('.order-card'); card.dataset.id = order.id; node.querySelector('.service').textContent = order.service; const status = node.querySelector('.status'); status.textContent = order.status; status.classList.add(statusClass(order.status)); node.querySelector('.idea').textContent = order.idea; node.querySelector('.meta').textContent = `${order.email} · ${order.payment} · ${order.price} · ${order.size} · ${order.style}`; const references = Array.isArray(order.referenceFiles) ? order.referenceFiles : []; const referenceLine = node.querySelector('.references'); if (references.length) { referenceLine.hidden = false; referenceLine.textContent = `参考样板（已随订单邮件发送）：${references.map(file => file.path || file.name).join(' · ')}`; } node.querySelector('.date').textContent = `订单号 ${order.id} · ${order.date}`;
+    const node = template.content.cloneNode(true); const card = node.querySelector('.order-card'); card.dataset.id = order.id; node.querySelector('.service').textContent = order.service; const status = node.querySelector('.status'); status.textContent = order.status; status.classList.add(statusClass(order.status)); node.querySelector('.idea').textContent = order.idea; node.querySelector('.meta').textContent = `${order.email} · ${order.payment} · ${order.price} · ${order.size} · ${order.style}`; const references = Array.isArray(order.referenceFiles) ? order.referenceFiles : []; const referenceLine = node.querySelector('.references'); if (references.length) { referenceLine.hidden = false; referenceLine.innerHTML = `<strong>参考样板（私有存储）</strong>${references.map((file, index) => `<button class="reference-download" type="button" data-reference-index="${index}"><span>${escapeHtml(file.path || file.name)}</span><small>${formatBytes(file.size)} · 下载</small></button>`).join('')}`; referenceLine.querySelectorAll('[data-reference-index]').forEach(button => button.addEventListener('click', () => downloadReference(order, Number(button.dataset.referenceIndex)))); } node.querySelector('.date').textContent = `订单号 ${order.id} · ${order.date}`;
     const revisions = Array.isArray(order.revisions) ? [...order.revisions].reverse() : [];
     const revisionList = node.querySelector('.revision-list');
     if (revisions.length) revisionList.innerHTML = `<h3>修改记录</h3>${revisions.map(item => `<article class="revision-card"><div><strong>第 ${item.round} 轮 · ${escapeHtml(item.type)}</strong><span>${escapeHtml(item.status)}</span></div><p>${escapeHtml(item.details)}</p>${item.referenceUrl ? `<a href="${escapeHtml(item.referenceUrl)}" target="_blank" rel="noopener">查看参考链接</a>` : ''}${item.referenceName ? `<small>参考文件：${escapeHtml(item.referenceName)}（已随申请邮件发送）</small>` : ''}</article>`).join('')}`;

@@ -392,6 +392,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--cyan); backgroun
 .reference-file-item small { margin-top: 3px; color: #7f8895; font-size: 8px; }
 .reference-file-item button { width: 25px; height: 25px; border: 1px solid #515a66; background: transparent; color: #aeb5bf; cursor: pointer; }
 .reference-file-summary { color: #f2d68a!important; font-family: var(--mono); }
+.reference-file-item.is-uploading { border-left-color: #f2d68a; }
+.reference-progress { display: block; height: 3px; margin-top: 7px; overflow: hidden; background: rgba(255,255,255,.1); }
+.reference-progress b { display: block; height: 100%; background: linear-gradient(90deg,var(--cyan),#f2d68a); transition: width .2s ease; }
+.reference-upload.is-busy .reference-actions, .reference-upload.is-busy [data-remove-reference] { pointer-events: none; opacity: .45; }
 
 /* Join, update ledger, transparent demo stats */
 .join-us { padding: 140px 0; display: grid; grid-template-columns: .8fr 1.2fr; gap: 100px; }

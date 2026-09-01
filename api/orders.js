@@ -1,17 +1,31 @@
 import { configured, isAdmin, kv, storageConfigured } from './_admin.js';
 import { availableServices, servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
+import { head } from '@vercel/blob';
 
 function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝'].includes(order.payment); }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
-function referenceMetadata(items) {
+const MAX_REFERENCE_FILES = 20;
+const MAX_REFERENCE_BYTES = 1024 * 1024 * 1024;
+async function referenceMetadata(items, orderId) {
   if (!Array.isArray(items)) return [];
-  return items.slice(0, 8).map(item => ({
+  if (items.length > MAX_REFERENCE_FILES) throw Object.assign(new Error('Too many reference files'), { status: 413 });
+  const cleaned = items.map(item => ({
     name: String(item?.name || '').trim().slice(0, 120).replace(/[\\/]/g, '-'),
     path: String(item?.path || item?.name || '').trim().slice(0, 240).replace(/[\r\n\0]/g, ''),
-    size: Math.max(0, Math.min(Number(item?.size) || 0, 3 * 1024 * 1024)),
-    type: String(item?.type || '').trim().slice(0, 100)
+    size: Math.max(0, Number(item?.size) || 0),
+    type: String(item?.type || '').trim().slice(0, 100),
+    blobPathname: String(item?.blobPathname || '').trim().slice(0, 500),
+    blobUrl: String(item?.blobUrl || '').trim().slice(0, 1200)
   })).filter(item => item.name);
+  const verified = await Promise.all(cleaned.map(async item => {
+    if (!item.blobPathname.startsWith(`orders/${orderId}/`) || !/^https:\/\/[a-z0-9]+\.private\.blob\.vercel-storage\.com\//i.test(item.blobUrl)) throw Object.assign(new Error('Invalid reference file record'), { status: 400 });
+    const blob = await head(item.blobUrl);
+    if (blob.pathname !== item.blobPathname || blob.size !== item.size || blob.size <= 0) throw Object.assign(new Error('Reference file could not be verified'), { status: 400 });
+    return { name: item.name, path: item.path, size: blob.size, type: blob.contentType || item.type, blobPathname: blob.pathname };
+  }));
+  if (verified.reduce((total, item) => total + item.size, 0) > MAX_REFERENCE_BYTES) throw Object.assign(new Error('Reference files exceed the 1 GB order limit'), { status: 413 });
+  return verified;
 }
 
 export default async function handler(req, res) {
@@ -21,7 +35,10 @@ export default async function handler(req, res) {
     const user = await getCurrentUser(req);
     if (!user) return res.status(401).json({ error: 'Please sign in before submitting an order' });
     if (String(req.body.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'Order email does not match the signed-in account' });
-    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: referenceMetadata(req.body.referenceFiles), email: user.email, price: servicePrices[req.body.service], status: '审核中', createdAt: new Date().toISOString() };
+    let references;
+    try { references = await referenceMetadata(req.body.referenceFiles, req.body.id); }
+    catch (error) { return res.status(error.status || 400).json({ error: error.message }); }
+    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: references, email: user.email, price: servicePrices[req.body.service], status: '审核中', createdAt: new Date().toISOString() };
     delete order.referenceAttachments;
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);

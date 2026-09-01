@@ -12,9 +12,10 @@ const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
 let pendingSubmittedOrder = null;
 let selectedOrderFiles = [];
-const MAX_ORDER_REFERENCE_FILES = 8;
-const MAX_ORDER_REFERENCE_BYTES = Math.floor(2.5 * 1024 * 1024);
-const orderReferenceExtension = /\.(jpe?g|png|webp|gif|pdf|txt|docx?|pptx?|zip)$/i;
+let orderUploadProgress = new Map();
+const MAX_ORDER_REFERENCE_FILES = 20;
+const MAX_ORDER_REFERENCE_BYTES = 1024 * 1024 * 1024;
+const orderReferenceExtension = /\.(jpe?g|png|webp|gif|svg|pdf|txt|docx?|pptx?|xlsx?|zip|psd|ai|mp4|mov|m4v|webm|mp3|wav|m4a)$/i;
 const servicePrices = {
   '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张', '电商详情页': '¥35 / 页起', '电商上新套装': '¥79 / 套起', 'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起', 'Banner 设计': '¥16 / 张', '创意字贴': '¥15 / 张', '壁纸设计': '¥16 / 张', '菜单与价目表': '¥22 / 张', '活动物料套装': '¥59 / 套起', '品牌视觉套装': '¥99 / 套起', '社媒月更包': '¥129 / 10 张起', '印刷物料设计': '¥22 / 张起', '其他需求': 'AI 评估报价',
   'Social cover': '¥16 / image', 'Marketing poster': '¥19 / image', 'E-commerce visual': '¥22 / image', 'E-commerce detail page': '¥35 / page from', 'E-commerce launch kit': '¥79 / kit from', 'Slide design': '¥20 / slide from', 'AI quick image': '¥12 / image', 'Brand logo': '¥25 / mark from', 'Banner design': '¥16 / image', 'Creative type sticker': '¥15 / image', 'Wallpaper design': '¥16 / image', 'Custom request': 'AI-estimated quote'
@@ -354,6 +355,7 @@ async function notifyOwner(order) {
 function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 function renderOrderReferenceList() {
@@ -366,7 +368,9 @@ function renderOrderReferenceList() {
   const total = selectedOrderFiles.reduce((sum, file) => sum + file.size, 0);
   target.innerHTML = `${selectedOrderFiles.map((file, index) => {
     const path = file.webkitRelativePath || file.name;
-    return `<article class="reference-file-item"><div><strong>${escapeHtml(file.name)}</strong><small>${escapeHtml(path)} · ${formatFileSize(file.size)}</small></div><button type="button" data-remove-reference="${index}" aria-label="${language === 'en' ? 'Remove file' : '删除文件'}">×</button></article>`;
+    const progress = orderUploadProgress.get(index);
+    const uploadState = Number.isFinite(progress) ? ` · ${language === 'en' ? 'Uploading' : '上传中'} ${Math.round(progress)}%` : '';
+    return `<article class="reference-file-item${Number.isFinite(progress) ? ' is-uploading' : ''}"><div><strong>${escapeHtml(file.name)}</strong><small>${escapeHtml(path)} · ${formatFileSize(file.size)}${uploadState}</small>${Number.isFinite(progress) ? `<i class="reference-progress"><b style="width:${Math.max(1, progress)}%"></b></i>` : ''}</div><button type="button" data-remove-reference="${index}" aria-label="${language === 'en' ? 'Remove file' : '删除文件'}">×</button></article>`;
   }).join('')}<span class="reference-file-summary">${language === 'en' ? `${selectedOrderFiles.length} files · ${formatFileSize(total)} total` : `已添加 ${selectedOrderFiles.length} 个文件 · 合计 ${formatFileSize(total)}`}</span>`;
 }
 function addOrderReferenceFiles(fileList) {
@@ -383,15 +387,35 @@ function addOrderReferenceFiles(fileList) {
   }
   renderOrderReferenceList();
   if (rejectedType) showToast(language === 'en' ? 'Some unsupported files were skipped.' : '部分不支持的文件已跳过。');
-  else if (rejectedLimit) showToast(language === 'en' ? 'You can add up to 8 files with a combined size of 2.5 MB.' : '最多上传 8 个文件，合计不能超过 2.5 MB。');
+  else if (rejectedLimit) showToast(language === 'en' ? 'You can add up to 20 files with a combined size of 1 GB.' : '最多上传 20 个文件，合计不能超过 1GB。');
 }
-function readOrderReferenceFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve({ name: file.name, path: file.webkitRelativePath || file.name, size: file.size, type: file.type, data: reader.result });
-    reader.onerror = () => reject(new Error(language === 'en' ? `Could not read ${file.name}.` : `无法读取文件：${file.name}`));
-    reader.readAsDataURL(file);
-  });
+async function uploadOrderReferenceFiles(orderId, submit) {
+  if (!selectedOrderFiles.length) return [];
+  const { uploadOrderReference } = await import('/reference-upload-client.js?v=20260831a');
+  const uploaded = [];
+  orderUploadProgress = new Map();
+  for (let index = 0; index < selectedOrderFiles.length; index++) {
+    const file = selectedOrderFiles[index];
+    submit.textContent = language === 'en' ? `Uploading reference ${index + 1}/${selectedOrderFiles.length}…` : `正在上传参考文件 ${index + 1}/${selectedOrderFiles.length}…`;
+    try {
+      const result = await uploadOrderReference(file, {
+        orderId,
+        relativePath: file.webkitRelativePath || file.name,
+        onProgress: progress => {
+          orderUploadProgress.set(index, progress.percentage);
+          renderOrderReferenceList();
+        }
+      });
+      uploaded.push(result);
+      orderUploadProgress.delete(index);
+      renderOrderReferenceList();
+    } catch {
+      orderUploadProgress.delete(index);
+      renderOrderReferenceList();
+      throw new Error(language === 'en' ? `Could not upload ${file.name}. Please keep this page open and try again.` : `文件上传失败：${file.name}。请保持页面打开后重试。`);
+    }
+  }
+  return uploaded;
 }
 async function notifyDelivery(order, result) {
   try {
@@ -706,6 +730,7 @@ document.querySelector('#orderReferenceList').addEventListener('click', event =>
   const button = event.target.closest('[data-remove-reference]');
   if (!button) return;
   selectedOrderFiles.splice(Number(button.dataset.removeReference), 1);
+  orderUploadProgress = new Map();
   renderOrderReferenceList();
 });
 document.querySelector('#orderForm').addEventListener('submit', async event => {
@@ -719,25 +744,29 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const form = event.target;
   const submit = document.querySelector('#submitOrder');
   const submitLabel = submit.textContent;
+  const referenceUpload = form.querySelector('.reference-upload');
   submit.disabled = true;
+  referenceUpload?.classList.add('is-busy');
+  referenceUpload?.querySelectorAll('input').forEach(input => { input.disabled = true; });
   submit.textContent = language === 'en' ? 'Preparing files…' : '正在整理文件…';
   const payment = form.querySelector('input[name="payment"]:checked').value;
   try {
-    const references = await Promise.all(selectedOrderFiles.map(readOrderReferenceFile));
-    const referenceFiles = references.map(({ data, ...metadata }) => metadata);
-    const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, referenceFiles, status: '审核中', date: formatDate() };
+    const orderId = `WA${Date.now().toString().slice(-7)}`;
+    const referenceFiles = await uploadOrderReferenceFiles(orderId, submit);
+    const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, referenceFiles, status: '审核中', date: formatDate() };
     submit.textContent = language === 'en' ? 'Submitting order…' : '正在提交订单…';
     const saved = await saveSharedOrder(order);
     if (!saved) { showToast(language === 'en' ? 'The order could not be saved. Please try again or contact us.' : '订单暂时无法同步，请稍后重试或联系客服。'); return; }
     const orders = getOrders(); orders.unshift(order); saveOrders(orders);
-    const emailSent = await notifyOwner({ ...order, referenceAttachments: references });
+    const emailSent = await notifyOwner(order);
     renderAccountStats();
     pendingSubmittedOrder = order;
     document.querySelector('#openOrderPayment').textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
     openModal(submittedModal);
-    showToast(emailSent ? (language === 'en' ? `Order submitted${references.length ? ` with ${references.length} reference files` : ''}. You can now open the payment QR.` : `订单已提交${references.length ? `，${references.length} 个参考文件已发送给工作室` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order was saved, but the email is delayed. Please contact us to resend reference files.' : '订单已保存，但邮件暂时延迟；请联系客服补发参考文件。'));
+    showToast(emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. You can now open the payment QR.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。'));
     form.reset();
     selectedOrderFiles = [];
+    orderUploadProgress = new Map();
     renderOrderReferenceList();
     document.querySelector('#promptOutput').className = 'prompt-output';
     document.querySelector('#promptOutput').textContent = '';
@@ -749,6 +778,8 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   } finally {
     submit.disabled = false;
     submit.textContent = submitLabel;
+    referenceUpload?.classList.remove('is-busy');
+    referenceUpload?.querySelectorAll('input').forEach(input => { input.disabled = false; });
   }
 });
 
@@ -894,14 +925,14 @@ Object.assign(zhToEn, {
   '查看微信收款码并付款': 'View WeChat Pay QR and pay',
   '稍后付款': 'Pay later',
   '参考样板（可选）': 'Reference samples (optional)',
-  '可以上传多张图片、PDF、Word、PPT 或 ZIP，也可以直接选择一个文件夹': 'Upload multiple images, PDFs, Word files, PowerPoint files or ZIPs, or choose a folder',
+  '可以上传图片、视频、音频、PDF、Office、PSD、AI 或 ZIP，也可以直接选择一个文件夹': 'Upload images, video, audio, PDFs, Office files, PSDs, AI files or ZIPs, or choose a folder',
   '＋ 添加多个文件': '+ Add multiple files',
   '▣ 选择文件夹': '▣ Choose a folder',
   '尚未添加参考文件': 'No reference files added yet',
-  '最多 8 个文件，合计不超过 2.5 MB；较大的素材请压缩为 ZIP，或在需求中填写网盘链接': 'Up to 8 files and 2.5 MB total; compress larger material as a ZIP or add a cloud link in your brief',
-  '提交后显示“正在审核中”，参考文件会随订单邮件发送给工作室，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are emailed to the studio and the payment QR and fixed project price are sent to your inbox',
+  '最多 20 个文件，每个订单合计不超过 1GB；大文件会自动分片上传，请在上传完成前保持页面打开': 'Up to 20 files and 1 GB total per order; large files upload in retryable parts, so keep this page open until complete',
+  '提交后显示“正在审核中”，参考文件会安全存入私有空间，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are stored privately and the payment QR and fixed project price are sent to your inbox',
   '我们仅使用你提交的邮箱、创意需求与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief and reference files you submit to process the order, send payment instructions and deliver the final work.',
-  '参考文件仅随订单邮件发送给工作室，不会公开展示。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are sent only to the studio with the order email and are never displayed publicly. We never sell your personal information. Order email is handled by Wonder Ad Lab at'
+  '参考文件会安全存入私有空间，仅供处理订单的工作室管理员下载，不会公开展示或发送给 AI。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are stored privately for authorized studio administrators only. They are never displayed publicly or sent to AI. We never sell your personal information. Order email is handled by Wonder Ad Lab at'
   ,'✦ 让真正的 AI 分析并生成简报': '✦ Let real AI analyze and build the brief'
   ,'点击后仅将需求文字、服务、尺寸和风格发送给 AI 分析，参考文件不会发送给 AI': 'Only the brief text, service, size and style are sent for AI analysis; reference files are never sent to AI'
 });
