@@ -115,12 +115,12 @@ test('ordinary orders can open the payment QR and confirm to the shared backend'
   assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
 });
 
-test('orders upload up to 1 GB of reference files directly into private storage', async () => {
+test('orders upload up to 100 reference files and 1 GB directly into private storage', async () => {
   const [html, script, css, notify, orders, uploadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
   assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
   assert.match(html, /id="orderReferenceFolder"[^>]*webkitdirectory/);
-  assert.match(html, /最多 20 个 · 合计 1GB/);
-  assert.match(script, /MAX_ORDER_REFERENCE_FILES = 20/);
+  assert.match(html, /最多 100 个 · 合计 1GB/);
+  assert.match(script, /MAX_ORDER_REFERENCE_FILES = 100/);
   assert.match(script, /MAX_ORDER_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
   assert.match(script, /uploadOrderReferenceFiles/);
   assert.doesNotMatch(script, /function readOrderReferenceFile/);
@@ -131,6 +131,7 @@ test('orders upload up to 1 GB of reference files directly into private storage'
   assert.match(uploadApi, /handleUpload/);
   assert.match(uploadApi, /maximumSizeInBytes: MAX_FILE_BYTES/);
   assert.match(uploadApi, /MAX_ORDER_BYTES = 1024 \* 1024 \* 1024/);
+  assert.match(uploadApi, /MAX_ORDER_FILES = 100/);
   assert.match(notify, /已安全存入私有空间/);
   assert.doesNotMatch(notify, /ownerPayload\.attachments = references/);
   assert.match(notify, /Idempotency-Key/);

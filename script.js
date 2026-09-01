@@ -13,7 +13,7 @@ const sessionKey = 'wonderad-session';
 let pendingSubmittedOrder = null;
 let selectedOrderFiles = [];
 let orderUploadProgress = new Map();
-const MAX_ORDER_REFERENCE_FILES = 20;
+const MAX_ORDER_REFERENCE_FILES = 100;
 const MAX_ORDER_REFERENCE_BYTES = 1024 * 1024 * 1024;
 const orderReferenceExtension = /\.(jpe?g|png|webp|gif|svg|pdf|txt|docx?|pptx?|xlsx?|zip|psd|ai|mp4|mov|m4v|webm|mp3|wav|m4a)$/i;
 const servicePrices = {
@@ -396,7 +396,7 @@ function addOrderReferenceFiles(fileList) {
   }
   renderOrderReferenceList();
   if (rejectedType) showToast(language === 'en' ? 'Some unsupported files were skipped.' : '部分不支持的文件已跳过。');
-  else if (rejectedLimit) showToast(language === 'en' ? 'You can add up to 20 files with a combined size of 1 GB.' : '最多上传 20 个文件，合计不能超过 1GB。');
+  else if (rejectedLimit) showToast(language === 'en' ? 'You can add up to 100 files with a combined size of 1 GB. Zip larger folders before uploading.' : '最多上传 100 个文件，合计不能超过 1GB；更多文件可先打包成 ZIP。');
 }
 async function uploadOrderReferenceFiles(orderId, submit) {
   if (!selectedOrderFiles.length) return [];
@@ -858,7 +858,7 @@ Object.assign(zhToEn, {
   '＋ 选文件': '+ Choose files',
   '▣ 选文件夹': '▣ Choose folder',
   '还没选文件': 'No files selected',
-  '最多 20 个 · 合计 1GB · 上传时请勿关闭页面': '20 files max · 1 GB total · Keep this page open while uploading',
+  '最多 100 个 · 合计 1GB · 更多文件可打包 ZIP · 上传时请勿关闭页面': '100 files max · 1 GB total · Zip larger folders · Keep this page open while uploading',
   '提交后显示“正在审核中”，参考文件会安全存入私有空间，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are stored privately and the payment QR and fixed project price are sent to your inbox',
   '我们仅使用你提交的邮箱、创意需求与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief and reference files you submit to process the order, send payment instructions and deliver the final work.',
   '参考文件会安全存入私有空间，仅供处理订单的工作室管理员下载，不会公开展示或发送给 AI。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are stored privately for authorized studio administrators only. They are never displayed publicly or sent to AI. We never sell your personal information. Order email is handled by Wonder Ad Lab at',

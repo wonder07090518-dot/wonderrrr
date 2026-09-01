@@ -5,7 +5,7 @@ import { getCurrentUser } from './_user.js';
 
 const MAX_FILE_BYTES = 1024 * 1024 * 1024;
 const MAX_ORDER_BYTES = 1024 * 1024 * 1024;
-const MAX_ORDER_FILES = 20;
+const MAX_ORDER_FILES = 100;
 const TOKEN_LIFETIME_MS = 2 * 60 * 60 * 1000;
 const allowedContentTypes = [
   'image/*', 'video/*', 'audio/*', 'text/*', 'application/pdf', 'application/zip',
