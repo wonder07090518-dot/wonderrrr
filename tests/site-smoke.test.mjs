@@ -164,3 +164,11 @@ test('AI brief helper calls a real protected model instead of a local template',
   assert.match(api, /VERCEL_OIDC_TOKEN/);
   assert.match(html, /参考文件不会发送给 AI/);
 });
+
+test('public indexing focuses on the main service page, not checkout', async () => {
+  const [sitemap, payment] = await Promise.all([read('sitemap.xml'), read('payment.html')]);
+  assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>/);
+  assert.match(sitemap, /<lastmod>2026-08-31<\/lastmod>/);
+  assert.doesNotMatch(sitemap, /payment\.html/);
+  assert.match(payment, /name="robots" content="noindex,nofollow,noarchive"/);
+});
