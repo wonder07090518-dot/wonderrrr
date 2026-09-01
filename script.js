@@ -362,7 +362,7 @@ function renderOrderReferenceList() {
   const target = document.querySelector('#orderReferenceList');
   if (!target) return;
   if (!selectedOrderFiles.length) {
-    target.innerHTML = `<span>${language === 'en' ? 'No reference files added yet' : '尚未添加参考文件'}</span>`;
+    target.innerHTML = `<span>${language === 'en' ? 'No files selected' : '还没选文件'}</span>`;
     return;
   }
   const total = selectedOrderFiles.reduce((sum, file) => sum + file.size, 0);
@@ -924,12 +924,12 @@ Object.assign(zhToEn, {
   '收款码也会发送到邮箱；你可以现在打开，或稍后在“我的订单”中继续付款。': 'The payment QR is also emailed to you. Open it now, or continue later from My Orders.',
   '查看微信收款码并付款': 'View WeChat Pay QR and pay',
   '稍后付款': 'Pay later',
-  '参考样板（可选）': 'Reference samples (optional)',
-  '可以上传图片、视频、音频、PDF、Office、PSD、AI 或 ZIP，也可以直接选择一个文件夹': 'Upload images, video, audio, PDFs, Office files, PSDs, AI files or ZIPs, or choose a folder',
-  '＋ 添加多个文件': '+ Add multiple files',
-  '▣ 选择文件夹': '▣ Choose a folder',
-  '尚未添加参考文件': 'No reference files added yet',
-  '最多 20 个文件，每个订单合计不超过 1GB；大文件会自动分片上传，请在上传完成前保持页面打开': 'Up to 20 files and 1 GB total per order; large files upload in retryable parts, so keep this page open until complete',
+  '上传参考文件（可选）': 'Reference files (optional)',
+  '图片、视频、文档或 ZIP': 'Images, video, documents or ZIP',
+  '＋ 选文件': '+ Choose files',
+  '▣ 选文件夹': '▣ Choose folder',
+  '还没选文件': 'No files selected',
+  '最多 20 个 · 合计 1GB · 上传时请勿关闭页面': '20 files max · 1 GB total · Keep this page open while uploading',
   '提交后显示“正在审核中”，参考文件会安全存入私有空间，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are stored privately and the payment QR and fixed project price are sent to your inbox',
   '我们仅使用你提交的邮箱、创意需求与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief and reference files you submit to process the order, send payment instructions and deliver the final work.',
   '参考文件会安全存入私有空间，仅供处理订单的工作室管理员下载，不会公开展示或发送给 AI。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are stored privately for authorized studio administrators only. They are never displayed publicly or sent to AI. We never sell your personal information. Order email is handled by Wonder Ad Lab at'

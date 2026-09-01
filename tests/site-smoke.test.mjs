@@ -119,7 +119,7 @@ test('orders upload up to 1 GB of reference files directly into private storage'
   const [html, script, css, notify, orders, uploadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
   assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
   assert.match(html, /id="orderReferenceFolder"[^>]*webkitdirectory/);
-  assert.match(html, /最多 20 个文件，每个订单合计不超过 1GB/);
+  assert.match(html, /最多 20 个 · 合计 1GB/);
   assert.match(script, /MAX_ORDER_REFERENCE_FILES = 20/);
   assert.match(script, /MAX_ORDER_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
   assert.match(script, /uploadOrderReferenceFiles/);

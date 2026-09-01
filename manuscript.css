@@ -631,6 +631,11 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
   .order { padding: 95px 16px; grid-template-columns: 1fr; gap: 45px; }
   .order > div { position: static; }
   .order form { padding: 22px 16px; }
+  .reference-upload { padding: 14px; }
+  .reference-upload > p { margin-bottom: 10px; }
+  .reference-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .reference-picker { min-height: 44px; justify-content: center; padding-inline: 8px; font-size: 11px; }
+  .reference-upload > small { font-size: 10px; }
   .join-us { grid-template-columns: 1fr; gap: 45px; }
   .join-us form { padding-left: 0; padding-top: 35px; border-left: 0; border-top: 1px solid var(--ink); }
   .update-grid, .stats-grid { grid-template-columns: 1fr 1fr; }
