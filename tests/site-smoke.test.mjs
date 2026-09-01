@@ -114,3 +114,22 @@ test('ordinary orders can open the payment QR and confirm to the shared backend'
   assert.match(api, /客户已确认付款/);
   assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
 });
+
+test('orders accept multiple reference files and email them safely to the studio', async () => {
+  const [html, script, css, notify, orders, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('admin.js')]);
+  assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
+  assert.match(html, /id="orderReferenceFolder"[^>]*webkitdirectory/);
+  assert.match(html, /最多 8 个文件，合计不超过 2\.5 MB/);
+  assert.match(script, /MAX_ORDER_REFERENCE_FILES = 8/);
+  assert.match(script, /referenceAttachments: references/);
+  assert.match(script, /readOrderReferenceFile/);
+  assert.match(css, /\.reference-file-list/);
+  assert.match(notify, /MAX_REFERENCE_FILES = 8/);
+  assert.match(notify, /ownerPayload\.attachments = references/);
+  assert.match(notify, /Idempotency-Key/);
+  assert.match(notify, /getCurrentUser/);
+  assert.match(notify, /wonder:order:/);
+  assert.match(orders, /referenceMetadata/);
+  assert.match(orders, /delete order\.referenceAttachments/);
+  assert.match(admin, /参考样板（已随订单邮件发送）/);
+});

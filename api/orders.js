@@ -4,6 +4,15 @@ import { getCurrentUser } from './_user.js';
 
 function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝'].includes(order.payment); }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
+function referenceMetadata(items) {
+  if (!Array.isArray(items)) return [];
+  return items.slice(0, 8).map(item => ({
+    name: String(item?.name || '').trim().slice(0, 120).replace(/[\\/]/g, '-'),
+    path: String(item?.path || item?.name || '').trim().slice(0, 240).replace(/[\r\n\0]/g, ''),
+    size: Math.max(0, Math.min(Number(item?.size) || 0, 3 * 1024 * 1024)),
+    type: String(item?.type || '').trim().slice(0, 100)
+  })).filter(item => item.name);
+}
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -12,7 +21,8 @@ export default async function handler(req, res) {
     const user = await getCurrentUser(req);
     if (!user) return res.status(401).json({ error: 'Please sign in before submitting an order' });
     if (String(req.body.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'Order email does not match the signed-in account' });
-    const order = { ...req.body, email: user.email, price: servicePrices[req.body.service], status: '审核中', createdAt: new Date().toISOString() };
+    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: referenceMetadata(req.body.referenceFiles), email: user.email, price: servicePrices[req.body.service], status: '审核中', createdAt: new Date().toISOString() };
+    delete order.referenceAttachments;
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
     return res.status(201).json({ ok: true });

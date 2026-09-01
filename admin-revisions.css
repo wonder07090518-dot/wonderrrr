@@ -59,6 +59,17 @@
   color: var(--blue);
 }
 
+.references {
+  margin: 10px 0;
+  padding: 9px 11px;
+  border-left: 3px solid var(--blue);
+  background: #f1f6fc;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 900px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);

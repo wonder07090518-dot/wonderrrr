@@ -11,6 +11,10 @@ const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
 let pendingSubmittedOrder = null;
+let selectedOrderFiles = [];
+const MAX_ORDER_REFERENCE_FILES = 8;
+const MAX_ORDER_REFERENCE_BYTES = Math.floor(2.5 * 1024 * 1024);
+const orderReferenceExtension = /\.(jpe?g|png|webp|gif|pdf|txt|docx?|pptx?|zip)$/i;
 const servicePrices = {
   '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张', '电商详情页': '¥35 / 页起', '电商上新套装': '¥79 / 套起', 'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起', 'Banner 设计': '¥16 / 张', '创意字贴': '¥15 / 张', '壁纸设计': '¥16 / 张', '菜单与价目表': '¥22 / 张', '活动物料套装': '¥59 / 套起', '品牌视觉套装': '¥99 / 套起', '社媒月更包': '¥129 / 10 张起', '印刷物料设计': '¥22 / 张起', '其他需求': 'AI 评估报价',
   'Social cover': '¥16 / image', 'Marketing poster': '¥19 / image', 'E-commerce visual': '¥22 / image', 'E-commerce detail page': '¥35 / page from', 'E-commerce launch kit': '¥79 / kit from', 'Slide design': '¥20 / slide from', 'AI quick image': '¥12 / image', 'Brand logo': '¥25 / mark from', 'Banner design': '¥16 / image', 'Creative type sticker': '¥15 / image', 'Wallpaper design': '¥16 / image', 'Custom request': 'AI-estimated quote'
@@ -186,6 +190,7 @@ function applyLanguage() {
   if (typeof updateLabMode === 'function') updateLabMode(activeLabMode);
   if (typeof updateScrollStoryCopy === 'function') updateScrollStoryCopy();
   updateAccountUI();
+  renderOrderReferenceList();
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
@@ -346,6 +351,48 @@ async function notifyOwner(order) {
     return false;
   }
 }
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+function renderOrderReferenceList() {
+  const target = document.querySelector('#orderReferenceList');
+  if (!target) return;
+  if (!selectedOrderFiles.length) {
+    target.innerHTML = `<span>${language === 'en' ? 'No reference files added yet' : '尚未添加参考文件'}</span>`;
+    return;
+  }
+  const total = selectedOrderFiles.reduce((sum, file) => sum + file.size, 0);
+  target.innerHTML = `${selectedOrderFiles.map((file, index) => {
+    const path = file.webkitRelativePath || file.name;
+    return `<article class="reference-file-item"><div><strong>${escapeHtml(file.name)}</strong><small>${escapeHtml(path)} · ${formatFileSize(file.size)}</small></div><button type="button" data-remove-reference="${index}" aria-label="${language === 'en' ? 'Remove file' : '删除文件'}">×</button></article>`;
+  }).join('')}<span class="reference-file-summary">${language === 'en' ? `${selectedOrderFiles.length} files · ${formatFileSize(total)} total` : `已添加 ${selectedOrderFiles.length} 个文件 · 合计 ${formatFileSize(total)}`}</span>`;
+}
+function addOrderReferenceFiles(fileList) {
+  const incoming = [...fileList];
+  let rejectedType = false;
+  let rejectedLimit = false;
+  for (const file of incoming) {
+    if (!orderReferenceExtension.test(file.name)) { rejectedType = true; continue; }
+    const path = file.webkitRelativePath || file.name;
+    if (selectedOrderFiles.some(existing => (existing.webkitRelativePath || existing.name) === path && existing.size === file.size)) continue;
+    const currentBytes = selectedOrderFiles.reduce((sum, item) => sum + item.size, 0);
+    if (selectedOrderFiles.length >= MAX_ORDER_REFERENCE_FILES || currentBytes + file.size > MAX_ORDER_REFERENCE_BYTES) { rejectedLimit = true; continue; }
+    selectedOrderFiles.push(file);
+  }
+  renderOrderReferenceList();
+  if (rejectedType) showToast(language === 'en' ? 'Some unsupported files were skipped.' : '部分不支持的文件已跳过。');
+  else if (rejectedLimit) showToast(language === 'en' ? 'You can add up to 8 files with a combined size of 2.5 MB.' : '最多上传 8 个文件，合计不能超过 2.5 MB。');
+}
+function readOrderReferenceFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, path: file.webkitRelativePath || file.name, size: file.size, type: file.type, data: reader.result });
+    reader.onerror = () => reject(new Error(language === 'en' ? `Could not read ${file.name}.` : `无法读取文件：${file.name}`));
+    reader.readAsDataURL(file);
+  });
+}
 async function notifyDelivery(order, result) {
   try {
     const response = await fetch('/api/notify-delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: order.email, orderId: order.id, service: order.service, price: order.price || servicePrices[order.service], fileName: result.name, fileData: result.data }) });
@@ -408,7 +455,9 @@ async function renderCustomerOrders() {
     const canPay = ['审核中', '待支付', '待确认支付'].includes(order.status) && paymentAmountFromPrice(order.price || servicePrices[order.service]);
     const payLabel = order.status === '待确认支付' ? (language === 'en' ? 'View payment QR again' : '重新查看收款码') : (language === 'en' ? 'View payment QR and pay' : '查看收款码并付款');
     const revisionNotice = ['修改申请', '修改中'].includes(order.status) ? `<p class="revision-active">${language === 'en' ? 'Your revision request is recorded. We will update the status here and by email.' : '修改申请已经记录，处理进度会在这里和邮件中同步。'}</p>` : '';
-    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
+    const referenceFiles = Array.isArray(order.referenceFiles) ? order.referenceFiles : [];
+    const referenceSummary = referenceFiles.length ? `<p class="order-reference-summary"><strong>${language === 'en' ? 'Reference files:' : '参考文件：'}</strong> ${referenceFiles.map(file => escapeHtml(file.path || file.name)).join(' · ')}</p>` : '';
+    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${referenceSummary}${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
   }).join('') : `<p class="empty-inbox">${language === 'en' ? 'No orders found for this account.' : '这个账户暂时没有订单。'}</p>`;
   ordersList.querySelectorAll('[data-revision-order]').forEach(button => button.addEventListener('click', () => openRevisionRequest(button.dataset.revisionOrder)));
   ordersList.querySelectorAll('[data-pay-order]').forEach(button => button.addEventListener('click', () => { const order = customerOrders.find(item => item.id === button.dataset.payOrder); if (order) startOrderPayment(order); }));
@@ -612,6 +661,14 @@ document.querySelector('#joinForm').addEventListener('submit', async event => {
 });
 document.querySelector('#openOrderPayment').addEventListener('click', () => { if (pendingSubmittedOrder) startOrderPayment(pendingSubmittedOrder); });
 document.querySelector('#returnHome').addEventListener('click', () => { closeModal(submittedModal); pendingSubmittedOrder = null; window.scrollTo({ top: 0, behavior: 'smooth' }); });
+document.querySelector('#orderReferenceFiles').addEventListener('change', event => { addOrderReferenceFiles(event.target.files); event.target.value = ''; });
+document.querySelector('#orderReferenceFolder').addEventListener('change', event => { addOrderReferenceFiles(event.target.files); event.target.value = ''; });
+document.querySelector('#orderReferenceList').addEventListener('click', event => {
+  const button = event.target.closest('[data-remove-reference]');
+  if (!button) return;
+  selectedOrderFiles.splice(Number(button.dataset.removeReference), 1);
+  renderOrderReferenceList();
+});
 document.querySelector('#orderForm').addEventListener('submit', async event => {
   event.preventDefault();
   const signedInUser = getCurrentUser() || await refreshSession();
@@ -621,21 +678,37 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
     return;
   }
   const form = event.target;
+  const submit = document.querySelector('#submitOrder');
+  const submitLabel = submit.textContent;
+  submit.disabled = true;
+  submit.textContent = language === 'en' ? 'Preparing files…' : '正在整理文件…';
   const payment = form.querySelector('input[name="payment"]:checked').value;
-  const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, status: '审核中', date: formatDate() };
-  const saved = await saveSharedOrder(order);
-  if (!saved) { showToast('订单暂时无法同步，请稍后重试或联系客服。'); return; }
-  const orders = getOrders(); orders.unshift(order); saveOrders(orders);
-  const emailSent = await notifyOwner(order);
-  renderAccountStats();
-  pendingSubmittedOrder = order;
-  document.querySelector('#openOrderPayment').textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
-  openModal(submittedModal);
-  showToast(emailSent ? '订单已提交，现在可以打开收款码付款。' : '订单已提交；邮件暂时延迟，可直接打开页面收款码付款。');
-  form.reset();
-  updateAccountUI();
-  renderCreativeOptions();
-  updateSelectedPrice();
+  try {
+    const references = await Promise.all(selectedOrderFiles.map(readOrderReferenceFile));
+    const referenceFiles = references.map(({ data, ...metadata }) => metadata);
+    const order = { id: `WA${Date.now().toString().slice(-7)}`, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, referenceFiles, status: '审核中', date: formatDate() };
+    submit.textContent = language === 'en' ? 'Submitting order…' : '正在提交订单…';
+    const saved = await saveSharedOrder(order);
+    if (!saved) { showToast(language === 'en' ? 'The order could not be saved. Please try again or contact us.' : '订单暂时无法同步，请稍后重试或联系客服。'); return; }
+    const orders = getOrders(); orders.unshift(order); saveOrders(orders);
+    const emailSent = await notifyOwner({ ...order, referenceAttachments: references });
+    renderAccountStats();
+    pendingSubmittedOrder = order;
+    document.querySelector('#openOrderPayment').textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
+    openModal(submittedModal);
+    showToast(emailSent ? (language === 'en' ? `Order submitted${references.length ? ` with ${references.length} reference files` : ''}. You can now open the payment QR.` : `订单已提交${references.length ? `，${references.length} 个参考文件已发送给工作室` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order was saved, but the email is delayed. Please contact us to resend reference files.' : '订单已保存，但邮件暂时延迟；请联系客服补发参考文件。'));
+    form.reset();
+    selectedOrderFiles = [];
+    renderOrderReferenceList();
+    updateAccountUI();
+    renderCreativeOptions();
+    updateSelectedPrice();
+  } catch (error) {
+    showToast(error.message || (language === 'en' ? 'Could not prepare the reference files.' : '参考文件整理失败，请重新选择。'));
+  } finally {
+    submit.disabled = false;
+    submit.textContent = submitLabel;
+  }
 });
 
 const supportPanel = document.querySelector('#supportPanel');
@@ -778,7 +851,16 @@ Object.assign(zhToEn, {
   '现在可以付款。': 'You can pay now.',
   '收款码也会发送到邮箱；你可以现在打开，或稍后在“我的订单”中继续付款。': 'The payment QR is also emailed to you. Open it now, or continue later from My Orders.',
   '查看微信收款码并付款': 'View WeChat Pay QR and pay',
-  '稍后付款': 'Pay later'
+  '稍后付款': 'Pay later',
+  '参考样板（可选）': 'Reference samples (optional)',
+  '可以上传多张图片、PDF、Word、PPT 或 ZIP，也可以直接选择一个文件夹': 'Upload multiple images, PDFs, Word files, PowerPoint files or ZIPs, or choose a folder',
+  '＋ 添加多个文件': '+ Add multiple files',
+  '▣ 选择文件夹': '▣ Choose a folder',
+  '尚未添加参考文件': 'No reference files added yet',
+  '最多 8 个文件，合计不超过 2.5 MB；较大的素材请压缩为 ZIP，或在需求中填写网盘链接': 'Up to 8 files and 2.5 MB total; compress larger material as a ZIP or add a cloud link in your brief',
+  '提交后显示“正在审核中”，参考文件会随订单邮件发送给工作室，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are emailed to the studio and the payment QR and fixed project price are sent to your inbox',
+  '我们仅使用你提交的邮箱、创意需求与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief and reference files you submit to process the order, send payment instructions and deliver the final work.',
+  '参考文件仅随订单邮件发送给工作室，不会公开展示。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are sent only to the studio with the order email and are never displayed publicly. We never sell your personal information. Order email is handled by Wonder Ad Lab at'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
 
