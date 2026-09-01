@@ -210,6 +210,34 @@ function applyLanguage() {
   if (mobileActions) mobileActions.setAttribute('aria-label', language === 'en' ? 'Mobile quick actions' : '移动端快捷操作');
   const serviceGrid = document.querySelector('.price-grid');
   if (serviceGrid) serviceGrid.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab services and pricing' : 'Wonder Ad Lab 服务与报价');
+  const localizedAttributes = [
+    ['.flow-hero', 'aria-label', 'Wonder Ad Lab brand showreel', 'Wonder Ad Lab 品牌作品片头'],
+    ['.reel-controls', 'aria-label', 'Choose a featured visual', '选择作品镜头'],
+    ['.hero-hud', 'aria-label', 'AI creative interface preview', 'AI 创意界面预览'],
+    ['.signal-rail', 'aria-label', 'Service highlights', '服务特点'],
+    ['.process-steps', 'aria-label', 'Production steps', '制作步骤'],
+    ['.service-system-bar', 'aria-label', 'Service system status', '服务系统状态'],
+    ['.service-toolbar', 'aria-label', 'Service categories', '服务分类'],
+    ['.service-filters', 'aria-label', 'Filter services', '筛选服务'],
+    ['.ai-lab', 'aria-label', 'AI creative tools interface demo', 'AI 创意工具界面演示'],
+    ['.lab-topbar nav', 'aria-label', 'Choose an AI capability', '选择 AI 能力'],
+    ['.order-steps', 'aria-label', 'Order steps', '下单步骤'],
+    ['#closeOrdersButton', 'aria-label', 'Close orders', '关闭订单'],
+    ['#closeRevisionButton', 'aria-label', 'Close revision request', '关闭修改申请'],
+    ['#closeRechargeButton', 'aria-label', 'Close balance top-up', '关闭余额充值'],
+    ['#closeFeedbackButton', 'aria-label', 'Close feedback', '关闭意见建议'],
+    ['[data-reel-frame="0"] img', 'alt', 'Wonder Ad Lab black-metal brand mark', 'Wonder Ad Lab 黑色金属品牌标志'],
+    ['[data-reel-frame="1"] img', 'alt', 'Morning Coffee brand visual', '晨光咖啡品牌视觉案例'],
+    ['[data-reel-frame="2"] img', 'alt', 'Light Skincare brand visual', '轻盈护肤品牌视觉案例'],
+    ['[data-reel-frame="3"] img', 'alt', 'Coastal Holiday campaign visual', '海岸假日旅行视觉案例'],
+    ['.sequence-row:not(.type-row) figure:nth-of-type(1) img', 'alt', 'Coffee visual thumbnail', '咖啡视觉缩略帧'],
+    ['.sequence-row:not(.type-row) figure:nth-of-type(2) img', 'alt', 'Skincare visual thumbnail', '护肤视觉缩略帧'],
+    ['.sequence-row:not(.type-row) figure:nth-of-type(3) img', 'alt', 'Travel visual thumbnail', '旅行视觉缩略帧'],
+    ['.wechat-contact img', 'alt', 'Wonder Ad Lab WeChat QR code, ID Wonder07090518', 'Wonder Ad Lab 微信二维码，微信号 Wonder07090518']
+  ];
+  localizedAttributes.forEach(([selector, attribute, en, zh]) => {
+    document.querySelector(selector)?.setAttribute(attribute, language === 'en' ? en : zh);
+  });
   document.title = language === 'en' ? 'AI Posters, E-commerce & PPT Design | Wonder Ad Lab' : 'AI 海报、电商主图与 PPT 设计｜Wonder Ad Lab 奇迹创意工作室';
   renderCreativeOptions();
   updateSelectedPrice();

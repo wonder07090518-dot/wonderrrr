@@ -38,6 +38,19 @@ test('English mode covers previously untranslated key sections', async () => {
   assert.match(payment, /notice: 'After you confirm/);
 });
 
+test('language switching localizes accessible labels and image descriptions', async () => {
+  const script = await read('script.js');
+  for (const phrase of [
+    "'AI creative interface preview', 'AI 创意界面预览'",
+    "'Service categories', '服务分类'",
+    "'Choose an AI capability', '选择 AI 能力'",
+    "'Close revision request', '关闭修改申请'",
+    "'Wonder Ad Lab black-metal brand mark', 'Wonder Ad Lab 黑色金属品牌标志'"
+  ]) assert.ok(script.includes(phrase), `missing accessible translation: ${phrase}`);
+  assert.match(script, /localizedAttributes\.forEach/);
+  assert.match(script, /setAttribute\(attribute, language === 'en' \? en : zh\)/);
+});
+
 test('new visitors start in English while explicit and saved language choices are preserved', async () => {
   const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
   assert.match(html, /<html lang="en">/);
