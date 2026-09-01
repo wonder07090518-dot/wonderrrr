@@ -129,7 +129,7 @@ Object.assign(zhToEn, {
   '不只是生成一张图':'More than generating one image','从一句需求生成视觉方向':'Turn one brief into a visual direction','识别主题、平台和风格，把模糊想法整理成可以继续制作的画面':'Identify the subject, platform and style, then turn a rough idea into a production-ready direction','夏日咖啡新品海报 · 清爽 · 社交媒体':'Summer coffee launch · fresh · social media',
   '为持续创作，准备的更快通道':'A faster lane for ongoing creativity','直接加我微信':'Add me on WeChat','选择项目、写下需求，提交后会发送确认邮件与付款指引':'Choose a service, share your brief, then receive an email confirmation and payment instructions','提交后显示“正在审核中”，付款二维码与固定项目价格将发送至你的邮箱':'Your order will be reviewed. A payment QR code and the fixed project price will be emailed to you.',
   '你的隐私，值得被认真对待':'Your privacy deserves care','我们仅使用你提交的邮箱与创意需求来处理订单、发送付款指引及交付成品。':'We only use the email address and creative brief you submit to process the order, send payment instructions and deliver the final files.','不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至':'We never sell your personal information. Order email is handled by Wonder Ad Lab at','处理。':'for order processing.','定制需求':'Custom brief','请在你的邮箱查收付款方式与订单确认信息。':'Check your email for payment instructions and order confirmation.',
-  '移动端快捷操作':'Mobile quick actions','主导航':'Main navigation','打开 AI 在线客服':'Open AI support','关闭客服':'Close support','发送':'Send',
+  '移动端快捷操作':'Mobile quick actions','主导航':'Main navigation',
   'AI 生图、AI 图像生成、AI 图片生成、AI 绘图、AI 配图、AI 创意配图、AI 文章插图、AI 博客配图、AI 公众号配图、AI 内容配图、AI 场景图、AI 氛围图、AI 视觉生成、AI 设计图片、AI 商业配图、AI 宣传配图、AI 活动配图、AI 品牌配图、AI 素材图、AI 高清配图':'AI image generation, AI illustration, article visuals, blog images, WeChat article images, scene visuals, mood images, commercial visuals, campaign images, brand images and high-resolution creative assets',
   'AI 海报、AI 海报设计、AI 广告图、AI 广告设计、AI 宣传图、AI 营销海报、AI 活动海报、AI 产品海报、AI 门店海报、AI 节日海报、AI 新品海报、AI 品牌海报、AI 社媒海报、AI 促销海报、AI 招生活动海报、AI 开业海报、AI 展会海报、在线海报设计、低价海报设计、广告投放素材':'AI posters, advertising visuals, campaign posters, product posters, retail posters, seasonal posters, launch posters, brand posters, social ads, promotion posters, opening posters, exhibition posters and ad-placement assets',
   '小红书封面设计、小红书图文封面、小红书笔记封面、小红书配图、小红书海报、抖音封面设计、视频号封面设计、公众号首图设计、公众号头图设计、朋友圈海报设计、社交媒体配图、社媒视觉设计、社媒运营配图、内容封面设计、方形海报设计、竖版海报设计、横版广告图、活动头图设计、社交封面设计、品牌社媒素材':'Xiaohongshu covers, Douyin covers, Channels covers, WeChat article headers, Moments posters, social media visuals, content covers, square posters, portrait posters, landscape ads, campaign headers and branded social assets',
@@ -655,53 +655,6 @@ revisionForm.addEventListener('submit', async event => {
     submit.textContent = originalLabel;
   }
 });
-function formatAiBrief(brief) {
-  const list = items => items.length ? items.map(item => `- ${item}`).join('\n') : (language === 'en' ? '- [To confirm]' : '- 【待确认】');
-  return language === 'en'
-    ? `PROJECT SUMMARY\n${brief.summary}\n\nOBJECTIVE\n${brief.objective}\n\nAUDIENCE\n${brief.audience}\n\nKEY MESSAGE\n${brief.keyMessage}\n\nVISUAL DIRECTION\n${brief.visualDirection}\n\nMUST INCLUDE\n${list(brief.mustInclude)}\n\nAVOID\n${list(brief.avoid)}\n\nDELIVERY CHECKLIST\n${list(brief.deliverableChecklist)}`
-    : `【项目概述】\n${brief.summary}\n\n【传播目标】\n${brief.objective}\n\n【目标受众】\n${brief.audience}\n\n【核心信息】\n${brief.keyMessage}\n\n【视觉方向】\n${brief.visualDirection}\n\n【必须包含】\n${list(brief.mustInclude)}\n\n【需要避免】\n${list(brief.avoid)}\n\n【交付检查】\n${list(brief.deliverableChecklist)}`;
-}
-document.querySelector('#buildPrompt').addEventListener('click', async event => {
-  const button = event.currentTarget;
-  const textarea = document.querySelector('#orderForm textarea');
-  const idea = textarea.value.trim();
-  const size = document.querySelector('input[name="size"]:checked').value;
-  const style = document.querySelector('input[name="style"]:checked').value;
-  const output = document.querySelector('#promptOutput');
-  if (idea.length < 5) {
-    output.className = 'prompt-output is-error';
-    output.textContent = language === 'en' ? 'Write at least one clear sentence before asking AI to analyze it.' : '请先写一句较完整的想法，再让 AI 分析。';
-    return;
-  }
-  const originalLabel = button.textContent;
-  button.disabled = true;
-  button.textContent = language === 'en' ? 'AI is analyzing your request…' : 'AI 正在分析你的需求…';
-  output.className = 'prompt-output is-loading';
-  output.textContent = language === 'en' ? 'A real model is reviewing the goal, audience, hierarchy and visual direction.' : '真实 AI 模型正在分析目标、受众、信息层级与视觉方向。';
-  try {
-    const response = await fetch('/api/ai-brief', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ service: service.value, size, style, idea, language })
-    });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      if (response.status === 429) throw new Error(language === 'en' ? 'AI has reached the short-term usage limit. Please try again in 10 minutes.' : 'AI 短时间使用次数已满，请 10 分钟后再试。');
-      throw new Error(language === 'en' ? 'The real AI service is temporarily unavailable. Your original request has not been changed.' : '真实 AI 服务暂时不可用，你原来的需求没有被修改。');
-    }
-    const formatted = formatAiBrief(body.brief);
-    textarea.value = formatted;
-    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    output.className = 'prompt-output is-ready';
-    output.innerHTML = `<strong>${language === 'en' ? 'AI analysis complete · editable brief added above' : 'AI 分析完成 · 已写入上方需求框，可继续修改'}</strong><small>${language === 'en' ? 'Generated by GPT-5.6 Terra through the protected website backend' : '由 GPT-5.6 Terra 通过网站安全后端生成'}</small>`;
-  } catch (error) {
-    output.className = 'prompt-output is-error';
-    output.textContent = error.message;
-  } finally {
-    button.disabled = false;
-    button.textContent = originalLabel;
-  }
-});
 document.querySelectorAll('.membership-pay').forEach(link => link.addEventListener('click', event => {
   event.preventDefault();
   startPayment({ id: `MB${Date.now().toString().slice(-7)}`, kind: 'membership', title: link.dataset.plan, amount: link.dataset.amount, payment: '微信支付' }, link.getAttribute('href'));
@@ -783,39 +736,6 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   }
 });
 
-const supportPanel = document.querySelector('#supportPanel');
-const supportMessages = document.querySelector('#supportMessages');
-function addSupportMessage(text, from = 'ai') {
-  const item = document.createElement('p');
-  item.className = `support-bubble ${from === 'user' ? 'support-user' : ''}`;
-  item.textContent = text;
-  supportMessages.appendChild(item);
-  supportMessages.scrollTop = supportMessages.scrollHeight;
-}
-function answerSupport(question) {
-  const text = question.toLowerCase();
-  const english = language === 'en';
-  if (/修改|改稿|revision|revise|change/.test(text)) return english ? 'After delivery, sign in and open My Orders, then choose Request a revision. You can also reply directly to the delivery email.' : '成品交付后，登录并打开“我的订单”，点击“申请修改”即可；也可以直接回复交付邮件补充说明。';
-  if (/其他|custom|定制|需求/.test(text)) return english ? 'Choose “Custom request” and describe what you need. We will review it and send a confirmed quote before payment.' : '选择“其他需求”，把你想做的内容写清楚。我们审核后会先发确认报价，再安排制作。';
-  if (/ppt|slide|汇报|提案/.test(text)) return english ? 'Basic PPT refinement starts at ¥20 per slide; complex slides are quoted after the content is reviewed.' : 'PPT 基础美化 ¥20 / 页起；复杂图表、定制版式或动画页会先看内容再确认价格。';
-  if (/海报|poster|广告|ad/.test(text)) return english ? 'Marketing posters are ¥19 per image. Share the copy, format and visual direction in the order form.' : '营销海报 ¥19 / 张。选择“营销海报”，写上文案、尺寸和风格即可。';
-  if (/字贴|type|文字/.test(text)) return english ? 'Creative type stickers are ¥15 per image. They work well for campaign headlines and social text.' : '创意字贴 ¥15 / 张，适合活动标题、社媒文字和醒目短句。';
-  if (/壁纸|wallpaper/.test(text)) return english ? 'Wallpaper design is ¥16 per image for phone, desktop or event backgrounds.' : '壁纸设计 ¥16 / 张，可做手机、电脑或活动背景。';
-  if (/支付|付款|pay|alipay|wechat/.test(text)) return english ? 'After you submit, we email a WeChat Pay or Alipay QR code together with your exact project price.' : '提交订单后，系统会把微信或支付宝收款码和你的固定项目价格一起发到邮箱。';
-  if (/多久|交付|deliver|time/.test(text)) return english ? 'Most simple visual projects are reviewed first, then delivered by email after payment and completion.' : '订单会先审核；确认付款并完成制作后，成品会通过邮件交付。';
-  if (/价格|多少钱|price|cost/.test(text)) return english ? 'Prices are fixed and displayed before you order. Choose a service and I can tell you the exact amount.' : '每项服务都是固定价格。选择项目后，页面会立即显示本次应付金额。';
-  return english ? 'Tell me what you want to make — poster, slide, product visual, type sticker or wallpaper — and I’ll point you to the right service.' : '告诉我你想做海报、PPT、商品图、字贴还是壁纸，我会帮你选合适的项目。';
-}
-function submitSupportQuestion(question) {
-  const value = question.trim();
-  if (!value) return;
-  addSupportMessage(value, 'user');
-  window.setTimeout(() => addSupportMessage(answerSupport(value)), 280);
-}
-document.querySelector('#openSupport').addEventListener('click', () => { supportPanel.classList.add('open'); supportPanel.setAttribute('aria-hidden', 'false'); });
-document.querySelector('#closeSupport').addEventListener('click', () => { supportPanel.classList.remove('open'); supportPanel.setAttribute('aria-hidden', 'true'); });
-document.querySelector('#supportForm').addEventListener('submit', event => { event.preventDefault(); const input = document.querySelector('#supportInput'); submitSupportQuestion(input.value); input.value = ''; });
-document.querySelectorAll('.support-suggestions button').forEach(button => button.addEventListener('click', () => submitSupportQuestion(button.textContent)));
 Object.assign(zhToEn, {
   '奇迹创意工作室': 'Wonder Creative Studio',
   '正在接单': 'Now taking projects',
@@ -932,9 +852,8 @@ Object.assign(zhToEn, {
   '最多 20 个 · 合计 1GB · 上传时请勿关闭页面': '20 files max · 1 GB total · Keep this page open while uploading',
   '提交后显示“正在审核中”，参考文件会安全存入私有空间，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are stored privately and the payment QR and fixed project price are sent to your inbox',
   '我们仅使用你提交的邮箱、创意需求与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief and reference files you submit to process the order, send payment instructions and deliver the final work.',
-  '参考文件会安全存入私有空间，仅供处理订单的工作室管理员下载，不会公开展示或发送给 AI。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are stored privately for authorized studio administrators only. They are never displayed publicly or sent to AI. We never sell your personal information. Order email is handled by Wonder Ad Lab at'
-  ,'✦ 让真正的 AI 分析并生成简报': '✦ Let real AI analyze and build the brief'
-  ,'点击后仅将需求文字、服务、尺寸和风格发送给 AI 分析，参考文件不会发送给 AI': 'Only the brief text, service, size and style are sent for AI analysis; reference files are never sent to AI'
+  '参考文件会安全存入私有空间，仅供处理订单的工作室管理员下载，不会公开展示或发送给 AI。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are stored privately for authorized studio administrators only. They are never displayed publicly or sent to AI. We never sell your personal information. Order email is handled by Wonder Ad Lab at',
+  '不用写专业术语，我们收到后会帮你整理清楚': 'No professional wording needed. We will organize the brief after you submit it.'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
 

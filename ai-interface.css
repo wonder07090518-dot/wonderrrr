@@ -293,11 +293,9 @@ body::after {
 .plan-signal i:nth-child(4) { height: 11px; animation-delay: -.2s; }
 .member-featured .plan-signal i { background: var(--ui-cyan); }
 .order { position: relative; overflow: hidden; background-image: radial-gradient(circle at 20% 12%, rgba(36,87,255,.17), transparent 26%), linear-gradient(rgba(87,112,184,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(87,112,184,.09) 1px, transparent 1px); background-size: auto, 34px 34px, 34px 34px; }
-.order::before { content: "AI BRIEF CONSOLE / READY"; position: absolute; right: max(24px, calc((100vw - 1180px)/2)); top: 48px; color: var(--ui-cyan); font: 700 8px/1 var(--mono); letter-spacing: .12em; }
+.order::before { content: "PROJECT REQUEST / READY"; position: absolute; right: max(24px, calc((100vw - 1180px)/2)); top: 48px; color: var(--ui-cyan); font: 700 8px/1 var(--mono); letter-spacing: .12em; }
 .order form { position: relative; box-shadow: 0 30px 90px rgba(0,0,0,.28), 0 0 35px rgba(36,87,255,.08); }
 .order form::before { content: "REQUEST INPUT"; position: absolute; right: 14px; top: 12px; color: #59657c; font: 700 7px/1 var(--mono); letter-spacing: .1em; }
-.prompt-helper { position: relative; overflow: hidden; }
-.prompt-helper::after { content: ""; position: absolute; inset: 0; width: 35%; transform: translateX(-140%) skewX(-18deg); background: linear-gradient(90deg, transparent, rgba(24,215,197,.18), transparent); animation: ui-sweep 3.8s ease-in-out infinite; }
 
 /* Motion */
 @keyframes ui-pulse { 0%,100% { opacity: .55; transform: scale(.88); } 50% { opacity: 1; transform: scale(1.12); } }
@@ -399,5 +397,5 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reel-frame::after, .hud-panel::before, .hud-orbit i, .hud-wave i, .signal-wave b, .process-console::after, .tools::before, .model-core::before, .model-core::after, .model-core > i, .lab-stage::after, .lab-chip, .plan-signal i, .prompt-helper::after { animation: none !important; }
+  .reel-frame::after, .hud-panel::before, .hud-orbit i, .hud-wave i, .signal-wave b, .process-console::after, .tools::before, .model-core::before, .model-core::after, .model-core > i, .lab-stage::after, .lab-chip, .plan-signal i { animation: none !important; }
 }

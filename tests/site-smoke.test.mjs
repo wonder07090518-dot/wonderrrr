@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const read = file => readFile(new URL(`../${file}`, import.meta.url), 'utf8');
@@ -147,22 +147,13 @@ test('orders upload up to 1 GB of reference files directly into private storage'
   assert.match(admin, /downloadReference/);
 });
 
-test('AI brief helper calls a real protected model instead of a local template', async () => {
-  const [html, script, css, api] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/ai-brief.js')]);
-  assert.match(html, /让真正的 AI 分析并生成简报/);
-  assert.match(script, /fetch\('\/api\/ai-brief'/);
-  assert.match(script, /formatAiBrief/);
-  assert.match(script, /textarea\.value = formatted/);
-  assert.doesNotMatch(script, /创意摘要：制作 \$\{size\}/);
-  assert.match(css, /\.prompt-output\.is-loading/);
-  assert.match(api, /ai-gateway\.vercel\.sh\/v1\/chat\/completions/);
-  assert.match(api, /openai\/gpt-5\.6-terra/);
-  assert.match(api, /response_format/);
-  assert.match(api, /json_schema/);
-  assert.match(api, /reasoning: \{ effort: 'medium' \}/);
-  assert.match(api, /RATE_LIMIT = 5/);
-  assert.match(api, /VERCEL_OIDC_TOKEN/);
-  assert.match(html, /参考文件不会发送给 AI/);
+test('website removes unavailable or scripted AI conversations', async () => {
+  const [html, script, css] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css')]);
+  assert.doesNotMatch(html, /id="buildPrompt"|id="supportPanel"|id="openSupport"/);
+  assert.doesNotMatch(script, /fetch\('\/api\/ai-brief'|function answerSupport|#openSupport/);
+  assert.doesNotMatch(css, /\.ai-support|\.prompt-output/);
+  assert.match(html, /不用写专业术语，我们收到后会帮你整理清楚/);
+  await assert.rejects(() => access(new URL('../api/ai-brief.js', import.meta.url)));
 });
 
 test('public indexing focuses on the main service page, not checkout', async () => {
