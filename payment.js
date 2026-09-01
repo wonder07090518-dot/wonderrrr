@@ -15,6 +15,9 @@ const copy = language === 'en' ? {
   qrAlt: methodName => `${methodName} payment QR code`,
   status: 'Payment pending verification',
   success: 'Your payment confirmation has been submitted. Please wait for Wonder Ad Lab to verify the payment.',
+  submitting: 'Submitting confirmation…',
+  failed: 'Payment confirmation could not be submitted. Please stay on this page and try again.',
+  qrFailed: 'The payment QR code could not be loaded. Please return to My Orders and try again.',
   plan: { monthly: 'Monthly membership', yearly: 'Yearly membership' }
 } : {
   title: 'Wonder Ad Lab · 支付订单',
@@ -29,6 +32,9 @@ const copy = language === 'en' ? {
   qrAlt: methodName => `${methodName}收款码`,
   status: '待确认支付',
   success: '已提交付款确认，请等待 Wonder Ad Lab 团队确认到账。',
+  submitting: '正在提交付款确认…',
+  failed: '付款确认暂时无法提交，请留在此页面并重试。',
+  qrFailed: '收款码加载失败，请返回“我的订单”后重新打开。',
   plan: { monthly: '月会员', yearly: '年会员' }
 };
 const membershipPlans = {
@@ -52,6 +58,7 @@ const description = document.querySelector('#paymentDescription');
 const amount = document.querySelector('#paymentAmount');
 const qr = document.querySelector('#paymentQr');
 const hint = document.querySelector('#paymentHint');
+const confirmButton = document.querySelector('#confirmPayment');
 let method = transaction?.payment === '支付宝' ? '支付宝' : '微信支付';
 const transactionValid = transaction && (!params.get('id') || params.get('id') === transaction.id);
 document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
@@ -62,7 +69,7 @@ document.querySelector('#alipayMethod').textContent = copy.alipay;
 document.querySelector('#confirmPayment').textContent = copy.confirm;
 document.querySelector('#paymentNotice').textContent = copy.notice;
 description.textContent = copy.loading;
-if (!transactionValid) { description.textContent = copy.invalid; document.querySelector('#confirmPayment').disabled = true; }
+if (!transactionValid) { description.textContent = copy.invalid; confirmButton.disabled = true; }
 else {
   const localizedTitle = transaction.kind === 'membership' && copy.plan[planKey] ? copy.plan[planKey] : transaction.title;
   description.textContent = `${localizedTitle} · ${transaction.id}`;
@@ -70,11 +77,39 @@ else {
 }
 function renderMethod() {
   document.querySelectorAll('[data-method]').forEach(button => button.classList.toggle('active', button.dataset.method === method));
+  confirmButton.disabled = !transactionValid;
   qr.src = method === '支付宝' ? 'alipay.jpg' : 'wechat.jpg';
   const visibleMethod = method === '支付宝' ? copy.alipay : copy.wechat;
   qr.alt = copy.qrAlt(visibleMethod);
   hint.textContent = copy.hint(visibleMethod);
 }
+qr.addEventListener('error', () => { hint.textContent = copy.qrFailed; confirmButton.disabled = true; });
 document.querySelectorAll('[data-method]').forEach(button => button.addEventListener('click', () => { method = button.dataset.method; renderMethod(); }));
-document.querySelector('#confirmPayment').addEventListener('click', () => { if (!transactionValid) return; if (transaction.kind === 'membership') { const memberships = JSON.parse(localStorage.getItem('wonderad-membership-requests') || '[]'); memberships.unshift({ ...transaction, payment: method, status: copy.status, date: new Date().toLocaleString(language === 'en' ? 'en-CA' : 'zh-CN') }); localStorage.setItem('wonderad-membership-requests', JSON.stringify(memberships)); } else { const orders = JSON.parse(localStorage.getItem(ordersKey) || '[]'); const order = orders.find(item => item.id === transaction.id); if (order) { order.status = copy.status; order.payment = method; localStorage.setItem(ordersKey, JSON.stringify(orders)); } } localStorage.removeItem(key); alert(copy.success); location.href = 'index.html'; });
+confirmButton.addEventListener('click', async () => {
+  if (!transactionValid) return;
+  confirmButton.disabled = true;
+  const originalLabel = confirmButton.textContent;
+  confirmButton.textContent = copy.submitting;
+  try {
+    if (transaction.kind === 'membership') {
+      const memberships = JSON.parse(localStorage.getItem('wonderad-membership-requests') || '[]');
+      memberships.unshift({ ...transaction, payment: method, status: copy.status, date: new Date().toLocaleString(language === 'en' ? 'en-CA' : 'zh-CN') });
+      localStorage.setItem('wonderad-membership-requests', JSON.stringify(memberships));
+    } else {
+      const response = await fetch('/api/payment-confirm', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: transaction.id, payment: method }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || copy.failed);
+      const orders = JSON.parse(localStorage.getItem(ordersKey) || '[]');
+      const order = orders.find(item => item.id === transaction.id);
+      if (order) { order.status = copy.status; order.payment = method; localStorage.setItem(ordersKey, JSON.stringify(orders)); }
+    }
+    localStorage.removeItem(key);
+    alert(copy.success);
+    location.href = 'index.html';
+  } catch (error) {
+    hint.textContent = language === 'en' ? `${copy.failed} ${error.message}` : `${copy.failed} ${error.message}`;
+    confirmButton.disabled = false;
+    confirmButton.textContent = originalLabel;
+  }
+});
 renderMethod();

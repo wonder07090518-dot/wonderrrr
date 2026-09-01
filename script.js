@@ -10,6 +10,7 @@ const submittedModal = document.querySelector('#submittedModal');
 const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
+let pendingSubmittedOrder = null;
 const servicePrices = {
   '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张', '电商详情页': '¥35 / 页起', '电商上新套装': '¥79 / 套起', 'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起', 'Banner 设计': '¥16 / 张', '创意字贴': '¥15 / 张', '壁纸设计': '¥16 / 张', '菜单与价目表': '¥22 / 张', '活动物料套装': '¥59 / 套起', '品牌视觉套装': '¥99 / 套起', '社媒月更包': '¥129 / 10 张起', '印刷物料设计': '¥22 / 张起', '其他需求': 'AI 评估报价',
   'Social cover': '¥16 / image', 'Marketing poster': '¥19 / image', 'E-commerce visual': '¥22 / image', 'E-commerce detail page': '¥35 / page from', 'E-commerce launch kit': '¥79 / kit from', 'Slide design': '¥20 / slide from', 'AI quick image': '¥12 / image', 'Brand logo': '¥25 / mark from', 'Banner design': '¥16 / image', 'Creative type sticker': '¥15 / image', 'Wallpaper design': '¥16 / image', 'Custom request': 'AI-estimated quote'
@@ -366,6 +367,19 @@ function startPayment(transaction, destination = 'payment.html') {
   paymentUrl.searchParams.set('id', transaction.id);
   window.location.assign(paymentUrl.href);
 }
+function paymentAmountFromPrice(price) {
+  const match = String(price || '').match(/¥\s*(\d+(?:\.\d+)?)/);
+  return match ? match[1] : '';
+}
+function startOrderPayment(order) {
+  const price = order.price || servicePrices[order.service];
+  const amount = paymentAmountFromPrice(price);
+  if (!amount) {
+    showToast(language === 'en' ? 'This project needs a confirmed quote before payment.' : '这个项目需要先确认报价，再安排付款。');
+    return;
+  }
+  startPayment({ id: order.id, kind: 'order', title: order.service, amount, priceLabel: price, payment: order.payment || '微信支付' });
+}
 async function renderAccountStats() {
   const user = getCurrentUser();
   let orders = [];
@@ -391,10 +405,13 @@ async function renderCustomerOrders() {
   };
   ordersList.innerHTML = orders.length ? orders.map(order => {
     const canRevise = order.status === '已交付';
+    const canPay = ['审核中', '待支付', '待确认支付'].includes(order.status) && paymentAmountFromPrice(order.price || servicePrices[order.service]);
+    const payLabel = order.status === '待确认支付' ? (language === 'en' ? 'View payment QR again' : '重新查看收款码') : (language === 'en' ? 'View payment QR and pay' : '查看收款码并付款');
     const revisionNotice = ['修改申请', '修改中'].includes(order.status) ? `<p class="revision-active">${language === 'en' ? 'Your revision request is recorded. We will update the status here and by email.' : '修改申请已经记录，处理进度会在这里和邮件中同步。'}</p>` : '';
-    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
+    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
   }).join('') : `<p class="empty-inbox">${language === 'en' ? 'No orders found for this account.' : '这个账户暂时没有订单。'}</p>`;
   ordersList.querySelectorAll('[data-revision-order]').forEach(button => button.addEventListener('click', () => openRevisionRequest(button.dataset.revisionOrder)));
+  ordersList.querySelectorAll('[data-pay-order]').forEach(button => button.addEventListener('click', () => { const order = customerOrders.find(item => item.id === button.dataset.payOrder); if (order) startOrderPayment(order); }));
 }
 let customerOrders = [];
 const revisionTypeEnglish = { '文字内容':'Text content', '颜色与风格':'Colour and style', '排版与构图':'Layout and composition', '尺寸与格式':'Size and format', '其他修改':'Other change' };
@@ -593,7 +610,8 @@ document.querySelector('#joinForm').addEventListener('submit', async event => {
   try { await fetch('/api/join', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); } catch { /* 本地预览无邮件服务 */ }
   event.target.reset(); showToast('加入申请已提交，Wonder Ad Lab 团队会通过邮箱回复你。');
 });
-document.querySelector('#returnHome').addEventListener('click', () => { closeModal(submittedModal); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+document.querySelector('#openOrderPayment').addEventListener('click', () => { if (pendingSubmittedOrder) startOrderPayment(pendingSubmittedOrder); });
+document.querySelector('#returnHome').addEventListener('click', () => { closeModal(submittedModal); pendingSubmittedOrder = null; window.scrollTo({ top: 0, behavior: 'smooth' }); });
 document.querySelector('#orderForm').addEventListener('submit', async event => {
   event.preventDefault();
   const signedInUser = getCurrentUser() || await refreshSession();
@@ -610,8 +628,10 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const orders = getOrders(); orders.unshift(order); saveOrders(orders);
   const emailSent = await notifyOwner(order);
   renderAccountStats();
+  pendingSubmittedOrder = order;
+  document.querySelector('#openOrderPayment').textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
   openModal(submittedModal);
-  showToast(emailSent ? '订单已提交，请在邮箱查收付款收款码。' : '订单已提交，邮件发送暂未成功，请稍后重试或联系我们。');
+  showToast(emailSent ? '订单已提交，现在可以打开收款码付款。' : '订单已提交；邮件暂时延迟，可直接打开页面收款码付款。');
   form.reset();
   updateAccountUI();
   renderCreativeOptions();
@@ -754,7 +774,11 @@ Object.assign(zhToEn, {
   '提交后会立即保存，并通过邮件通知工作室。参考文件不超过 2 MB；如果修改范围属于全新设计，会先联系你确认报价。': 'Your request is saved immediately and emailed to the studio. Reference files must be no larger than 2 MB; a new design direction will be quoted before work begins.',
   '提交修改申请': 'Submit revision request',
   '关闭订单': 'Close orders',
-  '关闭修改申请': 'Close revision request'
+  '关闭修改申请': 'Close revision request',
+  '现在可以付款。': 'You can pay now.',
+  '收款码也会发送到邮箱；你可以现在打开，或稍后在“我的订单”中继续付款。': 'The payment QR is also emailed to you. Open it now, or continue later from My Orders.',
+  '查看微信收款码并付款': 'View WeChat Pay QR and pay',
+  '稍后付款': 'Pay later'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
 

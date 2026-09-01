@@ -97,3 +97,20 @@ test('admin can see and process revision history', async () => {
   assert.match(script, /\['审核中', '制作中', '修改中'\]/);
   assert.match(css, /\.revision-card/);
 });
+
+test('ordinary orders can open the payment QR and confirm to the shared backend', async () => {
+  const [html, script, paymentHtml, paymentScript, api] = await Promise.all([read('index.html'), read('script.js'), read('payment.html'), read('payment.js'), read('api/payment-confirm.js')]);
+  assert.match(html, /id="openOrderPayment"/);
+  assert.match(html, /查看微信收款码并付款/);
+  assert.match(script, /function startOrderPayment/);
+  assert.match(script, /data-pay-order/);
+  assert.match(script, /kind: 'order'/);
+  assert.match(paymentHtml, /id="paymentQr"/);
+  assert.doesNotMatch(paymentHtml, /class="qr-logo"/);
+  assert.match(paymentScript, /fetch\('\/api\/payment-confirm'/);
+  assert.match(paymentScript, /credentials: 'same-origin'/);
+  assert.match(api, /getCurrentUser/);
+  assert.match(api, /status: '待确认支付'/);
+  assert.match(api, /客户已确认付款/);
+  assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
+});
