@@ -201,6 +201,27 @@ test('balance top-ups are credited one-to-one only after idempotent admin approv
   assert.match(adminScript, /确认实际到账并入账/);
 });
 
+test('signed-in customers can pay an order from balance without duplicate deductions', async () => {
+  const [html, script, orderApi, route, router, vercel] = await Promise.all([
+    read('index.html'), read('script.js'), read('api/orders.js'), read('api/_balance-payment-route.js'), read('api/account-actions.js'), read('vercel.json')
+  ]);
+  assert.match(script, /value="余额支付"/);
+  assert.match(script, /fetch\(path, \{ credentials: 'same-origin'/);
+  assert.match(script, /accountApi\('\/api\/balance-payment'/);
+  assert.match(script, /data-balance-pay-order/);
+  assert.match(script, /Remaining balance/);
+  assert.match(html, /id="submittedTitle"/);
+  assert.match(orderApi, /'余额支付'/);
+  assert.match(route, /servicePrices\[order\.service\]/);
+  assert.match(route, /This order does not belong to your account/);
+  assert.match(route, /redis\.call\('EXISTS', KEYS\[2\]\)/);
+  assert.match(route, /current < amount/);
+  assert.match(route, /redis\.call\('DECRBY', KEYS\[1\], amount\)/);
+  assert.match(route, /status: '已支付'/);
+  assert.match(router, /route === 'balance-payment'/);
+  assert.match(vercel, /"source": "\/api\/balance-payment"/);
+});
+
 test('serverless API routes stay within the Vercel Hobby deployment limit', async () => {
   const { readdir } = await import('node:fs/promises');
   const apiFiles = (await readdir(new URL('../api', import.meta.url))).filter(name => name.endsWith('.js') && !name.startsWith('_'));

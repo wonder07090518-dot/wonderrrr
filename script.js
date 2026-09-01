@@ -19,6 +19,17 @@ let accountBalanceData = { balance: 0, recharges: [] };
 const MAX_ORDER_REFERENCE_FILES = 100;
 const MAX_ORDER_REFERENCE_BYTES = 1024 * 1024 * 1024;
 const orderReferenceExtension = /\.(jpe?g|png|webp|gif|svg|pdf|txt|docx?|pptx?|xlsx?|zip|psd|ai|mp4|mov|m4v|webm|mp3|wav|m4a)$/i;
+function installBalancePaymentOption() {
+  const fieldset = document.querySelector('.payment-methods');
+  if (!fieldset || fieldset.querySelector('input[value="余额支付"]')) return;
+  const option = document.createElement('label');
+  option.className = 'payment-option balance-payment-option';
+  option.innerHTML = '<input type="radio" name="payment" value="余额支付"><span><b>余额支付</b><small id="orderBalanceHint">请先登录</small></span>';
+  fieldset.append(option);
+  const note = document.querySelector('#orderForm .form-note');
+  if (note) note.textContent = '使用余额支付会直接扣除本次固定项目价格；选择微信或支付宝时，收款码与价格会发送到邮箱';
+}
+installBalancePaymentOption();
 const servicePrices = {
   '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张', '电商详情页': '¥35 / 页起', '电商上新套装': '¥79 / 套起', 'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起', 'Banner 设计': '¥16 / 张', '创意字贴': '¥15 / 张', '壁纸设计': '¥16 / 张', '菜单与价目表': '¥22 / 张', '活动物料套装': '¥59 / 套起', '品牌视觉套装': '¥99 / 套起', '社媒月更包': '¥129 / 10 张起', '印刷物料设计': '¥22 / 张起', '其他需求': 'AI 评估报价',
   'Social cover': '¥16 / image', 'Marketing poster': '¥19 / image', 'E-commerce visual': '¥22 / image', 'E-commerce detail page': '¥35 / page from', 'E-commerce launch kit': '¥79 / kit from', 'Slide design': '¥20 / slide from', 'AI quick image': '¥12 / image', 'Brand logo': '¥25 / mark from', 'Banner design': '¥16 / image', 'Creative type sticker': '¥15 / image', 'Wallpaper design': '¥16 / image', 'Custom request': 'AI-estimated quote'
@@ -209,6 +220,7 @@ function applyLanguage() {
   updateAccountUI();
   renderRechargeHistory(accountBalanceData.recharges);
   renderOrderReferenceList();
+  updateOrderBalanceHint();
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
@@ -230,7 +242,7 @@ function getCurrentUser() { return currentUser; }
 async function accountApi(path = '/api/auth', options = {}) {
   const response = await fetch(path, { credentials: 'same-origin', ...options });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(body.error || '账户服务暂时不可用'), { setup: body.setup });
+  if (!response.ok) throw Object.assign(new Error(body.error || '账户服务暂时不可用'), { setup: body.setup, status: response.status, details: body });
   return body;
 }
 async function refreshSession() {
@@ -466,7 +478,41 @@ function startOrderPayment(order) {
     showToast(language === 'en' ? 'This project needs a confirmed quote before payment.' : '这个项目需要先确认报价，再安排付款。');
     return;
   }
-  startPayment({ id: order.id, kind: 'order', title: order.service, amount, priceLabel: price, payment: order.payment || '微信支付' });
+  const qrPayment = ['微信支付', '支付宝'].includes(order.payment) ? order.payment : '微信支付';
+  startPayment({ id: order.id, kind: 'order', title: order.service, amount, priceLabel: price, payment: qrPayment });
+}
+function updateOrderBalanceHint() {
+  const hint = document.querySelector('#orderBalanceHint');
+  if (!hint) return;
+  if (!getCurrentUser()) hint.textContent = language === 'en' ? 'Sign in first' : '请先登录';
+  else hint.textContent = language === 'en' ? `Available ¥${Number(accountBalanceData.balance) || 0}` : `可用 ¥${Number(accountBalanceData.balance) || 0}`;
+}
+async function payOrderWithBalance(order, button = null, confirmPayment = true) {
+  const price = order.price || servicePrices[order.service];
+  const amount = Number(paymentAmountFromPrice(price));
+  if (!amount) {
+    showToast(language === 'en' ? 'This project needs a confirmed fixed quote before balance payment.' : '这个项目需要先确认固定报价，才能使用余额支付。');
+    return null;
+  }
+  if (confirmPayment) {
+    const accepted = window.confirm(language === 'en' ? `Use ¥${amount} from your balance to pay order ${order.id}?` : `确认从余额扣除 ¥${amount} 支付订单 ${order.id} 吗？`);
+    if (!accepted) return null;
+  }
+  const originalLabel = button?.textContent;
+  if (button) { button.disabled = true; button.textContent = language === 'en' ? 'Paying…' : '正在扣款…'; }
+  try {
+    const result = await accountApi('/api/balance-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id }) });
+    accountBalanceData.balance = result.balance;
+    updateOrderBalanceHint();
+    showToast(language === 'en' ? `Paid ¥${result.amount} from balance. Remaining balance: ¥${result.balance}.` : `余额支付成功，已扣 ¥${result.amount}，剩余 ¥${result.balance}。`);
+    return result;
+  } catch (error) {
+    if (error.status === 402) showToast(language === 'en' ? `Insufficient balance. Available ¥${error.details?.balance || 0}; required ¥${error.details?.required || amount}.` : `余额不足：可用 ¥${error.details?.balance || 0}，需要 ¥${error.details?.required || amount}。`);
+    else showToast(error.message || (language === 'en' ? 'Balance payment could not be completed.' : '余额支付暂时无法完成。'));
+    return null;
+  } finally {
+    if (button) { button.disabled = false; button.textContent = originalLabel; }
+  }
 }
 async function renderAccountStats() {
   const user = getCurrentUser();
@@ -481,6 +527,7 @@ async function renderAccountStats() {
   document.querySelector('#accountImageCount').textContent = orders.filter(order => order.result).length;
   document.querySelector('#accountBalance').textContent = `¥${Number(accountBalanceData.balance) || 0}`;
   renderRechargeHistory(accountBalanceData.recharges);
+  updateOrderBalanceHint();
   return accountBalanceData;
 }
 function rechargeStatusText(status) {
@@ -510,14 +557,22 @@ async function renderCustomerOrders() {
   ordersList.innerHTML = orders.length ? orders.map(order => {
     const canRevise = order.status === '已交付';
     const canPay = ['审核中', '待支付', '待确认支付'].includes(order.status) && paymentAmountFromPrice(order.price || servicePrices[order.service]);
-    const payLabel = order.status === '待确认支付' ? (language === 'en' ? 'View payment QR again' : '重新查看收款码') : (language === 'en' ? 'View payment QR and pay' : '查看收款码并付款');
+    const payLabel = order.status === '待确认支付' ? (language === 'en' ? 'View payment QR again' : '重新查看收款码') : (language === 'en' ? 'Pay by QR' : '收款码支付');
+    const balanceAmount = paymentAmountFromPrice(order.price || servicePrices[order.service]);
+    const balancePayLabel = language === 'en' ? `Use balance ¥${balanceAmount}` : `余额支付 ¥${balanceAmount}`;
     const revisionNotice = ['修改申请', '修改中'].includes(order.status) ? `<p class="revision-active">${language === 'en' ? 'Your revision request is recorded. We will update the status here and by email.' : '修改申请已经记录，处理进度会在这里和邮件中同步。'}</p>` : '';
     const referenceFiles = Array.isArray(order.referenceFiles) ? order.referenceFiles : [];
     const referenceSummary = referenceFiles.length ? `<p class="order-reference-summary"><strong>${language === 'en' ? 'Reference files:' : '参考文件：'}</strong> ${referenceFiles.map(file => escapeHtml(file.path || file.name)).join(' · ')}</p>` : '';
-    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${referenceSummary}${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
+    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${referenceSummary}${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-balance-payment" type="button" data-balance-pay-order="${escapeHtml(order.id)}">${balancePayLabel}</button><button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
   }).join('') : `<p class="empty-inbox">${language === 'en' ? 'No orders found for this account.' : '这个账户暂时没有订单。'}</p>`;
   ordersList.querySelectorAll('[data-revision-order]').forEach(button => button.addEventListener('click', () => openRevisionRequest(button.dataset.revisionOrder)));
   ordersList.querySelectorAll('[data-pay-order]').forEach(button => button.addEventListener('click', () => { const order = customerOrders.find(item => item.id === button.dataset.payOrder); if (order) startOrderPayment(order); }));
+  ordersList.querySelectorAll('[data-balance-pay-order]').forEach(button => button.addEventListener('click', async () => {
+    const order = customerOrders.find(item => item.id === button.dataset.balancePayOrder);
+    if (!order) return;
+    const paid = await payOrderWithBalance(order, button, true);
+    if (paid) await Promise.all([renderCustomerOrders(), renderAccountStats()]);
+  }));
 }
 let customerOrders = [];
 const revisionTypeEnglish = { '文字内容':'Text content', '颜色与风格':'Colour and style', '排版与构图':'Layout and composition', '尺寸与格式':'Size and format', '其他修改':'Other change' };
@@ -766,25 +821,59 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const submit = document.querySelector('#submitOrder');
   const submitLabel = submit.textContent;
   const referenceUpload = form.querySelector('.reference-upload');
+  const payment = form.querySelector('input[name="payment"]:checked').value;
   submit.disabled = true;
   referenceUpload?.classList.add('is-busy');
   referenceUpload?.querySelectorAll('input').forEach(input => { input.disabled = true; });
   submit.textContent = language === 'en' ? 'Preparing files…' : '正在整理文件…';
-  const payment = form.querySelector('input[name="payment"]:checked').value;
   try {
+    if (payment === '余额支付') {
+      const amount = Number(paymentAmountFromPrice(servicePrices[service.value]));
+      if (!amount) throw new Error(language === 'en' ? 'This project needs a confirmed fixed quote before balance payment.' : '这个项目需要先确认固定报价，才能使用余额支付。');
+      const latestBalance = await accountApi('/api/balance');
+      accountBalanceData = latestBalance;
+      updateOrderBalanceHint();
+      if ((Number(latestBalance.balance) || 0) < amount) throw new Error(language === 'en' ? `Insufficient balance. Available ¥${Number(latestBalance.balance) || 0}; required ¥${amount}.` : `余额不足：可用 ¥${Number(latestBalance.balance) || 0}，需要 ¥${amount}。请先充值或选择收款码支付。`);
+    }
     const orderId = `WA${Date.now().toString().slice(-7)}`;
     const referenceFiles = await uploadOrderReferenceFiles(orderId, submit);
     const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, referenceFiles, status: '审核中', date: formatDate() };
     submit.textContent = language === 'en' ? 'Submitting order…' : '正在提交订单…';
     const saved = await saveSharedOrder(order);
     if (!saved) { showToast(language === 'en' ? 'The order could not be saved. Please try again or contact us.' : '订单暂时无法同步，请稍后重试或联系客服。'); return; }
-    const orders = getOrders(); orders.unshift(order); saveOrders(orders);
-    const emailSent = await notifyOwner(order);
+    let completedOrder = order;
+    let balancePaymentResult = null;
+    if (payment === '余额支付') {
+      submit.textContent = language === 'en' ? 'Paying from balance…' : '正在从余额扣款…';
+      balancePaymentResult = await payOrderWithBalance(order, null, false);
+      if (!balancePaymentResult) {
+        showToast(language === 'en' ? 'The order was saved, but balance payment was not completed. Open My Orders to try again.' : '订单已保存，但余额扣款未完成。请到“我的订单”中重试，系统不会重复扣款。');
+        return;
+      }
+      completedOrder = { ...order, ...balancePaymentResult.order };
+    }
+    const orders = getOrders(); orders.unshift(completedOrder); saveOrders(orders);
+    const emailSent = payment === '余额支付' ? balancePaymentResult.emailSent : await notifyOwner(order);
     renderAccountStats();
-    pendingSubmittedOrder = order;
-    document.querySelector('#openOrderPayment').textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
+    pendingSubmittedOrder = payment === '余额支付' ? null : order;
+    const submittedTitle = document.querySelector('#submittedTitle');
+    const submittedDescription = document.querySelector('#submittedDescription');
+    const openOrderPayment = document.querySelector('#openOrderPayment');
+    const returnHome = document.querySelector('#returnHome');
+    if (payment === '余额支付') {
+      submittedTitle.innerHTML = language === 'en' ? 'Balance payment complete.<br>Your order is paid.' : '余额支付成功，<br>订单已完成付款。';
+      submittedDescription.textContent = language === 'en' ? `¥${balancePaymentResult.amount} deducted. Remaining balance: ¥${balancePaymentResult.balance}. A receipt has been sent by email.` : `已扣除 ¥${balancePaymentResult.amount}，剩余余额 ¥${balancePaymentResult.balance}。支付凭证会发送到邮箱。`;
+      openOrderPayment.hidden = true;
+      returnHome.textContent = language === 'en' ? 'Done' : '完成';
+    } else {
+      submittedTitle.innerHTML = language === 'en' ? 'Order submitted.<br>You can pay now.' : '订单已提交，<br>现在可以付款。';
+      submittedDescription.textContent = language === 'en' ? 'The payment QR is also emailed to you. Open it now, or continue later from My Orders.' : '收款码也会发送到邮箱；你可以现在打开，或稍后在“我的订单”中继续付款。';
+      openOrderPayment.hidden = false;
+      openOrderPayment.textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
+      returnHome.textContent = language === 'en' ? 'Pay later' : '稍后付款';
+    }
     openModal(submittedModal);
-    showToast(emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. You can now open the payment QR.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。'));
+    showToast(payment === '余额支付' ? (emailSent ? (language === 'en' ? 'Balance payment complete. Your paid order and email receipt are ready.' : '余额支付完成，订单已标记为“已支付”，邮件凭证已发送。') : (language === 'en' ? 'Balance payment complete; the email receipt is delayed.' : '余额支付完成，邮件凭证暂时延迟。')) : (emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. You can now open the payment QR.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。')));
     form.reset();
     selectedOrderFiles = [];
     orderUploadProgress = new Map();
@@ -939,6 +1028,9 @@ Object.assign(zhToEn, {
   '打开收款码': 'Open payment QR',
   '暂时没有充值记录。': 'No top-up records yet.',
   '关闭余额充值': 'Close balance top-up',
+  '余额支付': 'Balance',
+  '请先登录': 'Sign in first',
+  '使用余额支付会直接扣除本次固定项目价格；选择微信或支付宝时，收款码与价格会发送到邮箱': 'Balance payment deducts the fixed project price immediately. Choose WeChat Pay or Alipay to receive a QR code and price by email.',
   '我们仅使用你提交的邮箱、创意需求、意见建议、充值记录与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief, feedback, top-up records and reference files you submit to process orders, send payment instructions and deliver final work.'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));

@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const storedOrder = JSON.parse(storedRaw);
   if (String(storedOrder.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'This order does not belong to your account' });
   const { service, email, wechat, idea, size, style, payment, date, price } = storedOrder;
-  if (!servicePrices[service] || !email || !idea || !['微信支付', '支付宝'].includes(payment)) return res.status(400).json({ error: 'Invalid order details' });
+  if (!servicePrices[service] || !email || !idea || !['微信支付', '支付宝', '余额支付'].includes(payment)) return res.status(400).json({ error: 'Invalid order details' });
   if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return res.status(503).json({ error: 'Email service is not configured' });
   const references = Array.isArray(storedOrder.referenceFiles) ? storedOrder.referenceFiles : [];
   const orderPrice = servicePrices[service] || price || '待确认报价';
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': `order-owner-${id}` },
     body: JSON.stringify(ownerPayload)
   });
+  if (payment === '余额支付') return res.status(ownerResponse.ok ? 200 : 502).json(ownerResponse.ok ? { ok: true } : { error: 'Email delivery failed' });
   const qrFile = payment === '支付宝' ? 'alipay.jpg' : 'wechat.jpg';
   const qrLabel = payment === '支付宝' ? '支付宝收款码' : '微信支付收款码';
   let qrContent;

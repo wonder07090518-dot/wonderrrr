@@ -364,6 +364,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--cyan); backgroun
 .payment-option input { position: absolute; opacity: 0; }
 .payment-option span { min-height: 42px; display: grid; place-items: center; border: 1px solid #444b56; }
 .payment-option input:checked + span { border-color: var(--cyan); color: #fff; background: rgba(18,184,173,.1); }
+.payment-methods .balance-payment-option span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 7px 10px; }
+.payment-methods .balance-payment-option b { display: block; width: 100%; text-align: center; font-size: 11px; line-height: 1.1; }
+.payment-methods .balance-payment-option small { display: block; width: 100%; color: #8d96a3; text-align: center; white-space: nowrap; font: 8px/1.15 var(--mono); }
+.balance-payment-option input:checked + span small { color: #bdece7; }
 .order form > .primary { width: 100%; min-height: 52px; }
 .form-note { margin: 14px 0 0; color: #7f8895; font-size: 10px; line-height: 1.55; }
 .reference-upload { margin: 4px 0 24px; padding: 18px; border: 1px solid #3e4652; background: rgba(255,255,255,.025); }
@@ -454,8 +458,10 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
 .order-reference-summary { margin: 10px 0; padding: 9px 11px; border-left: 2px solid var(--blue); background: #f4f7ff; color: var(--muted); font-size: 10px; line-height: 1.65; overflow-wrap: anywhere; }
 .order-reference-summary strong { color: var(--blue); }
 .result-link { display: inline-block; margin: 4px 10px 8px 0; color: var(--blue); font-size: 12px; font-weight: 750; }
-.revision-request, .order-payment { min-height: 38px; padding: 0 15px; border: 1px solid var(--blue); border-radius: 999px; background: var(--blue); color: #fff; font: 750 12px/1 var(--sans); cursor: pointer; }
+.revision-request, .order-payment, .order-balance-payment { min-height: 38px; padding: 0 15px; border: 1px solid var(--blue); border-radius: 999px; background: var(--blue); color: #fff; font: 750 12px/1 var(--sans); cursor: pointer; }
 .order-payment { margin: 2px 8px 8px 0; background: #101114; border-color: #101114; }
+.order-balance-payment { margin: 2px 8px 8px 0; background: var(--blue); border-color: var(--blue); }
+.order-balance-payment:disabled, .order-payment:disabled { opacity: .58; cursor: wait; }
 .revision-active { padding: 10px 12px; border-radius: 8px; background: #f2f6ff; color: var(--blue); font-size: 11px; line-height: 1.6; }
 .revision-history { display: grid; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .revision-history h4 { margin: 0; font-size: 12px; }

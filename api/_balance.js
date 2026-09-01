@@ -11,6 +11,10 @@ export function rechargeKey(id) {
   return `wonder:recharge:${String(id || '').trim()}`;
 }
 
+export function balancePaymentKey(orderId) {
+  return `wonder:balance-payment:${String(orderId || '').trim()}`;
+}
+
 export async function loadRecharge(id) {
   const raw = await kv('get', rechargeKey(id));
   return raw ? JSON.parse(raw) : null;

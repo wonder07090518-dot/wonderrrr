@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/balance", "destination": "/api/account-actions?route=balance" },
+    { "source": "/api/balance-payment", "destination": "/api/account-actions?route=balance-payment" },
     { "source": "/api/feedback", "destination": "/api/account-actions?route=feedback" },
     { "source": "/api/recharges", "destination": "/api/account-actions?route=recharges" }
   ]

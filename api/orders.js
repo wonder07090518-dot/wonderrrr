@@ -3,7 +3,7 @@ import { availableServices, servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
 import { head, issueSignedToken, presignUrl } from '@vercel/blob';
 
-function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝'].includes(order.payment); }
+function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝', '余额支付'].includes(order.payment); }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
 const MAX_REFERENCE_FILES = 100;
 const MAX_REFERENCE_BYTES = 1024 * 1024 * 1024;
