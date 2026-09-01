@@ -13,7 +13,7 @@ async function downloadReference(order, index) {
   if (downloadWindow) downloadWindow.opener = null;
   try {
     setNotice('正在生成安全下载链接…');
-    const data = await api('/api/reference-download', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, index }) });
+    const data = await api('/api/orders?action=reference-download', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, index }) });
     if (downloadWindow) downloadWindow.location.replace(data.url); else window.location.assign(data.url);
     setNotice(`已为 ${data.name} 生成 10 分钟有效的下载链接。`);
   } catch (error) {

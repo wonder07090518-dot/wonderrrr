@@ -116,7 +116,7 @@ test('ordinary orders can open the payment QR and confirm to the shared backend'
 });
 
 test('orders upload up to 1 GB of reference files directly into private storage', async () => {
-  const [html, script, css, notify, orders, uploadApi, downloadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('api/reference-download.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
+  const [html, script, css, notify, orders, uploadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
   assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
   assert.match(html, /id="orderReferenceFolder"[^>]*webkitdirectory/);
   assert.match(html, /最多 20 个文件，每个订单合计不超过 1GB/);
@@ -140,9 +140,9 @@ test('orders upload up to 1 GB of reference files directly into private storage'
   assert.match(orders, /await head\(item\.blobUrl\)/);
   assert.match(orders, /MAX_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
   assert.match(orders, /delete order\.referenceAttachments/);
-  assert.match(downloadApi, /issueSignedToken/);
-  assert.match(downloadApi, /validUntil = Date\.now\(\) \+ 10 \* 60 \* 1000/);
-  assert.match(downloadApi, /isAdmin/);
+  assert.match(orders, /issueSignedToken/);
+  assert.match(orders, /validUntil = Date\.now\(\) \+ 10 \* 60 \* 1000/);
+  assert.match(orders, /createReferenceDownload/);
   assert.match(admin, /参考样板（私有存储）/);
   assert.match(admin, /downloadReference/);
 });

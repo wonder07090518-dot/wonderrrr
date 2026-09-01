@@ -1,7 +1,7 @@
 import { configured, isAdmin, kv, storageConfigured } from './_admin.js';
 import { availableServices, servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
-import { head } from '@vercel/blob';
+import { head, issueSignedToken, presignUrl } from '@vercel/blob';
 
 function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝'].includes(order.payment); }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
@@ -28,8 +28,26 @@ async function referenceMetadata(items, orderId) {
   return verified;
 }
 
+async function createReferenceDownload(req, res) {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin authentication required' });
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(503).json({ error: 'Private file storage is not configured' });
+  const orderId = String(req.body?.orderId || '').trim().slice(0, 40);
+  const index = Number(req.body?.index);
+  if (!orderId || !Number.isInteger(index) || index < 0) return res.status(400).json({ error: 'Missing file details' });
+  const raw = await kv('get', `wonder:order:${orderId}`);
+  if (!raw) return res.status(404).json({ error: 'Order not found' });
+  const order = JSON.parse(raw);
+  const reference = Array.isArray(order.referenceFiles) ? order.referenceFiles[index] : null;
+  if (!reference?.blobPathname || !reference.blobPathname.startsWith(`orders/${orderId}/`)) return res.status(404).json({ error: 'Reference file not found' });
+  const validUntil = Date.now() + 10 * 60 * 1000;
+  const token = await issueSignedToken({ pathname: reference.blobPathname, operations: ['get'], validUntil });
+  const { presignedUrl } = await presignUrl(token, { pathname: reference.blobPathname, operation: 'get', validUntil });
+  return res.status(200).json({ url: presignedUrl, name: reference.name, expiresIn: 600 });
+}
+
 export default async function handler(req, res) {
   if (req.method === 'POST') {
+    if (req.query?.action === 'reference-download') return createReferenceDownload(req, res);
     if (!storageConfigured()) return res.status(503).json({ error: 'Order storage is not configured', setup: true });
     if (!validOrder(req.body)) return res.status(400).json({ error: 'Missing order details' });
     const user = await getCurrentUser(req);
