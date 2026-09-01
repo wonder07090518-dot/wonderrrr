@@ -157,9 +157,37 @@ test('website removes unavailable or scripted AI conversations', async () => {
 });
 
 test('public indexing focuses on the main service page, not checkout', async () => {
-  const [sitemap, payment] = await Promise.all([read('sitemap.xml'), read('payment.html')]);
+  const [html, script, sitemap, payment, manifest] = await Promise.all([read('index.html'), read('script.js'), read('sitemap.xml'), read('payment.html'), read('site.webmanifest')]);
   assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>/);
   assert.match(sitemap, /<lastmod>2026-08-31<\/lastmod>/);
+  for (const page of ['ai-poster-design', 'social-cover-design', 'ecommerce-visual-design', 'ppt-design']) {
+    assert.match(sitemap, new RegExp(`<loc>https:\\/\\/www\\.wonderadlab\\.com\\/services\\/${page}\\.html<\\/loc>`));
+    const servicePage = await read(`services/${page}.html`);
+    assert.match(servicePage, /<meta name="robots" content="index,follow,max-image-preview:large">/);
+    assert.match(servicePage, /<link rel="canonical" href="https:\/\/www\.wonderadlab\.com\/services\//);
+    assert.match(servicePage, /application\/ld\+json/);
+    assert.match(servicePage, /href="\/\?service=/);
+  }
   assert.doesNotMatch(sitemap, /payment\.html/);
   assert.match(payment, /name="robots" content="noindex,nofollow,noarchive"/);
+  assert.match(html, /twitter:card" content="summary_large_image"/);
+  assert.match(html, /wonder-ad-lab-social\.jpg/);
+  assert.match(html, /hero-wonder-3d-960\.webp/);
+  assert.match(html, /service-guide-grid/);
+  assert.match(script, /pageParams\.get\('service'\)/);
+  assert.doesNotMatch(html, /120\+ 项 AI 创意服务与搜索场景/);
+  assert.equal(JSON.parse(manifest).name, 'Wonder Ad Lab 奇迹创意工作室');
+});
+
+test('homepage uses optimized visual assets and stable dimensions', async () => {
+  const [html, css] = await Promise.all([read('index.html'), read('manuscript.css')]);
+  assert.match(html, /site\.min\.css\?v=/);
+  assert.match(html, /script\.min\.js\?v=/);
+  assert.doesNotMatch(html, /href="ai-interface\.css|href="scroll-story\.css|href="service-matrix\.css/);
+  assert.match(html, /hero-wonder-3d-960\.webp 960w, hero-wonder-3d-1660\.webp 1660w/);
+  assert.match(html, /fetchpriority="high" decoding="async"/);
+  assert.match(html, /portfolio-coffee\.webp" width="1122" height="1402"/);
+  assert.match(html, /wonder-wechat-qr\.jpg" width="888" height="1131"/);
+  assert.match(css, /background-image: url\("portfolio-coffee\.webp"\)/);
+  assert.doesNotMatch(css, /background-image: url\("portfolio-coffee\.jpg"\)/);
 });

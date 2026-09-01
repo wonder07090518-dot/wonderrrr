@@ -1,0 +1,17 @@
+{
+  "name": "Wonder Ad Lab 奇迹创意工作室",
+  "short_name": "Wonder Ad Lab",
+  "description": "AI 海报、社媒封面、电商商品图、PPT 美化与品牌视觉设计。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f6",
+  "theme_color": "#2457ff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

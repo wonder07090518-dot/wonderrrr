@@ -4,6 +4,9 @@
   "type": "module",
   "scripts": {
     "build:upload-client": "esbuild reference-upload-client.entry.js --bundle --format=esm --platform=browser --minify --outfile=reference-upload-client.js",
+    "build:site-css": "esbuild site.entry.css --bundle --minify --external:*.webp --outfile=site.min.css",
+    "build:site-js": "esbuild script.js --minify --target=es2020 --outfile=script.min.js",
+    "build": "npm run build:upload-client && npm run build:site-css && npm run build:site-js",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {

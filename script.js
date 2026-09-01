@@ -101,9 +101,8 @@ Object.assign(zhToEn, {
   '开业与节日活动':'Launch and seasonal campaign','开业、上新、促销、节日营销，一次配齐线上传播和线下印刷物料。':'A complete set of digital and print visuals for openings, launches, promotions and seasonal campaigns.','主海报与社媒图':'Hero poster and social visuals','优惠活动宣传物料':'Promotion materials','横幅、桌牌与印刷文件':'Banners, table signs and print files',
   'AI 生图与配图':'AI images and illustrations','适合文章插图、活动氛围图、壁纸和日常内容配图。':'For article illustrations, campaign mood images, wallpapers and everyday content.','AI 海报与广告图':'AI posters and ads','适合新品发布、门店活动、节日营销、朋友圈与社交媒体传播。':'For product launches, retail campaigns, seasonal marketing, Moments and social media.','小红书封面与电商主图':'Social covers and e-commerce hero images','为内容点击率和商品展示而设计，尺寸与风格可按平台选择。':'Designed for content clicks and product presentation, with platform-ready formats.','PPT 美化与品牌视觉':'Slide refinement and brand visuals','把提案、汇报和品牌信息做得更清楚、更有记忆点。':'Make proposals, reports and brand messages clearer and more memorable.',
   '关于 AI 创意服务':'About our AI creative services','Wonder Ad Lab 可以做哪些 AI 设计？':'What can Wonder Ad Lab design?','可制作 AI 生图、海报、广告图、小红书封面、电商主图与详情页、菜单价目表、活动物料、品牌视觉、印刷物料、Banner、创意字贴、壁纸与 PPT 美化。':'We create AI images, posters, ads, social covers, e-commerce hero images and detail pages, menus, campaign materials, brand visuals, print files, banners, creative type, wallpapers and refined slides.','AI 海报和广告图怎么收费？':'How are AI posters and ads priced?','下单后如何获得成品？':'How will I receive the final files?','提交需求后会收到订单与付款指引。完成制作后，成品会通过邮箱交付给客户。':'After submitting your brief, you will receive order and payment instructions. Final files are delivered by email when complete.',
-  '你正在找的 AI 设计，':'Looking for a specific','这里可能刚好能做。':'AI design service?','按具体需求找服务，比只搜“AI 生图”更容易找到合适的作品与报价。':'Browse by a specific need to find the right format and price more easily.','展开查看 120+ 项 AI 创意服务与搜索场景':'View 120+ AI creative services and use cases','海报与广告图':'Posters and ads','社媒与内容封面':'Social and content covers','电商与产品视觉':'E-commerce and product visuals','PPT 与品牌设计':'Slides and brand design','壁纸与定制场景':'Wallpapers and custom work',
   '收到你的作品。':'Receive your work.','微信号（可选）':'WeChat ID (optional)','让每一句想法，都值得被看见':'Every idea deserves to be seen',
-  '制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','固定价格可见':'Visible fixed pricing','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
+  '制作流程':'Workflow','案例':'Work','服务报价':'Services & pricing','联系':'Contact','查看制作流程':'See the workflow','直接看报价':'See pricing','当前可接单':'Available for work','画面正在拆解与组合':'Breaking the brief into frames','中英双语':'Chinese & English','晨光咖啡':'Morning Coffee',
   '观看制作流程':'Watch the workflow','浏览作品':'Explore work','海报、社媒、电商与品牌视觉，从一句需求开始，变成真正能够发布的内容':'Posters, social content, e-commerce and brand visuals — one brief becomes content ready to publish','品牌片头':'Brand film','轻盈护肤':'Light Skincare','海岸假日':'Coastal Holiday','让创意先被看见':'Make creativity visible first','画面会说话，':'Images can speak.','作品就是答案。':'The work is the answer.','三组品牌视觉实验。每一组都从一句需求开始，再拆成适合发布的画面。':'Three brand-visual studies. Each begins with one brief and becomes a set of publish-ready frames.','新品主视觉 · 社媒延展 · 生活方式氛围':'Launch visual · social extensions · lifestyle mood','产品发布 · 留白构图 · 柔和品牌语言':'Product launch · spacious layout · soft brand language','旅行企划 · 夏日色彩 · 多平台宣传画面':'Travel campaign · summer colour · multi-platform visuals',
   '一句需求，':'One brief.','拆成每一帧':'Every frame.','能用的内容。':'Ready to publish.','从想法、画面拆解到最终交付，把海报、社媒、电商和品牌视觉放进一套清楚的制作流程。':'From the first idea to final delivery, posters, social content, e-commerce and brand visuals move through one clear production workflow.',
   '不是按一下生成。':'More than one click.','是把需求拆清楚。':'A brief, made clear.','参考视频制作和剪辑软件的逻辑：每一步都能看懂、每个画面都有用途，最后再整理成适合发布的成品。':'Built like a video-production workflow: every step is visible, every frame has a purpose, and each final file is ready to publish.',
@@ -130,15 +129,25 @@ Object.assign(zhToEn, {
   '为持续创作，准备的更快通道':'A faster lane for ongoing creativity','直接加我微信':'Add me on WeChat','选择项目、写下需求，提交后会发送确认邮件与付款指引':'Choose a service, share your brief, then receive an email confirmation and payment instructions','提交后显示“正在审核中”，付款二维码与固定项目价格将发送至你的邮箱':'Your order will be reviewed. A payment QR code and the fixed project price will be emailed to you.',
   '你的隐私，值得被认真对待':'Your privacy deserves care','我们仅使用你提交的邮箱与创意需求来处理订单、发送付款指引及交付成品。':'We only use the email address and creative brief you submit to process the order, send payment instructions and deliver the final files.','不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至':'We never sell your personal information. Order email is handled by Wonder Ad Lab at','处理。':'for order processing.','定制需求':'Custom brief','请在你的邮箱查收付款方式与订单确认信息。':'Check your email for payment instructions and order confirmation.',
   '移动端快捷操作':'Mobile quick actions','主导航':'Main navigation',
-  'AI 生图、AI 图像生成、AI 图片生成、AI 绘图、AI 配图、AI 创意配图、AI 文章插图、AI 博客配图、AI 公众号配图、AI 内容配图、AI 场景图、AI 氛围图、AI 视觉生成、AI 设计图片、AI 商业配图、AI 宣传配图、AI 活动配图、AI 品牌配图、AI 素材图、AI 高清配图':'AI image generation, AI illustration, article visuals, blog images, WeChat article images, scene visuals, mood images, commercial visuals, campaign images, brand images and high-resolution creative assets',
-  'AI 海报、AI 海报设计、AI 广告图、AI 广告设计、AI 宣传图、AI 营销海报、AI 活动海报、AI 产品海报、AI 门店海报、AI 节日海报、AI 新品海报、AI 品牌海报、AI 社媒海报、AI 促销海报、AI 招生活动海报、AI 开业海报、AI 展会海报、在线海报设计、低价海报设计、广告投放素材':'AI posters, advertising visuals, campaign posters, product posters, retail posters, seasonal posters, launch posters, brand posters, social ads, promotion posters, opening posters, exhibition posters and ad-placement assets',
-  '小红书封面设计、小红书图文封面、小红书笔记封面、小红书配图、小红书海报、抖音封面设计、视频号封面设计、公众号首图设计、公众号头图设计、朋友圈海报设计、社交媒体配图、社媒视觉设计、社媒运营配图、内容封面设计、方形海报设计、竖版海报设计、横版广告图、活动头图设计、社交封面设计、品牌社媒素材':'Xiaohongshu covers, Douyin covers, Channels covers, WeChat article headers, Moments posters, social media visuals, content covers, square posters, portrait posters, landscape ads, campaign headers and branded social assets',
-  '电商商品图、电商主图设计、商品主图设计、商品场景图、商品详情页配图、产品宣传图、产品卖点图、电商 Banner、电商活动图、店铺首页图、淘宝主图设计、京东商品图、拼多多主图、亚马逊产品图、独立站商品图、产品展示图、上新商品图、促销商品图、品牌商品视觉、AI 电商设计':'E-commerce hero images, product scene images, detail-page visuals, selling-point graphics, e-commerce banners, shop home graphics, Taobao, JD, Pinduoduo and Amazon product images, independent-store visuals, launch images and promotional product graphics',
-  'AI PPT 美化、PPT 美化设计、PPT 排版设计、PPT 模板设计、商务 PPT、美化汇报 PPT、提案 PPT 设计、答辩 PPT 美化、课程 PPT 设计、融资 PPT 美化、产品发布 PPT、品牌提案 PPT、品牌 Logo 设计、AI Logo 设计、品牌视觉设计、活动视觉设计、Banner 设计、网站横幅设计、创意字贴设计、标题字设计':'AI slide refinement, presentation layout, slide templates, business decks, proposals, academic presentations, course slides, pitch decks, product launches, brand proposals, logo concepts, brand visuals, campaign visuals, banners and creative typography',
-  'AI 壁纸设计、手机壁纸设计、电脑壁纸设计、活动背景壁纸、桌面壁纸设计、品牌壁纸设计、节日壁纸设计、AI 视觉定制、AI 商业设计、AI 创意服务、定制海报设计、定制广告图、定制电商图、定制社媒封面、定制 PPT 设计、杭州 AI 设计、杭州海报设计、杭州广告设计、奇迹创意工作室、Wonder Ad Lab':'AI wallpapers, phone and desktop wallpapers, campaign backgrounds, branded and seasonal wallpapers, custom AI visuals, commercial design, custom posters, ads, e-commerce graphics, social covers, slide design and Wonder Ad Lab creative services'
+  '申请修改':'Request a revision'
+});
+Object.assign(zhToEn, {
+  '先看最常见的四类设计需求':'Start with four common design needs',
+  '每一页都写清楚适合场景、需要准备的材料、交付内容和起步价格，方便你选对服务。':'Each guide explains suitable use cases, what to prepare, deliverables and starting prices.',
+  'AI 海报与广告图':'AI posters and advertising visuals',
+  '活动、上新、开业与节日宣传，适配社媒和印刷尺寸。':'For campaigns, launches, openings and seasonal promotions in social and print sizes.',
+  '社媒与小红书封面':'Social and Xiaohongshu covers',
+  '适合小红书、朋友圈、公众号和视频平台的内容封面。':'Content covers for Xiaohongshu, WeChat Moments, articles and video platforms.',
+  '电商商品图':'E-commerce product visuals',
+  '主图、场景图、卖点图与详情页视觉，按平台尺寸交付。':'Hero images, lifestyle scenes, selling-point graphics and product-detail visuals.',
+  'PPT 美化设计':'PPT and slide design',
+  '汇报、提案、课程与品牌演示，让内容更清楚、更好讲。':'Clearer reports, proposals, class presentations and brand decks.',
+  '查看服务说明与下单建议 →':'View the service guide →',
+  '不知道选哪种？直接在下单区选择“其他需求”，用一句话告诉我们用途即可。':'Not sure which service fits? Choose “Custom request” in the order form and describe the use in one sentence.'
 });
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
-let language = localStorage.getItem('wonderad-language') || 'zh';
+const pageParams = new URLSearchParams(window.location.search);
+let language = pageParams.get('lang') === 'en' ? 'en' : (localStorage.getItem('wonderad-language') || 'zh');
 function applyLanguage() {
   const dictionary = language === 'en' ? zhToEn : enToZh;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -183,7 +192,7 @@ function applyLanguage() {
   if (mobileActions) mobileActions.setAttribute('aria-label', language === 'en' ? 'Mobile quick actions' : '移动端快捷操作');
   const serviceGrid = document.querySelector('.price-grid');
   if (serviceGrid) serviceGrid.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab services and pricing' : 'Wonder Ad Lab 服务与报价');
-  document.title = language === 'en' ? 'Wonder Ad Lab · AI Creative Studio' : '奇迹创意工作室 · Wonder Ad Lab';
+  document.title = language === 'en' ? 'AI Posters, E-commerce & PPT Design | Wonder Ad Lab' : 'AI 海报、电商主图与 PPT 设计｜Wonder Ad Lab 奇迹创意工作室';
   renderCreativeOptions();
   updateSelectedPrice();
   updateServiceView();
@@ -272,25 +281,25 @@ let activeProcessStep = 'brief';
 let processManualUntil = 0;
 const processStepData = {
   brief: {
-    image: 'portfolio-coffee.jpg', tag: 'BRIEF / FRAME 01', number: 'STEP 01',
+    image: 'portfolio-coffee.webp', tag: 'BRIEF / FRAME 01', number: 'STEP 01',
     project: { zh: '01 / 需求拆解', en: '01 / BRIEF BREAKDOWN' },
     goal: { zh: '新品咖啡上线', en: 'New coffee launch' }, platform: { zh: '小红书 / 朋友圈', en: 'Xiaohongshu / Moments' }, style: { zh: '暖色 · 极简 · 生活感', en: 'Warm · minimal · lifestyle' }, status: { zh: '需求已整理', en: 'Brief organized' },
     title: { zh: '先把模糊的想法，整理成能执行的方向。', en: 'Turn a rough idea into a direction we can execute.' }, text: { zh: '确认用途、尺寸、文案重点和参考风格，避免做完才发现方向不对。', en: 'Confirm the use, format, key copy and visual reference before production begins.' }
   },
   board: {
-    image: 'portfolio-skincare.jpg', tag: 'STORYBOARD / FRAME 02', number: 'STEP 02',
+    image: 'portfolio-skincare.webp', tag: 'STORYBOARD / FRAME 02', number: 'STEP 02',
     project: { zh: '02 / 分镜与构图', en: '02 / STORYBOARD' },
     goal: { zh: '建立画面顺序', en: 'Build the frame order' }, platform: { zh: '主视觉 / 社媒延展', en: 'Hero visual / social' }, style: { zh: '留白 · 产品聚焦', en: 'Whitespace · product focus' }, status: { zh: '构图已确认', en: 'Layout approved' },
     title: { zh: '先看画面顺序，再决定每一张该说什么。', en: 'Plan the visual sequence before designing each frame.' }, text: { zh: '用分镜拆出主画面、卖点画面和行动画面，让整套内容看起来像同一个品牌。', en: 'Separate the hero, selling-point and action frames so the whole set feels like one brand.' }
   },
   refine: {
-    image: 'portfolio-travel.jpg', tag: 'REFINE / FRAME 03', number: 'STEP 03',
+    image: 'portfolio-travel.webp', tag: 'REFINE / FRAME 03', number: 'STEP 03',
     project: { zh: '03 / 设计与调整', en: '03 / BUILD & REFINE' },
     goal: { zh: '完成视觉系统', en: 'Complete the visual system' }, platform: { zh: '多平台同步', en: 'Multi-platform' }, style: { zh: '清晰 · 有记忆点', en: 'Clear · memorable' }, status: { zh: '细节调整中', en: 'Refining details' },
     title: { zh: '调整文字、颜色和重点，直到信息一眼能看懂。', en: 'Refine type, colour and hierarchy until the message reads instantly.' }, text: { zh: '保留好看的同时检查文字层级、商品比例和品牌一致性，不靠特效掩盖信息。', en: 'Balance visual polish with clear hierarchy, product scale and brand consistency.' }
   },
   deliver: {
-    image: 'portfolio-coffee.jpg', tag: 'EXPORT / FINAL', number: 'STEP 04',
+    image: 'portfolio-coffee.webp', tag: 'EXPORT / FINAL', number: 'STEP 04',
     project: { zh: '04 / 尺寸与交付', en: '04 / EXPORT & DELIVERY' },
     goal: { zh: '输出发布文件', en: 'Export publish-ready files' }, platform: { zh: '社媒 / 网页 / 印刷', en: 'Social / web / print' }, style: { zh: '高清 · 格式正确', en: 'High-res · correct format' }, status: { zh: '等待邮件交付', en: 'Ready for email delivery' },
     title: { zh: '同一套视觉，整理成每个平台真正能用的尺寸。', en: 'Turn one visual system into the formats each platform actually needs.' }, text: { zh: '检查清晰度、裁切安全区和文件格式，完成后通过邮箱交付，不把预览图当成最终成品。', en: 'Check resolution, safe crops and file formats, then deliver the real final files by email.' }
@@ -863,8 +872,8 @@ const storySystemStates = {
   en: ['INPUT / BRIEFING', 'SEND / CONFIRMED', 'TRANSFER / IN TRANSIT', 'WONDER / REVIEW', 'THINK / AI ANALYSIS', 'BUILD / HUMAN CHECK', 'DELIVER / RECEIVED']
 };
 const storyAriaLabels = {
-  zh: ['第 1 幕：想法变成需求', '第 2 幕：一键发出订单', '第 3 幕：需求打包上路', '第 4 幕：Wonder 接单确认', '第 5 幕：AI 核心开始思考', '第 6 幕：AI 出稿，人工把关', '第 7 幕：好设计如期而至'],
-  en: ['Scene 1: Idea becomes a brief', 'Scene 2: Send with one click', 'Scene 3: Packed and in transit', 'Scene 4: Wonder confirms it', 'Scene 5: The AI core thinks', 'Scene 6: AI drafts, we refine', 'Scene 7: Your design arrives']
+  zh: ['01，第 1 幕：想法变成需求', '02，第 2 幕：一键发出订单', '03，第 3 幕：需求打包上路', '04，第 4 幕：Wonder 接单确认', '05，第 5 幕：AI 核心开始思考', '06，第 6 幕：AI 出稿，人工把关', '07，第 7 幕：好设计如期而至'],
+  en: ['01, Scene 1: Idea becomes a brief', '02, Scene 2: Send with one click', '03, Scene 3: Packed and in transit', '04, Scene 4: Wonder confirms it', '05, Scene 5: The AI core thinks', '06, Scene 6: AI drafts, we refine', '07, Scene 7: Your design arrives']
 };
 function updateScrollStoryCopy() {
   const state = document.querySelector('#storySystemState');
@@ -1072,7 +1081,7 @@ function initCinematicMotion() {
   };
   window.addEventListener('scroll', requestMeasuredMotion, { passive: true });
   window.addEventListener('resize', requestMeasuredMotion, { passive: true });
-  updateMeasuredMotion();
+  window.requestAnimationFrame(updateMeasuredMotion);
 
   return;
 
@@ -1187,6 +1196,8 @@ function initCinematicMotion() {
   }
 
 }
+const requestedService = pageParams.get('service');
+if (requestedService && [...service.options].some(option => option.value === requestedService)) service.value = requestedService;
 updateServiceView();
 initStudioCutMotion();
 initShowreel();
