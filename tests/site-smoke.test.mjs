@@ -133,3 +133,21 @@ test('orders accept multiple reference files and email them safely to the studio
   assert.match(orders, /delete order\.referenceAttachments/);
   assert.match(admin, /参考样板（已随订单邮件发送）/);
 });
+
+test('AI brief helper calls a real protected model instead of a local template', async () => {
+  const [html, script, css, api] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/ai-brief.js')]);
+  assert.match(html, /让真正的 AI 分析并生成简报/);
+  assert.match(script, /fetch\('\/api\/ai-brief'/);
+  assert.match(script, /formatAiBrief/);
+  assert.match(script, /textarea\.value = formatted/);
+  assert.doesNotMatch(script, /创意摘要：制作 \$\{size\}/);
+  assert.match(css, /\.prompt-output\.is-loading/);
+  assert.match(api, /ai-gateway\.vercel\.sh\/v1\/chat\/completions/);
+  assert.match(api, /openai\/gpt-5\.6-terra/);
+  assert.match(api, /response_format/);
+  assert.match(api, /json_schema/);
+  assert.match(api, /reasoning: \{ effort: 'medium' \}/);
+  assert.match(api, /RATE_LIMIT = 5/);
+  assert.match(api, /VERCEL_OIDC_TOKEN/);
+  assert.match(html, /参考文件不会发送给 AI/);
+});

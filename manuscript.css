@@ -355,7 +355,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--cyan); backgroun
 .creative-options label input:checked + span { border-color: var(--cyan); background: rgba(18,184,173,.1); color: #fff; }
 .prompt-helper { width: 100%; min-height: 44px; margin: -3px 0 14px; border: 1px dashed var(--cyan); background: transparent; color: var(--cyan); font-size: 12px; font-weight: 720; }
 .prompt-helper:hover { background: rgba(18,184,173,.1); }
-.prompt-output { margin-bottom: 20px; color: #aeb5bf; font-size: 11px; line-height: 1.6; }
+.prompt-helper:disabled { cursor: progress; opacity: .72; }
+.ai-brief-note { display: block; margin: -7px 0 13px; color: #7f8895; font-size: 9px; line-height: 1.55; }
+.prompt-output { min-height: 0; margin: 0 0 20px; color: #aeb5bf; font-size: 11px; line-height: 1.6; }
+.prompt-output:empty { display: none; }
+.prompt-output.is-loading, .prompt-output.is-ready, .prompt-output.is-error { padding: 13px 14px; border-left: 3px solid var(--cyan); background: rgba(18,184,173,.08); }
+.prompt-output.is-loading { animation: aiBriefPulse 1.3s ease-in-out infinite alternate; }
+.prompt-output.is-ready strong, .prompt-output.is-ready small { display: block; }
+.prompt-output.is-ready strong { color: #fff; }
+.prompt-output.is-ready small { margin-top: 4px; color: #8d99a8; }
+.prompt-output.is-error { border-left-color: #e0a13a; background: rgba(224,161,58,.09); color: #f2d68a; }
+@keyframes aiBriefPulse { to { background: rgba(18,184,173,.15); } }
 .payment-methods { display: flex; gap: 8px; flex-wrap: wrap; }
 .payment-methods legend { flex-basis: 100%; }
 .payment-option { flex: 1; }
