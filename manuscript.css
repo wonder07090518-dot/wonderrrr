@@ -435,6 +435,38 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
 .lookup-form { display: grid; grid-template-columns: 1fr 100px; gap: 8px; }
 .lookup-form .primary { border-radius: 3px; }
 .inbox-list { margin-top: 18px; }
+.inbox-item { margin-bottom: 12px; padding: 18px; border: 1px solid var(--rule); border-radius: 10px; background: #fff; }
+.inbox-item-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.inbox-tag, .status { padding: 5px 8px; border-radius: 999px; font-size: 11px; font-weight: 750; }
+.inbox-tag { background: #eaf0ff; color: var(--blue); }
+.status.pending { background: #fff3cf; color: #805d00; }
+.status.paid, .status.making { background: #eaf0ff; color: var(--blue); }
+.status.revision { background: #fff0f6; color: #a92565; }
+.status.done { background: #dcf8f4; color: #087c76; }
+.inbox-idea { margin: 14px 0 0; font-size: 14px; line-height: 1.65; }
+.customer-email, .delivery-wait { margin: 10px 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+.result-link { display: inline-block; margin: 4px 10px 8px 0; color: var(--blue); font-size: 12px; font-weight: 750; }
+.revision-request { min-height: 38px; padding: 0 15px; border: 1px solid var(--blue); border-radius: 999px; background: var(--blue); color: #fff; font: 750 12px/1 var(--sans); cursor: pointer; }
+.revision-active { padding: 10px 12px; border-radius: 8px; background: #f2f6ff; color: var(--blue); font-size: 11px; line-height: 1.6; }
+.revision-history { display: grid; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.revision-history h4 { margin: 0; font-size: 12px; }
+.revision-item { padding: 12px; border-radius: 8px; background: #f7f7f9; }
+.revision-item > div { display: flex; justify-content: space-between; gap: 10px; }
+.revision-item strong, .revision-item span, .revision-item small, .revision-item a { font-size: 10px; }
+.revision-item span { color: var(--blue); font-weight: 750; }
+.revision-item p { margin: 8px 0; font-size: 11px; line-height: 1.6; }
+.revision-item a, .revision-item small { display: block; color: var(--blue); }
+.revision-modal-panel { width: min(680px, calc(100vw - 32px)); }
+.revision-order-summary { margin: 18px 0; padding: 12px; border-left: 3px solid var(--blue); background: #f1f5ff; color: var(--blue); font-size: 12px; font-weight: 750; }
+.revision-form { display: grid; gap: 15px; }
+.revision-form label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; }
+.revision-form input, .revision-form select, .revision-form textarea { width: 100%; padding: 12px; border: 1px solid var(--rule); border-radius: 8px; background: #fff; color: var(--ink); font: 13px/1.5 var(--sans); }
+.revision-form textarea { min-height: 140px; resize: vertical; }
+.revision-form input:focus, .revision-form select:focus, .revision-form textarea:focus { outline: 2px solid color-mix(in srgb, var(--blue) 28%, transparent); border-color: var(--blue); }
+.revision-policy { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; }
+.revision-actions { display: flex; justify-content: flex-end; }
+.revision-actions .primary { min-width: 150px; }
+.revision-actions .primary:disabled { opacity: .55; cursor: wait; }
 .account-grid { margin: 25px 0; display: grid; grid-template-columns: repeat(2, 1fr); border: 1px solid var(--rule); }
 .account-grid article { padding: 18px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .account-grid article:nth-child(2n) { border-right: 0; }

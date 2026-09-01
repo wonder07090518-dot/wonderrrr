@@ -1,7 +1,7 @@
 import { configured, isAdmin, kv, storageConfigured } from './_admin.js';
+import { availableServices, servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
 
-const availableServices = new Set(['社媒封面', '营销海报', '电商商品图', 'PPT 美化', 'AI 快速配图', '品牌 Logo', 'Banner 设计', '创意字贴', '壁纸设计', '其他需求']);
 function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝'].includes(order.payment); }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
 
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     const user = await getCurrentUser(req);
     if (!user) return res.status(401).json({ error: 'Please sign in before submitting an order' });
     if (String(req.body.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'Order email does not match the signed-in account' });
-    const order = { ...req.body, email: user.email, status: req.body.status || '审核中', createdAt: new Date().toISOString() };
+    const order = { ...req.body, email: user.email, price: servicePrices[req.body.service], status: '审核中', createdAt: new Date().toISOString() };
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
     return res.status(201).json({ ok: true });
@@ -36,8 +36,12 @@ export default async function handler(req, res) {
     const id = req.query.id; const existing = await load(id);
     if (!existing) return res.status(404).json({ error: 'Order not found' });
     const status = req.body?.status;
-    if (!['审核中', '待确认支付', '已支付', '制作中', '已交付'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
-    await kv('set', `wonder:order:${id}`, JSON.stringify({ ...existing, status, updatedAt: new Date().toISOString() }));
+    if (!['审核中', '待确认支付', '已支付', '制作中', '修改申请', '修改中', '已交付'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const revisions = Array.isArray(existing.revisions) ? [...existing.revisions] : [];
+    const latestIndex = revisions.length - 1;
+    if (latestIndex >= 0 && status === '修改中' && revisions[latestIndex].status === '待处理') revisions[latestIndex] = { ...revisions[latestIndex], status: '修改中', startedAt: new Date().toISOString() };
+    if (latestIndex >= 0 && status === '已交付' && ['待处理', '修改中'].includes(revisions[latestIndex].status)) revisions[latestIndex] = { ...revisions[latestIndex], status: '已完成', completedAt: new Date().toISOString() };
+    await kv('set', `wonder:order:${id}`, JSON.stringify({ ...existing, status, revisions, updatedAt: new Date().toISOString() }));
     return res.status(200).json({ ok: true });
   }
   return res.status(405).json({ error: 'Method not allowed' });

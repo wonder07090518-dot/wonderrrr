@@ -1,6 +1,8 @@
 const service = document.querySelector('#service');
 const toast = document.querySelector('#toast');
 const ordersModal = document.querySelector('#ordersModal');
+const revisionModal = document.querySelector('#revisionModal');
+const revisionForm = document.querySelector('#revisionForm');
 const accountModal = document.querySelector('#accountModal');
 const authModal = document.querySelector('#authModal');
 const privacyModal = document.querySelector('#privacyModal');
@@ -9,8 +11,8 @@ const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
 const servicePrices = {
-  '社媒封面': '¥79 / 张', '营销海报': '¥199 / 张', '电商商品图': '¥129 / 张', '电商详情页': '¥299 / 页起', '电商上新套装': '¥1299 / 套起', 'PPT 美化': '¥50 / 页起', 'AI 快速配图': '¥59 / 张', '品牌 Logo': '¥399 / 个起', 'Banner 设计': '¥159 / 张', '创意字贴': '¥99 / 张', '壁纸设计': '¥129 / 张', '菜单与价目表': '¥199 / 张', '活动物料套装': '¥999 / 套起', '品牌视觉套装': '¥1999 / 套起', '社媒月更包': '¥699 / 10 张起', '印刷物料设计': '¥199 / 张起', '其他需求': 'AI 评估报价',
-  'Social cover': '¥79 / image', 'Marketing poster': '¥199 / image', 'E-commerce visual': '¥129 / image', 'E-commerce detail page': '¥299 / page from', 'E-commerce launch kit': '¥1299 / kit from', 'Slide design': '¥50 / slide from', 'AI quick image': '¥59 / image', 'Brand logo': '¥399 / mark from', 'Banner design': '¥159 / image', 'Creative type sticker': '¥99 / image', 'Wallpaper design': '¥129 / image', 'Custom request': 'AI-estimated quote'
+  '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张', '电商详情页': '¥35 / 页起', '电商上新套装': '¥79 / 套起', 'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起', 'Banner 设计': '¥16 / 张', '创意字贴': '¥15 / 张', '壁纸设计': '¥16 / 张', '菜单与价目表': '¥22 / 张', '活动物料套装': '¥59 / 套起', '品牌视觉套装': '¥99 / 套起', '社媒月更包': '¥129 / 10 张起', '印刷物料设计': '¥22 / 张起', '其他需求': 'AI 评估报价',
+  'Social cover': '¥16 / image', 'Marketing poster': '¥19 / image', 'E-commerce visual': '¥22 / image', 'E-commerce detail page': '¥35 / page from', 'E-commerce launch kit': '¥79 / kit from', 'Slide design': '¥20 / slide from', 'AI quick image': '¥12 / image', 'Brand logo': '¥25 / mark from', 'Banner design': '¥16 / image', 'Creative type sticker': '¥15 / image', 'Wallpaper design': '¥16 / image', 'Custom request': 'AI-estimated quote'
 };
 const serviceOptions = {
   '社媒封面': { sizes: ['小红书 3:4（1242×1660）', '抖音封面 9:16（1080×1920）', '公众号首图 2.35:1（900×383）', '视频号封面 16:9（1920×1080）', '方形社媒 1:1（1080×1080）', '其他尺寸'], styles: ['极简', '清新生活', '潮流时尚', '品牌商业', '可爱插画', '其他风格'] },
@@ -103,14 +105,16 @@ Object.assign(zhToEn, {
   '先把模糊的想法，整理成能执行的方向。':'Turn a rough idea into a direction we can execute.','确认用途、尺寸、文案重点和参考风格，避免做完才发现方向不对。':'Confirm the use, format, key copy and visual reference before production begins.'
 });
 Object.assign(zhToEn, {
-  '基础美化 ¥50 / 页起，复杂页另报价':'Basic refinement from ¥50 per slide; complex slides are quoted separately',
+  '基础美化 ¥20 / 页起，复杂页另报价':'Basic refinement from ¥20 per slide; complex slides are quoted separately',
   'AI 生成 + 人工筛选与检查':'AI generation + human selection and review',
   '品牌 Logo 概念':'Brand logo concept',
   '从一个清晰视觉方向开始':'Start with one clear visual direction',
   '以上为明确范围的起步价。数量、复杂合成、文案整理、额外尺寸与源文件会在开工前确认，不临时加价。':'These are starting prices for a defined scope. Quantity, complex compositing, copy work, extra formats and source files are confirmed before work begins.',
-  'AI 快速配图 ¥59 / 张，社媒封面 ¥79 / 张，电商商品图 ¥129 / 张，Banner ¥159 / 张，营销海报 ¥199 / 张，PPT 基础美化 ¥50 / 页起。套装与复杂项目显示起步价，开工前确认最终范围与价格。':'AI quick images are ¥59 each, social covers ¥79, e-commerce visuals ¥129, banners ¥159, marketing posters ¥199, and basic slide refinement starts at ¥50 per slide. Kit and complex-project pricing is confirmed before work begins.',
-  '为什么价格不是几元一张？':'Why are prices not just a few yuan per image?',
-  '报价包含需求整理、AI 生成、人工筛选、排版检查和清晰文件交付，不采用无法覆盖实际制作的低价引流方式。':'Pricing includes brief preparation, AI generation, human selection, layout review and clear final-file delivery. We do not use unrealistically low bait pricing.',
+  'AI 快速配图 ¥12 / 张，社媒封面 ¥16 / 张，Banner ¥16 / 张，营销海报 ¥19 / 张，电商商品图 ¥22 / 张，PPT 基础美化 ¥20 / 页起。套装与复杂项目显示起步价，开工前确认最终范围与价格。':'AI quick images are ¥12 each, social covers and banners ¥16, marketing posters ¥19, e-commerce visuals ¥22, and basic slide refinement starts at ¥20 per slide. Kit and complex-project pricing is confirmed before work begins.',
+  '为什么不是统一最低价？':'Why is there not one minimum price for everything?',
+  '报价包含需求整理、AI 生成、人工筛选、排版检查和清晰文件交付；复杂合成、额外尺寸和源文件会先确认再计价。':'Pricing includes brief preparation, AI generation, human selection, layout review and final-file delivery. Complex compositing, extra formats and source files are quoted after confirmation.',
+  '下单后如何获得成品和申请修改？':'How do I receive files and request revisions?',
+  '提交需求后会收到订单与付款指引。完成制作后，成品会通过邮箱交付；登录后可在“我的订单”提交修改申请，也可以直接回复交付邮件。':'After submitting a brief, you receive order and payment instructions. Final files are delivered by email; sign in to request a revision in My Orders, or reply to the delivery email.',
   '5 张商品主图 + 详情页结构':'5 product hero images + detail structure','3 张商品主图 + 2 张场景图':'3 product hero images + 2 lifestyle images','主图 + 详情页 + Banner':'Hero image + detail page + banner','淘宝 / 天猫上新':'Taobao / Tmall launch','独立站上新':'Independent shop launch'
 });
 Object.assign(zhToEn, {
@@ -140,7 +144,7 @@ function applyLanguage() {
     const translated = dictionary[key] || dictionary[`${key}。`] || dictionary[`${key}.`];
     if (translated !== undefined) item.nodeValue = raw.replace(key, translated);
   });
-  const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…' };
+  const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…', '请写清楚要改的位置、原内容和想改成什么…':'Describe where the change is, the current content and what you want instead…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…', 'Describe where the change is, the current content and what you want instead…':'请写清楚要改的位置、原内容和想改成什么…' };
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your content<br><em>worth seeing.</em>' : '让品牌内容，<br><em>持续被看见。</em>';
@@ -181,6 +185,7 @@ function applyLanguage() {
   if (typeof updateLabMode === 'function') updateLabMode(activeLabMode);
   if (typeof updateScrollStoryCopy === 'function') updateScrollStoryCopy();
   updateAccountUI();
+  if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
 
@@ -226,13 +231,13 @@ function updateAccountUI() {
   else orderEmail.readOnly = false;
 }
 function escapeHtml(value = '') {
-  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>');
 }
 function formatDate() {
   return new Intl.DateTimeFormat(language === 'en' ? 'en-CA' : 'zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
 }
 function updateSelectedPrice() {
-  let price = servicePrices[service.value] || '¥79 / 张';
+  let price = servicePrices[service.value] || '¥16 / 张';
   if (language === 'en') price = price.replace('/ 10 张起', '/ 10 images from').replace('/ 页起', '/ slide from').replace('/ 个起', '/ mark from').replace('/ 张起', '/ image from').replace('/ 套起', '/ kit from').replace('/ 张', '/ image').replace('/ 页', '/ slide').replace('/ 个', '/ mark').replace('AI 评估报价', 'AI-estimated quote');
   const label = language === 'en' ? 'Project price:' : '本次项目价格：';
   const target = document.querySelector('#selectedPrice');
@@ -353,7 +358,7 @@ async function saveSharedOrder(order) {
   } catch { return false; }
 }
 function statusClass(status) {
-  return ({ '审核中': 'pending', '待支付': 'pending', '待确认支付': 'pending', '已支付': 'paid', '制作中': 'making', '已交付': 'done' })[status] || 'pending';
+  return ({ '审核中': 'pending', '待支付': 'pending', '待确认支付': 'pending', '已支付': 'paid', '制作中': 'making', '修改申请': 'revision', '修改中': 'making', '已交付': 'done' })[status] || 'pending';
 }
 function startPayment(transaction, destination = 'payment.html') {
   localStorage.setItem('wonderad-payment', JSON.stringify(transaction));
@@ -375,9 +380,42 @@ async function renderCustomerOrders() {
   if (!user) { ordersList.innerHTML = `<p class="empty-inbox">${language === 'en' ? 'Sign in to view your orders.' : '请先登录，才能查看自己的订单。'}</p>`; return; }
   let orders = [];
   try { orders = (await accountApi('/api/orders')).orders || []; }
-  catch (error) { ordersList.innerHTML = `<p class="empty-inbox">暂时无法读取订单：${escapeHtml(error.message)}</p>`; return; }
-  ordersList.innerHTML = orders.length ? orders.map(order => `
-    <article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(order.status)}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">项目价格：${escapeHtml(order.price || servicePrices[order.service] || '待确认报价')} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · 下单于 ${escapeHtml(order.date)}</p>${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">下载你的成品</a>` : '<p class="delivery-wait">设计师完成后，成品会显示在这里。</p>'}</article>`).join('') : '<p class="empty-inbox">没有找到该邮箱的订单。</p>';
+  catch (error) { ordersList.innerHTML = `<p class="empty-inbox">${language === 'en' ? 'Orders are temporarily unavailable: ' : '暂时无法读取订单：'}${escapeHtml(error.message)}</p>`; return; }
+  customerOrders = orders;
+  const statusText = status => language === 'en' ? ({ '审核中':'Under review', '待确认支付':'Awaiting payment', '已支付':'Paid', '制作中':'In production', '修改申请':'Revision requested', '修改中':'Revision in progress', '已交付':'Delivered' }[status] || status) : status;
+  const revisionStatusText = status => language === 'en' ? ({ '待处理':'Pending', '修改中':'In progress', '已完成':'Completed' }[status] || status) : status;
+  const revisionHistory = order => {
+    const revisions = Array.isArray(order.revisions) ? [...order.revisions].reverse() : [];
+    if (!revisions.length) return '';
+    return `<div class="revision-history"><h4>${language === 'en' ? 'Revision history' : '修改记录'}</h4>${revisions.map(item => `<article class="revision-item"><div><strong>${language === 'en' ? `Round ${item.round} · ${revisionTypeEnglish[item.type] || item.type}` : `第 ${item.round} 轮 · ${item.type}`}</strong><span>${escapeHtml(revisionStatusText(item.status))}</span></div><p>${escapeHtml(item.details)}</p>${item.referenceUrl ? `<a href="${escapeHtml(item.referenceUrl)}" target="_blank" rel="noopener">${language === 'en' ? 'Open reference link' : '查看参考链接'}</a>` : ''}${item.referenceName ? `<small>${language === 'en' ? 'Reference file: ' : '参考文件：'}${escapeHtml(item.referenceName)}</small>` : ''}</article>`).join('')}</div>`;
+  };
+  ordersList.innerHTML = orders.length ? orders.map(order => {
+    const canRevise = order.status === '已交付';
+    const revisionNotice = ['修改申请', '修改中'].includes(order.status) ? `<p class="revision-active">${language === 'en' ? 'Your revision request is recorded. We will update the status here and by email.' : '修改申请已经记录，处理进度会在这里和邮件中同步。'}</p>` : '';
+    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
+  }).join('') : `<p class="empty-inbox">${language === 'en' ? 'No orders found for this account.' : '这个账户暂时没有订单。'}</p>`;
+  ordersList.querySelectorAll('[data-revision-order]').forEach(button => button.addEventListener('click', () => openRevisionRequest(button.dataset.revisionOrder)));
+}
+let customerOrders = [];
+const revisionTypeEnglish = { '文字内容':'Text content', '颜色与风格':'Colour and style', '排版与构图':'Layout and composition', '尺寸与格式':'Size and format', '其他修改':'Other change' };
+function openRevisionRequest(orderId) {
+  const order = customerOrders.find(item => item.id === orderId);
+  if (!order || order.status !== '已交付') return;
+  revisionForm.reset();
+  document.querySelector('#revisionOrderId').value = order.id;
+  document.querySelector('#revisionOrderSummary').textContent = language === 'en' ? `${order.service} · Order ${order.id}` : `${order.service} · 订单号 ${order.id}`;
+  openModal(revisionModal);
+  document.querySelector('#revisionDetails').focus();
+}
+function readRevisionReference(file) {
+  if (!file) return Promise.resolve(null);
+  if (file.size > 2 * 1024 * 1024) return Promise.reject(new Error(language === 'en' ? 'The reference file must be no larger than 2 MB.' : '参考文件不能超过 2 MB。'));
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, data: reader.result });
+    reader.onerror = () => reject(new Error(language === 'en' ? 'Could not read the reference file.' : '无法读取参考文件。'));
+    reader.readAsDataURL(file);
+  });
 }
 function openModal(modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }
 function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
@@ -450,6 +488,8 @@ document.querySelector('#openPrivacy').addEventListener('click', () => openModal
 document.querySelectorAll('#languageToggle, #mobileLanguageToggle').forEach(button => button.addEventListener('click', () => { language = language === 'zh' ? 'en' : 'zh'; localStorage.setItem('wonderad-language', language); applyLanguage(); closeMobileMenu(); }));
 document.querySelector('#closeOrders').addEventListener('click', () => closeModal(ordersModal));
 document.querySelector('#closeOrdersButton').addEventListener('click', () => closeModal(ordersModal));
+document.querySelector('#closeRevision').addEventListener('click', () => closeModal(revisionModal));
+document.querySelector('#closeRevisionButton').addEventListener('click', () => closeModal(revisionModal));
 document.querySelector('#closeAccount').addEventListener('click', () => closeModal(accountModal));
 document.querySelector('#closeAccountButton').addEventListener('click', () => closeModal(accountModal));
 document.querySelector('#closeAuth').addEventListener('click', () => closeModal(authModal));
@@ -495,7 +535,36 @@ document.querySelector('#loginForm').addEventListener('submit', async event => {
     event.target.reset(); updateAccountUI(); closeModal(authModal); showToast(`欢迎回来，${currentUser.name}。`);
   } catch (error) { showToast(error.setup ? '账户服务正在配置中，请稍后再试。' : '邮箱或密码不正确。'); }
 });
-document.querySelector('#lookupForm').addEventListener('submit', event => { event.preventDefault(); renderCustomerOrders(); });
+document.querySelector('#lookupForm')?.addEventListener('submit', event => { event.preventDefault(); renderCustomerOrders(); });
+revisionForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = document.querySelector('#submitRevision');
+  submit.disabled = true;
+  const originalLabel = submit.textContent;
+  submit.textContent = language === 'en' ? 'Submitting…' : '正在提交…';
+  try {
+    const reference = await readRevisionReference(document.querySelector('#revisionReferenceFile').files[0]);
+    const payload = {
+      orderId: document.querySelector('#revisionOrderId').value,
+      type: document.querySelector('#revisionType').value,
+      details: document.querySelector('#revisionDetails').value.trim(),
+      referenceUrl: document.querySelector('#revisionReferenceUrl').value.trim(),
+      referenceName: reference?.name || '',
+      referenceData: reference?.data || ''
+    };
+    const response = await fetch('/api/revisions', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || (language === 'en' ? 'Could not submit the revision request.' : '修改申请提交失败。'));
+    closeModal(revisionModal);
+    await renderCustomerOrders();
+    showToast(body.emailSent ? (language === 'en' ? 'Revision request submitted and emailed.' : '修改申请已提交，并已发送邮件通知。') : (language === 'en' ? 'Revision request saved; the email notice is temporarily delayed.' : '修改申请已保存；邮件通知暂时延迟。'));
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = originalLabel;
+  }
+});
 document.querySelector('#buildPrompt').addEventListener('click', () => {
   const text = document.querySelector('#orderForm textarea').value.trim();
   const size = document.querySelector('input[name="size"]:checked').value;
@@ -561,11 +630,12 @@ function addSupportMessage(text, from = 'ai') {
 function answerSupport(question) {
   const text = question.toLowerCase();
   const english = language === 'en';
+  if (/修改|改稿|revision|revise|change/.test(text)) return english ? 'After delivery, sign in and open My Orders, then choose Request a revision. You can also reply directly to the delivery email.' : '成品交付后，登录并打开“我的订单”，点击“申请修改”即可；也可以直接回复交付邮件补充说明。';
   if (/其他|custom|定制|需求/.test(text)) return english ? 'Choose “Custom request” and describe what you need. We will review it and send a confirmed quote before payment.' : '选择“其他需求”，把你想做的内容写清楚。我们审核后会先发确认报价，再安排制作。';
-  if (/ppt|slide|汇报|提案/.test(text)) return english ? 'Basic PPT refinement starts at ¥50 per slide; complex slides are quoted after the content is reviewed.' : 'PPT 基础美化 ¥50 / 页起；复杂图表、定制版式或动画页会先看内容再确认价格。';
-  if (/海报|poster|广告|ad/.test(text)) return english ? 'Marketing posters are ¥199 per image. Share the copy, format and visual direction in the order form.' : '营销海报 ¥199 / 张。选择“营销海报”，写上文案、尺寸和风格即可。';
-  if (/字贴|type|文字/.test(text)) return english ? 'Creative type stickers are ¥99 per image. They work well for campaign headlines and social text.' : '创意字贴 ¥99 / 张，适合活动标题、社媒文字和醒目短句。';
-  if (/壁纸|wallpaper/.test(text)) return english ? 'Wallpaper design is ¥129 per image for phone, desktop or event backgrounds.' : '壁纸设计 ¥129 / 张，可做手机、电脑或活动背景。';
+  if (/ppt|slide|汇报|提案/.test(text)) return english ? 'Basic PPT refinement starts at ¥20 per slide; complex slides are quoted after the content is reviewed.' : 'PPT 基础美化 ¥20 / 页起；复杂图表、定制版式或动画页会先看内容再确认价格。';
+  if (/海报|poster|广告|ad/.test(text)) return english ? 'Marketing posters are ¥19 per image. Share the copy, format and visual direction in the order form.' : '营销海报 ¥19 / 张。选择“营销海报”，写上文案、尺寸和风格即可。';
+  if (/字贴|type|文字/.test(text)) return english ? 'Creative type stickers are ¥15 per image. They work well for campaign headlines and social text.' : '创意字贴 ¥15 / 张，适合活动标题、社媒文字和醒目短句。';
+  if (/壁纸|wallpaper/.test(text)) return english ? 'Wallpaper design is ¥16 per image for phone, desktop or event backgrounds.' : '壁纸设计 ¥16 / 张，可做手机、电脑或活动背景。';
   if (/支付|付款|pay|alipay|wechat/.test(text)) return english ? 'After you submit, we email a WeChat Pay or Alipay QR code together with your exact project price.' : '提交订单后，系统会把微信或支付宝收款码和你的固定项目价格一起发到邮箱。';
   if (/多久|交付|deliver|time/.test(text)) return english ? 'Most simple visual projects are reviewed first, then delivered by email after payment and completion.' : '订单会先审核；确认付款并完成制作后，成品会通过邮件交付。';
   if (/价格|多少钱|price|cost/.test(text)) return english ? 'Prices are fixed and displayed before you order. Choose a service and I can tell you the exact amount.' : '每项服务都是固定价格。选择项目后，页面会立即显示本次应付金额。';
@@ -668,7 +738,23 @@ Object.assign(zhToEn, {
   '让一个新品牌看起来更完整': 'Give a new brand a complete look',
   '持续更新，省下反复沟通': 'Stay consistent and save repeated briefing',
   '按印刷规范交付可用文件': 'Print-ready files made to the right specs',
-  '我们会按需求确认报价与交付方式': 'We will confirm the quote and delivery method for your request'
+  '我们会按需求确认报价与交付方式': 'We will confirm the quote and delivery method for your request',
+  '查看订单状态、下载成品，交付后可以直接提交修改申请。': 'View order status, download final files and request a revision after delivery.',
+  '正在读取你的订单…': 'Loading your orders…',
+  '申请修改': 'Request a revision',
+  '修改类型': 'Revision type',
+  '文字内容': 'Text content',
+  '颜色与风格': 'Colour and style',
+  '排版与构图': 'Layout and composition',
+  '尺寸与格式': 'Size and format',
+  '其他修改': 'Other change',
+  '修改内容': 'Revision details',
+  '参考链接（可选）': 'Reference link (optional)',
+  '上传截图或 PDF（可选）': 'Upload screenshot or PDF (optional)',
+  '提交后会立即保存，并通过邮件通知工作室。参考文件不超过 2 MB；如果修改范围属于全新设计，会先联系你确认报价。': 'Your request is saved immediately and emailed to the studio. Reference files must be no larger than 2 MB; a new design direction will be quoted before work begins.',
+  '提交修改申请': 'Submit revision request',
+  '关闭订单': 'Close orders',
+  '关闭修改申请': 'Close revision request'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
 
