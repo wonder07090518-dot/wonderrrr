@@ -392,7 +392,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--cyan); backgroun
 /* Join, update ledger, transparent demo stats */
 .join-us { padding: 140px 0; display: grid; grid-template-columns: .8fr 1.2fr; gap: 100px; }
 .join-us form { padding-left: 40px; border-left: 1px solid var(--ink); }
-.join-us input, .join-us select, .join-us textarea, .inbox-panel input, .inbox-panel textarea { background: var(--white); border-color: var(--rule); color: var(--ink); }
+.join-us input, .join-us select, .join-us textarea, .inbox-panel input, .inbox-panel select, .inbox-panel textarea { background: var(--white); border-color: var(--rule); color: var(--ink); }
 .join-us form > .primary, .contact-form > .primary, .auth-form > .primary { min-height: 48px; padding-inline: 20px; }
 .updates { padding: 140px 0; border-top: 1px solid var(--rule); background: var(--white); }
 .updates > .eyebrow, .updates > h2, .updates .update-grid { width: var(--wrap); margin-inline: auto; }
@@ -484,6 +484,31 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
 .account-grid strong { display: block; margin-top: 10px; color: var(--blue); font: 800 25px/1 var(--mono); }
 .account-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
 .account-actions button, .auth-switch button { min-height: 42px; border: 1px solid var(--rule); background: #fff; }
+.recharge-panel { width: min(680px, calc(100vw - 32px)); }
+.recharge-form { display: grid; gap: 18px; margin-top: 24px; }
+.recharge-form fieldset { padding: 0; margin: 0; border: 0; }
+.recharge-form legend { margin-bottom: 10px; color: var(--muted); font-size: 12px; font-weight: 720; }
+.recharge-amounts, .recharge-methods { display: grid; gap: 8px; }
+.recharge-amounts { grid-template-columns: repeat(4, 1fr); }
+.recharge-methods { grid-template-columns: repeat(2, 1fr); }
+.recharge-amounts label, .recharge-methods label { position: relative; }
+.recharge-amounts input, .recharge-methods input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.recharge-amounts span, .recharge-methods span { min-height: 46px; display: grid; place-items: center; border: 1px solid var(--rule); background: #fff; font-size: 12px; font-weight: 760; cursor: pointer; transition: border-color .2s ease, color .2s ease, background .2s ease; }
+.recharge-amounts input:checked + span, .recharge-methods input:checked + span { border-color: var(--blue); background: #edf2ff; color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.recharge-rate { margin: 0; padding: 13px 14px; border-left: 3px solid var(--blue); background: #edf2ff; color: var(--blue); font: 720 12px/1.55 var(--sans); }
+.recharge-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.7; }
+.recharge-form > .primary { min-height: 48px; }
+.recharge-history { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--rule); }
+.recharge-history h3 { margin: 0 0 12px; font-size: 14px; }
+.recharge-history > p { margin: 0; color: var(--muted); font-size: 12px; }
+.recharge-history article { padding: 12px 0; display: grid; gap: 6px; border-bottom: 1px solid var(--rule); }
+.recharge-history article > div { display: flex; justify-content: space-between; gap: 12px; }
+.recharge-history article strong { font-size: 14px; }
+.recharge-history article span { color: var(--blue); font-size: 11px; font-weight: 760; }
+.recharge-history article small { color: var(--muted); font-size: 10px; }
+.feedback-panel { width: min(620px, calc(100vw - 32px)); }
+.feedback-panel .contact-form { margin-top: 22px; }
+.feedback-honeypot { position: fixed!important; left: -10000px!important; width: 1px!important; height: 1px!important; overflow: hidden!important; }
 .auth-switch { display: grid; grid-template-columns: repeat(2, 1fr); margin: 22px 0; }
 .auth-switch button.active { border-color: var(--blue); color: #fff; background: var(--blue); }
 .privacy-consent { grid-template-columns: 18px 1fr !important; align-items: center; }
@@ -622,6 +647,8 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
   .demo-label { display: inline-block; margin-top: 18px; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 45px 30px; }
   .footer-grid > div:first-child { grid-column: 1 / -1; padding-bottom: 25px; border-bottom: 1px solid #353a43; }
+  .inbox-panel { padding: 24px 18px; }
+  .recharge-amounts { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 390px) {

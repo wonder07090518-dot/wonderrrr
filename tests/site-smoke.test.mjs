@@ -151,12 +151,52 @@ test('orders upload up to 100 reference files and 1 GB directly into private sto
   assert.match(orders, /referenceMetadata/);
   assert.match(orders, /await head\(item\.blobUrl\)/);
   assert.match(orders, /MAX_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
+  assert.match(orders, /MAX_REFERENCE_FILES = 100/);
   assert.match(orders, /delete order\.referenceAttachments/);
   assert.match(orders, /issueSignedToken/);
   assert.match(orders, /validUntil = Date\.now\(\) \+ 10 \* 60 \* 1000/);
   assert.match(orders, /createReferenceDownload/);
   assert.match(admin, /参考样板（私有存储）/);
   assert.match(admin, /downloadReference/);
+});
+
+test('feedback form saves suggestions and emails the studio with abuse controls', async () => {
+  const [html, script, css, api] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/feedback.js')]);
+  assert.match(html, /id="openFeedback"/);
+  assert.match(html, /id="feedbackModal"/);
+  assert.match(html, /id="feedbackForm"/);
+  assert.match(html, /id="feedbackMessage"[^>]*maxlength="2000"/);
+  assert.match(script, /fetch\('\/api\/feedback'/);
+  assert.match(script, /Feedback & suggestions/);
+  assert.match(css, /\.feedback-honeypot/);
+  assert.match(api, /wonder07090518@gmail\.com/);
+  assert.match(api, /wonder:feedback-rate:/);
+  assert.match(api, /count <= 5/);
+  assert.match(api, /req\.body\?\.website/);
+  assert.match(api, /reply_to: email/);
+  assert.match(api, /Wonder Ad Lab 意见建议/);
+});
+
+test('balance top-ups are credited one-to-one only after idempotent admin approval', async () => {
+  const [html, script, payment, api, balanceApi, balanceHelpers, adminHtml, adminScript] = await Promise.all([
+    read('index.html'), read('script.js'), read('payment.js'), read('api/recharges.js'), read('api/balance.js'), read('api/_balance.js'), read('admin.html'), read('admin.js')
+  ]);
+  assert.match(html, /id="rechargeModal"/);
+  assert.match(html, /支付 ¥50，确认后余额增加 ¥50/);
+  assert.match(html, /核对实际到账并在后台确认后/);
+  assert.match(script, /kind: 'recharge'/);
+  assert.match(script, /accountApi\('\/api\/balance'\)/);
+  assert.match(payment, /fetch\('\/api\/recharges'/);
+  assert.match(payment, /topUpNotice/);
+  assert.match(balanceHelpers, /new Set\(\[20, 50, 100, 200\]\)/);
+  assert.match(api, /creditedAmount: amount/);
+  assert.match(api, /isAdmin\(req\)/);
+  assert.match(api, /kv\('setnx', `wonder:recharge-applied:/);
+  assert.match(api, /kv\('incrby', balanceKey\(item\.email\), item\.creditedAmount\)/);
+  assert.match(balanceApi, /getCurrentUser/);
+  assert.match(adminHtml, /id="recharges"/);
+  assert.match(adminScript, /action: 'approve'/);
+  assert.match(adminScript, /确认实际到账并入账/);
 });
 
 test('website removes unavailable or scripted AI conversations', async () => {

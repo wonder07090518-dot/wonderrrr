@@ -1,7 +1,7 @@
 const params = new URLSearchParams(location.search);
 const key = 'wonderad-payment';
 const ordersKey = 'wonderad-orders';
-const language = localStorage.getItem('wonderad-language') === 'en' ? 'en' : 'zh';
+const language = localStorage.getItem('wonderad-language') === 'zh' ? 'zh' : 'en';
 const copy = language === 'en' ? {
   title: 'Wonder Ad Lab · Secure checkout',
   heading: 'Complete payment',
@@ -18,6 +18,9 @@ const copy = language === 'en' ? {
   submitting: 'Submitting confirmation…',
   failed: 'Payment confirmation could not be submitted. Please stay on this page and try again.',
   qrFailed: 'The payment QR code could not be loaded. Please return to My Orders and try again.',
+  topUp: 'Account balance top-up',
+  topUpNotice: 'After you confirm, the top-up will wait for studio verification. Your balance is credited one-to-one only after the funds received are confirmed.',
+  topUpSuccess: 'Your top-up confirmation has been submitted. The balance will be credited after Wonder Ad Lab verifies the payment received.',
   plan: { monthly: 'Monthly membership', yearly: 'Yearly membership' }
 } : {
   title: 'Wonder Ad Lab · 支付订单',
@@ -35,6 +38,9 @@ const copy = language === 'en' ? {
   submitting: '正在提交付款确认…',
   failed: '付款确认暂时无法提交，请留在此页面并重试。',
   qrFailed: '收款码加载失败，请返回“我的订单”后重新打开。',
+  topUp: '账户余额充值',
+  topUpNotice: '点击确认后，充值会等待工作室核对。只有确认实际到账后，才会按 1:1 增加账户余额。',
+  topUpSuccess: '充值付款确认已提交。Wonder Ad Lab 核对实际到账后，余额才会入账。',
   plan: { monthly: '月会员', yearly: '年会员' }
 };
 const membershipPlans = {
@@ -71,9 +77,10 @@ document.querySelector('#paymentNotice').textContent = copy.notice;
 description.textContent = copy.loading;
 if (!transactionValid) { description.textContent = copy.invalid; confirmButton.disabled = true; }
 else {
-  const localizedTitle = transaction.kind === 'membership' && copy.plan[planKey] ? copy.plan[planKey] : transaction.title;
+  const localizedTitle = transaction.kind === 'membership' && copy.plan[planKey] ? copy.plan[planKey] : (transaction.kind === 'recharge' ? copy.topUp : transaction.title);
   description.textContent = `${localizedTitle} · ${transaction.id}`;
   amount.textContent = `¥${transaction.amount}`;
+  if (transaction.kind === 'recharge') document.querySelector('#paymentNotice').textContent = copy.topUpNotice;
 }
 function renderMethod() {
   document.querySelectorAll('[data-method]').forEach(button => button.classList.toggle('active', button.dataset.method === method));
@@ -95,6 +102,10 @@ confirmButton.addEventListener('click', async () => {
       const memberships = JSON.parse(localStorage.getItem('wonderad-membership-requests') || '[]');
       memberships.unshift({ ...transaction, payment: method, status: copy.status, date: new Date().toLocaleString(language === 'en' ? 'en-CA' : 'zh-CN') });
       localStorage.setItem('wonderad-membership-requests', JSON.stringify(memberships));
+    } else if (transaction.kind === 'recharge') {
+      const response = await fetch('/api/recharges', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: transaction.id, amount: Number(transaction.amount), payment: method }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || copy.failed);
     } else {
       const response = await fetch('/api/payment-confirm', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: transaction.id, payment: method }) });
       const body = await response.json().catch(() => ({}));
@@ -104,7 +115,7 @@ confirmButton.addEventListener('click', async () => {
       if (order) { order.status = copy.status; order.payment = method; localStorage.setItem(ordersKey, JSON.stringify(orders)); }
     }
     localStorage.removeItem(key);
-    alert(copy.success);
+    alert(transaction.kind === 'recharge' ? copy.topUpSuccess : copy.success);
     location.href = 'index.html';
   } catch (error) {
     hint.textContent = language === 'en' ? `${copy.failed} ${error.message}` : `${copy.failed} ${error.message}`;

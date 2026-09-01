@@ -2,6 +2,7 @@ const loginView = document.querySelector('#loginView');
 const dashboard = document.querySelector('#dashboard');
 const notice = document.querySelector('#notice');
 let currentOrders = [];
+let currentRecharges = [];
 
 function statusClass(status) { return status === '已交付' ? 'is-done' : ['制作中', '修改中'].includes(status) ? 'is-making' : status === '修改申请' ? 'is-revision' : 'is-pending'; }
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; }
@@ -41,9 +42,42 @@ function renderOrders() {
 }
 function escapeHtml(value = '') { return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>'); }
 async function loadOrders() { try { setNotice('正在加载订单…'); const data = await api('/api/orders'); currentOrders = data.orders || []; renderOrders(); } catch (error) { setNotice(error.setup ? '后台已建好：请先在 Vercel 设置管理员账号、密码与订单存储后启用。' : `无法读取订单：${error.message}`); } }
+function formatDate(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('zh-CN'); }
+function renderRecharges() {
+  const list = document.querySelector('#recharges');
+  const rechargeNotice = document.querySelector('#rechargeNotice');
+  list.innerHTML = '';
+  if (!currentRecharges.length) { rechargeNotice.textContent = '暂时没有充值申请。'; return; }
+  const pending = currentRecharges.filter(item => item.status !== '已到账').length;
+  rechargeNotice.textContent = `已加载 ${currentRecharges.length} 条充值记录${pending ? `，其中 ${pending} 条待核对` : ''}。`;
+  currentRecharges.forEach(item => {
+    const card = document.createElement('article');
+    card.className = 'recharge-admin-card';
+    const approved = item.status === '已到账';
+    card.innerHTML = `<div class="recharge-admin-copy"><div class="row"><strong>${escapeHtml(item.id)}</strong><span class="status ${approved ? 'is-done' : 'is-pending'}">${escapeHtml(item.status)}</span></div><h3>付款 ¥${Number(item.amount) || 0} · 入账 ¥${Number(item.creditedAmount) || 0}</h3><p>${escapeHtml(item.email)} · ${escapeHtml(item.payment)}</p><small>提交：${escapeHtml(formatDate(item.requestedAt))}${item.approvedAt ? ` · 到账：${escapeHtml(formatDate(item.approvedAt))}` : ''}</small></div><button type="button" class="approve-recharge" ${approved ? 'disabled' : ''}>${approved ? `已到账 · 余额 ¥${Number(item.balanceAfter) || 0}` : '确认实际到账并入账'}</button>`;
+    const button = card.querySelector('.approve-recharge');
+    if (!approved) button.addEventListener('click', () => approveRecharge(item, button));
+    list.appendChild(card);
+  });
+}
+async function loadRecharges() {
+  const rechargeNotice = document.querySelector('#rechargeNotice');
+  try { rechargeNotice.textContent = '正在加载充值申请…'; const data = await api('/api/recharges'); currentRecharges = data.recharges || []; renderRecharges(); }
+  catch (error) { rechargeNotice.textContent = error.setup ? '充值存储尚未配置。' : `无法读取充值申请：${error.message}`; }
+}
+async function approveRecharge(item, button) {
+  if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户余额将增加 ¥${item.creditedAmount}。`)) return;
+  button.disabled = true; button.textContent = '正在入账…';
+  try {
+    const result = await api('/api/recharges', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, action: 'approve' }) });
+    await loadRecharges();
+    document.querySelector('#rechargeNotice').textContent = `已确认 ${item.id}，客户当前余额为 ¥${Number(result.balance) || 0}${result.emailSent ? '，通知邮件已发送。' : '；余额已入账，通知邮件暂时未发送。'}`;
+  } catch (error) { button.disabled = false; button.textContent = '确认实际到账并入账'; document.querySelector('#rechargeNotice').textContent = `入账失败：${error.message}`; }
+}
+async function loadDashboard() { await Promise.all([loadOrders(), loadRecharges()]); }
 async function updateOrder(order, status) { if (status === '已交付') { alert('请先上传成品，系统会自动邮件交付并标记为已交付。'); return; } try { if (order.status !== status && ['审核中', '制作中', '修改中'].includes(status)) await api('/api/notify-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: order.email, orderId: order.id, service: order.service, price: order.price, status }) }); await api(`/api/orders?id=${encodeURIComponent(order.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); await loadOrders(); setNotice(['制作中', '修改中'].includes(status) ? `已更新为${status}，并已向客户发送进度邮件。` : '订单状态已更新。'); } catch (error) { alert(`更新失败：${error.message}`); await loadOrders(); } }
 async function deliver(order, file) { if (!file) return; if (file.size > 3 * 1024 * 1024) { setNotice('该文件超过 3 MB，邮件附件无法稳定交付。请先压缩文件；大型视频建议使用云端链接交付。'); return; } const reader = new FileReader(); reader.onload = async () => { try { setNotice('正在发送成品邮件…'); await api('/api/notify-delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: order.email, orderId: order.id, service: order.service, price: order.price, fileName: file.name, fileData: reader.result }) }); await api(`/api/orders?id=${encodeURIComponent(order.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: '已交付' }) }); await loadOrders(); setNotice('成品已发送到客户邮箱，并标记为已交付。'); } catch (error) { setNotice(`交付失败：${error.message}`); } }; reader.readAsDataURL(file); }
-document.querySelector('#loginForm').addEventListener('submit', async event => { event.preventDefault(); const hint = document.querySelector('#loginHint'); try { await api('/api/admin-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.querySelector('#username').value.trim(), password: document.querySelector('#password').value }) }); setView(true); loadOrders(); } catch (error) { hint.textContent = error.setup ? '管理员账号与密码尚未配置。' : '管理员账号或密码不正确。'; } });
+document.querySelector('#loginForm').addEventListener('submit', async event => { event.preventDefault(); const hint = document.querySelector('#loginHint'); try { await api('/api/admin-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.querySelector('#username').value.trim(), password: document.querySelector('#password').value }) }); setView(true); loadDashboard(); } catch (error) { hint.textContent = error.setup ? '管理员账号与密码尚未配置。' : '管理员账号或密码不正确。'; } });
 document.querySelector('#logout').addEventListener('click', async () => { await fetch('/api/admin-auth', { method: 'DELETE', credentials: 'same-origin' }); setView(false); });
-document.querySelector('#refresh').addEventListener('click', loadOrders);
-(async () => { try { const session = await api('/api/admin-auth'); if (session.authenticated) { setView(true); loadOrders(); } } catch { /* keep login screen */ } })();
+document.querySelector('#refresh').addEventListener('click', loadDashboard);
+(async () => { try { const session = await api('/api/admin-auth'); if (session.authenticated) { setView(true); loadDashboard(); } } catch { /* keep login screen */ } })();

@@ -6,6 +6,8 @@ const revisionForm = document.querySelector('#revisionForm');
 const accountModal = document.querySelector('#accountModal');
 const authModal = document.querySelector('#authModal');
 const privacyModal = document.querySelector('#privacyModal');
+const rechargeModal = document.querySelector('#rechargeModal');
+const feedbackModal = document.querySelector('#feedbackModal');
 const submittedModal = document.querySelector('#submittedModal');
 const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
@@ -13,6 +15,7 @@ const sessionKey = 'wonderad-session';
 let pendingSubmittedOrder = null;
 let selectedOrderFiles = [];
 let orderUploadProgress = new Map();
+let accountBalanceData = { balance: 0, recharges: [] };
 const MAX_ORDER_REFERENCE_FILES = 100;
 const MAX_ORDER_REFERENCE_BYTES = 1024 * 1024 * 1024;
 const orderReferenceExtension = /\.(jpe?g|png|webp|gif|svg|pdf|txt|docx?|pptx?|xlsx?|zip|psd|ai|mp4|mov|m4v|webm|mp3|wav|m4a)$/i;
@@ -163,7 +166,7 @@ function applyLanguage() {
     const translated = dictionary[key] || dictionary[`${key}。`] || dictionary[`${key}.`];
     if (translated !== undefined) item.nodeValue = raw.replace(key, translated);
   });
-  const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…', '请写清楚要改的位置、原内容和想改成什么…':'Describe where the change is, the current content and what you want instead…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…', 'Describe where the change is, the current content and what you want instead…':'请写清楚要改的位置、原内容和想改成什么…' };
+  const placeholders = language === 'en' ? { '怎么称呼你？':'What should we call you?', '至少 8 位':'At least 8 characters', '输入你的邮箱':'Enter your email', '方便时填写，便于联系':'Optional, for easy contact', '例如：给我的咖啡店做一张夏日新品海报，轻松一点…':'Example: a relaxed summer launch poster for my coffee shop…', '请写清楚要改的位置、原内容和想改成什么…':'Describe where the change is, the current content and what you want instead…', '请告诉我们哪里需要改进…':'Tell us what we could improve…' } : { 'What should we call you?':'怎么称呼你？', 'At least 8 characters':'至少 8 位', 'Enter your email':'输入你的邮箱', 'Optional, for easy contact':'方便时填写，便于联系', 'Example: a relaxed summer launch poster for my coffee shop…':'例如：给我的咖啡店做一张夏日新品海报，轻松一点…', 'Describe where the change is, the current content and what you want instead…':'请写清楚要改的位置、原内容和想改成什么…', 'Tell us what we could improve…':'请告诉我们哪里需要改进…' };
   document.querySelectorAll('[placeholder]').forEach(input => { if (placeholders[input.placeholder]) input.placeholder = placeholders[input.placeholder]; });
   const heroTitle = document.querySelector('.hero h1');
   if (heroTitle) heroTitle.innerHTML = language === 'en' ? 'Keep your content<br><em>worth seeing.</em>' : '让品牌内容，<br><em>持续被看见。</em>';
@@ -204,6 +207,7 @@ function applyLanguage() {
   if (typeof updateLabMode === 'function') updateLabMode(activeLabMode);
   if (typeof updateScrollStoryCopy === 'function') updateScrollStoryCopy();
   updateAccountUI();
+  renderRechargeHistory(accountBalanceData.recharges);
   renderOrderReferenceList();
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
@@ -467,11 +471,27 @@ function startOrderPayment(order) {
 async function renderAccountStats() {
   const user = getCurrentUser();
   let orders = [];
+  accountBalanceData = { balance: 0, recharges: [] };
   if (user) {
-    try { orders = (await accountApi('/api/orders')).orders || []; } catch { orders = []; }
+    const [ordersResult, balanceResult] = await Promise.allSettled([accountApi('/api/orders'), accountApi('/api/balance')]);
+    if (ordersResult.status === 'fulfilled') orders = ordersResult.value.orders || [];
+    if (balanceResult.status === 'fulfilled') accountBalanceData = balanceResult.value;
   }
   document.querySelector('#accountOrderCount').textContent = orders.length;
   document.querySelector('#accountImageCount').textContent = orders.filter(order => order.result).length;
+  document.querySelector('#accountBalance').textContent = `¥${Number(accountBalanceData.balance) || 0}`;
+  renderRechargeHistory(accountBalanceData.recharges);
+  return accountBalanceData;
+}
+function rechargeStatusText(status) {
+  if (language === 'en') return status === '已到账' ? 'Credited' : 'Awaiting verification';
+  return status;
+}
+function renderRechargeHistory(items = []) {
+  const target = document.querySelector('#rechargeHistory');
+  if (!target) return;
+  if (!items.length) { target.innerHTML = `<p>${language === 'en' ? 'No top-up records yet.' : '暂时没有充值记录。'}</p>`; return; }
+  target.innerHTML = `<h3>${language === 'en' ? 'Top-up history' : '充值记录'}</h3>${items.map(item => `<article><div><strong>¥${Number(item.amount) || 0}</strong><span>${escapeHtml(rechargeStatusText(item.status))}</span></div><small>${escapeHtml(item.id)} · ${escapeHtml(item.payment)}</small></article>`).join('')}`;
 }
 async function renderCustomerOrders() {
   const user = getCurrentUser();
@@ -599,8 +619,18 @@ document.querySelector('#closeAuth').addEventListener('click', () => closeModal(
 document.querySelector('#closeAuthButton').addEventListener('click', () => closeModal(authModal));
 document.querySelector('#closePrivacy').addEventListener('click', () => closeModal(privacyModal));
 document.querySelector('#closePrivacyButton').addEventListener('click', () => closeModal(privacyModal));
+document.querySelector('#closeRecharge').addEventListener('click', () => closeModal(rechargeModal));
+document.querySelector('#closeRechargeButton').addEventListener('click', () => closeModal(rechargeModal));
+document.querySelector('#closeFeedback').addEventListener('click', () => closeModal(feedbackModal));
+document.querySelector('#closeFeedbackButton').addEventListener('click', () => closeModal(feedbackModal));
 document.querySelector('#accountOrders').addEventListener('click', () => { closeModal(accountModal); openModal(ordersModal); renderCustomerOrders(); });
-document.querySelector('#rechargeButton').addEventListener('click', () => showToast('余额充值会在支付商户接入后开放。'));
+document.querySelector('#rechargeButton').addEventListener('click', async () => { closeModal(accountModal); await renderAccountStats(); openModal(rechargeModal); });
+document.querySelector('#rechargeForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const amount = event.target.querySelector('input[name="rechargeAmount"]:checked')?.value;
+  const payment = event.target.querySelector('input[name="rechargePayment"]:checked')?.value || '微信支付';
+  startPayment({ id: `RC${Date.now()}`, kind: 'recharge', title: language === 'en' ? 'Account balance top-up' : '账户余额充值', amount, payment });
+});
 document.querySelector('#inviteButton').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText('WONDER-2026'); showToast('邀请代码已复制。'); } catch { showToast('邀请代码：WONDER-2026'); }
 });
@@ -681,6 +711,31 @@ document.querySelector('#contactForm').addEventListener('submit', async event =>
   const payload = { email: document.querySelector('#contactEmail').value.trim(), message: document.querySelector('#contactMessage').value.trim() };
   try { await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); } catch { /* 本地预览无邮件服务 */ }
   event.target.reset(); closeModal(contactModal); showToast('定制咨询已提交，Wonder Ad Lab 团队会通过邮箱回复你。');
+});
+document.querySelector('#openFeedback').addEventListener('click', () => {
+  const user = getCurrentUser();
+  if (user) document.querySelector('#feedbackEmail').value = user.email;
+  openModal(feedbackModal);
+});
+document.querySelector('#feedbackForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = document.querySelector('#submitFeedback');
+  const originalLabel = submit.textContent;
+  submit.disabled = true;
+  submit.textContent = language === 'en' ? 'Sending…' : '正在提交…';
+  try {
+    const response = await fetch('/api/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.querySelector('#feedbackEmail').value.trim(), category: document.querySelector('#feedbackCategory').value, message: document.querySelector('#feedbackMessage').value.trim(), website: document.querySelector('#feedbackWebsite').value }) });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || (language === 'en' ? 'Could not submit your feedback.' : '建议暂时无法提交。'));
+    event.target.reset();
+    closeModal(feedbackModal);
+    showToast(body.emailSent ? (language === 'en' ? 'Thank you. Your feedback was saved and emailed to the studio.' : '感谢你的建议，内容已保存并发送到工作室邮箱。') : (language === 'en' ? 'Your feedback was saved; the email notice is delayed.' : '建议已保存，邮件通知暂时延迟。'));
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = originalLabel;
+  }
 });
 document.querySelector('#joinForm').addEventListener('submit', async event => {
   event.preventDefault();
@@ -866,7 +921,25 @@ Object.assign(zhToEn, {
   '提交后显示“正在审核中”，参考文件会安全存入私有空间，付款二维码与固定项目价格将发送至你的邮箱': 'After submission, reference files are stored privately and the payment QR and fixed project price are sent to your inbox',
   '我们仅使用你提交的邮箱、创意需求与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief and reference files you submit to process the order, send payment instructions and deliver the final work.',
   '参考文件会安全存入私有空间，仅供处理订单的工作室管理员下载，不会公开展示或发送给 AI。不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至': 'Reference files are stored privately for authorized studio administrators only. They are never displayed publicly or sent to AI. We never sell your personal information. Order email is handled by Wonder Ad Lab at',
-  '不用写专业术语，我们收到后会帮你整理清楚': 'No professional wording needed. We will organize the brief after you submit it.'
+  '不用写专业术语，我们收到后会帮你整理清楚': 'No professional wording needed. We will organize the brief after you submit it.',
+  '意见与建议': 'Feedback & suggestions',
+  '告诉我们哪里可以做得更好，建议会保存并发送到工作室邮箱。': 'Tell us what we could improve. Your feedback is saved and emailed to the studio.',
+  '建议类型': 'Feedback type',
+  '功能问题': 'Feature issue',
+  '设计建议': 'Design suggestion',
+  '服务建议': 'Service suggestion',
+  '其他建议': 'Other suggestion',
+  '建议内容': 'Your feedback',
+  '提交建议': 'Send feedback',
+  '关闭意见建议': 'Close feedback',
+  '余额充值': 'Top up balance',
+  '选择充值金额': 'Choose top-up amount',
+  '等额到账：支付 ¥50，确认后余额增加 ¥50，不额外赠送。': 'One-to-one credit: pay ¥50 and receive ¥50 after verification, with no bonus.',
+  '提交付款确认后不会立即增加余额。工作室核对实际到账并在后台确认后，余额才会入账并发送邮件通知。银行卡支付将在安全支付平台完成开户和验证后开放。': 'Your balance is not credited immediately after payment confirmation. The studio first verifies the funds received, then approves the credit and emails you. Card payments will open after secure payment-account verification.',
+  '打开收款码': 'Open payment QR',
+  '暂时没有充值记录。': 'No top-up records yet.',
+  '关闭余额充值': 'Close balance top-up',
+  '我们仅使用你提交的邮箱、创意需求、意见建议、充值记录与主动上传的参考文件来处理订单、发送付款指引及交付成品。': 'We only use the email address, creative brief, feedback, top-up records and reference files you submit to process orders, send payment instructions and deliver final work.'
 });
 Object.assign(enToZh, Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh])));
 
