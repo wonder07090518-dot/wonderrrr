@@ -38,6 +38,17 @@ test('English mode covers previously untranslated key sections', async () => {
   assert.match(payment, /notice: 'After you confirm/);
 });
 
+test('new visitors start in English while explicit and saved language choices are preserved', async () => {
+  const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
+  assert.match(html, /<html lang="en">/);
+  assert.match(html, /<meta property="og:locale" content="en_CA"/);
+  assert.match(html, /<title>AI Posters, E-commerce &amp; PPT Design \| Wonder Ad Lab<\/title>/);
+  assert.match(script, /const requestedLanguage = pageParams\.get\('lang'\)/);
+  assert.match(script, /const savedLanguage = localStorage\.getItem\('wonderad-language'\)/);
+  assert.match(script, /\['en', 'zh'\]\.includes\(requestedLanguage\)/);
+  assert.match(script, /savedLanguage : 'en'/);
+});
+
 test('closed account modals cannot cover mobile navigation', async () => {
   const [css, script] = await Promise.all([read('manuscript.css'), read('script.js')]);
   assert.match(css, /\.inbox-modal \{[^}]*display: none;[^}]*pointer-events: none;/);

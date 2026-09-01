@@ -147,7 +147,11 @@ Object.assign(zhToEn, {
 });
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 const pageParams = new URLSearchParams(window.location.search);
-let language = pageParams.get('lang') === 'en' ? 'en' : (localStorage.getItem('wonderad-language') || 'zh');
+const requestedLanguage = pageParams.get('lang');
+const savedLanguage = localStorage.getItem('wonderad-language');
+let language = ['en', 'zh'].includes(requestedLanguage)
+  ? requestedLanguage
+  : (['en', 'zh'].includes(savedLanguage) ? savedLanguage : 'en');
 function applyLanguage() {
   const dictionary = language === 'en' ? zhToEn : enToZh;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
