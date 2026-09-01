@@ -1,0 +1,7 @@
+{
+  "versionCode": 3,
+  "versionName": "0.4.0",
+  "apkUrl": "https://www.wonderadlab.com/downloads/huawei-rpa/Huawei-Receipt-Customer-RPA-v0.4.0.apk",
+  "sha256": "7099e5485436987e8c617b4dd2e5e66f41f4cfe3b531a1673fc3bc3bf32bf61d",
+  "notes": "新增安全自动更新、更新后自动恢复连接，并减少重复权限设置"
+}
