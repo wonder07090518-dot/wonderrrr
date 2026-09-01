@@ -34,7 +34,7 @@ async function notifyCustomer(item, balance) {
   });
 }
 
-export default async function handler(req, res) {
+export default async function rechargesHandler(req, res) {
   if (!storageConfigured()) return res.status(503).json({ error: 'Recharge storage is not configured', setup: true });
 
   if (req.method === 'POST') {

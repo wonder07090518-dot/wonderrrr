@@ -2,7 +2,7 @@ import { kv, storageConfigured } from './_admin.js';
 import { getCurrentUser } from './_user.js';
 import { loadRecharge, readBalance } from './_balance.js';
 
-export default async function handler(req, res) {
+export default async function balanceHandler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   if (!storageConfigured()) return res.status(503).json({ error: 'Balance storage is not configured', setup: true });
   const user = await getCurrentUser(req);

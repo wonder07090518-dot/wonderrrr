@@ -22,7 +22,7 @@ async function withinRateLimit(req) {
   return count <= 5;
 }
 
-export default async function handler(req, res) {
+export default async function feedbackHandler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (clean(req.body?.website, 120)) return res.status(200).json({ ok: true });
   const email = clean(req.body?.email, 180).toLowerCase();

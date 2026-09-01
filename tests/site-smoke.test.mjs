@@ -161,7 +161,7 @@ test('orders upload up to 100 reference files and 1 GB directly into private sto
 });
 
 test('feedback form saves suggestions and emails the studio with abuse controls', async () => {
-  const [html, script, css, api] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/feedback.js')]);
+  const [html, script, css, api, router, vercel] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/_feedback-route.js'), read('api/account-actions.js'), read('vercel.json')]);
   assert.match(html, /id="openFeedback"/);
   assert.match(html, /id="feedbackModal"/);
   assert.match(html, /id="feedbackForm"/);
@@ -175,11 +175,13 @@ test('feedback form saves suggestions and emails the studio with abuse controls'
   assert.match(api, /req\.body\?\.website/);
   assert.match(api, /reply_to: email/);
   assert.match(api, /Wonder Ad Lab 意见建议/);
+  assert.match(router, /route === 'feedback'/);
+  assert.match(vercel, /"source": "\/api\/feedback"/);
 });
 
 test('balance top-ups are credited one-to-one only after idempotent admin approval', async () => {
   const [html, script, payment, api, balanceApi, balanceHelpers, adminHtml, adminScript] = await Promise.all([
-    read('index.html'), read('script.js'), read('payment.js'), read('api/recharges.js'), read('api/balance.js'), read('api/_balance.js'), read('admin.html'), read('admin.js')
+    read('index.html'), read('script.js'), read('payment.js'), read('api/_recharges-route.js'), read('api/_balance-route.js'), read('api/_balance.js'), read('admin.html'), read('admin.js')
   ]);
   assert.match(html, /id="rechargeModal"/);
   assert.match(html, /支付 ¥50，确认后余额增加 ¥50/);
@@ -197,6 +199,13 @@ test('balance top-ups are credited one-to-one only after idempotent admin approv
   assert.match(adminHtml, /id="recharges"/);
   assert.match(adminScript, /action: 'approve'/);
   assert.match(adminScript, /确认实际到账并入账/);
+});
+
+test('serverless API routes stay within the Vercel Hobby deployment limit', async () => {
+  const { readdir } = await import('node:fs/promises');
+  const apiFiles = (await readdir(new URL('../api', import.meta.url))).filter(name => name.endsWith('.js') && !name.startsWith('_'));
+  assert.ok(apiFiles.length <= 12, `expected no more than 12 serverless functions, found ${apiFiles.length}`);
+  assert.ok(apiFiles.includes('account-actions.js'));
 });
 
 test('website removes unavailable or scripted AI conversations', async () => {
