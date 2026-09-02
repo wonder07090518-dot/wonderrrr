@@ -84,6 +84,9 @@ test('search engines can discover focused service guides and their images', asyn
     assert.match(page, /<script type="application\/ld\+json">/);
     assert.match(page, /<h1>/);
   }
+
+  const indexNowKey = (await read('0209f9bb53f5d942677b5c09c5db2c91.txt')).trim();
+  assert.equal(indexNowKey, '0209f9bb53f5d942677b5c09c5db2c91');
 });
 
 test('closed account modals cannot cover mobile navigation', async () => {
