@@ -321,17 +321,21 @@ em { color: var(--blue); font-style: normal; }
 .mobile-nav-actions { display: none; }
 
 /* WeChat contact / business card */
-.wechat-contact { position: relative; margin-block: 140px; min-height: 470px; padding: 60px; display: grid; grid-template-columns: 1fr 300px; align-items: center; gap: 80px; border: 1px solid var(--ink); background: var(--white); }
+.wechat-contact { position: relative; margin-block: 140px; min-height: 470px; padding: 60px; display: grid; grid-template-columns: 1fr 360px; align-items: center; gap: 80px; border: 1px solid var(--ink); background: var(--white); }
 .wechat-contact::before { content: "CONTACT PROOF / 01"; position: absolute; left: 18px; top: 18px; color: var(--blue); font: 700 9px/1 var(--mono); letter-spacing: .1em; }
 .wechat-contact::after { content: "WONDER AD LAB"; position: absolute; right: 18px; bottom: 18px; color: var(--muted); font: 700 9px/1 var(--mono); letter-spacing: .1em; }
 .wechat-contact h2 { margin-bottom: 24px; }
 .wechat-id { display: inline-flex; gap: 12px; margin: 20px 0 0 !important; padding-top: 14px; border-top: 1px solid var(--ink); color: var(--ink) !important; font: 700 12px/1 var(--mono) !important; }
-.wechat-contact figure { position: relative; margin: 0; padding: 17px; border: 1px solid var(--ink); background: var(--paper); }
+.wechat-contact figure { position: relative; width: 100%; max-width: 360px; margin: 0; padding: 14px; justify-self: center; border: 1px solid var(--ink); background: var(--paper); }
 .wechat-contact figure::before, .wechat-contact figure::after { content: ""; position: absolute; width: 20px; height: 20px; }
 .wechat-contact figure::before { left: -7px; top: -7px; border-left: 1px solid var(--blue); border-top: 1px solid var(--blue); }
 .wechat-contact figure::after { right: -7px; bottom: -7px; border-right: 1px solid var(--blue); border-bottom: 1px solid var(--blue); }
-.wechat-contact figure img { aspect-ratio: 1; width: 100%; object-fit: cover; }
-.wechat-contact figcaption { padding-top: 12px; text-align: center; color: var(--muted); font: 700 9px/1 var(--mono); }
+.wechat-qr-link { display: block; width: 100%; background: #fff; }
+.wechat-qr-link:focus-visible { outline: 3px solid rgba(36,87,255,.34); outline-offset: 5px; }
+.wechat-contact figure img { width: 100%; height: auto; object-fit: contain; }
+.wechat-contact figcaption { display: grid; gap: 6px; padding-top: 14px; text-align: center; color: var(--muted); font: 700 9px/1.45 var(--mono); }
+.wechat-contact figcaption strong { color: var(--ink); font-size: 11px; }
+.wechat-contact figcaption span { font-weight: 600; }
 
 /* Design request sheet */
 .order { padding: 140px max(24px, calc((100vw - 1180px)/2)); display: grid; grid-template-columns: .75fr 1.1fr; gap: 90px; color: #fff; background: var(--ink); }
@@ -633,7 +637,9 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
   .member-grid p { grid-column: 1; }
   .member-grid button, .member-grid .membership-pay { grid-column: 2; grid-row: 1 / 3; min-width: 105px; }
   .wechat-contact { margin-block: 95px; padding: 54px 26px 34px; grid-template-columns: 1fr; gap: 45px; }
-  .wechat-contact figure { max-width: 330px; }
+  .wechat-contact figure { max-width: 330px; padding: 11px; }
+  .wechat-contact figcaption { font-size: 10px; }
+  .wechat-contact figcaption strong { font-size: 12px; }
   .order { padding: 95px 16px; grid-template-columns: 1fr; gap: 45px; }
   .order > div { position: static; }
   .order form { padding: 22px 16px; }

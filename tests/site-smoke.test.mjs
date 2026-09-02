@@ -302,14 +302,17 @@ test('public indexing focuses on the main service page, not checkout', async () 
 });
 
 test('homepage uses optimized visual assets and stable dimensions', async () => {
-  const [html, css] = await Promise.all([read('index.html'), read('manuscript.css')]);
+  const [html, css, siteCss] = await Promise.all([read('index.html'), read('manuscript.css'), read('site.min.css')]);
   assert.match(html, /site\.min\.css\?v=/);
   assert.match(html, /script\.min\.js\?v=/);
   assert.doesNotMatch(html, /href="ai-interface\.css|href="scroll-story\.css|href="service-matrix\.css/);
   assert.match(html, /hero-wonder-3d-960\.webp 960w, hero-wonder-3d-1660\.webp 1660w/);
   assert.match(html, /fetchpriority="high" decoding="async"/);
   assert.match(html, /portfolio-coffee\.webp" width="1122" height="1402"/);
-  assert.match(html, /wonder-wechat-qr\.jpg" width="888" height="1131"/);
+  assert.match(html, /href="wonder-wechat-qr\.png"/);
+  assert.match(html, /wonder-wechat-qr\.png" width="888" height="1131"/);
+  assert.match(html, /点击二维码查看高清图/);
+  assert.match(siteCss, /\.wechat-qr-link/);
   assert.match(css, /background-image: url\("portfolio-coffee\.webp"\)/);
   assert.doesNotMatch(css, /background-image: url\("portfolio-coffee\.jpg"\)/);
 });

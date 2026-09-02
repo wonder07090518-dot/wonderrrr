@@ -166,7 +166,9 @@ Object.assign(zhToEn, {
   '文章插图、商品氛围和场景配图，生成后由人工筛选检查。':'Article illustrations, product moods and scene visuals with human review.',
   '查看 AI 配图说明 →':'View the AI image guide →',
   '查看服务说明与下单建议 →':'View the service guide →',
-  '不知道选哪种？直接在下单区选择“其他需求”，用一句话告诉我们用途即可。':'Not sure which service fits? Choose “Custom request” in the order form and describe the use in one sentence.'
+  '不知道选哪种？直接在下单区选择“其他需求”，用一句话告诉我们用途即可。':'Not sure which service fits? Choose “Custom request” in the order form and describe the use in one sentence.',
+  '点击二维码查看高清图':'Tap the QR code to view it in full resolution',
+  '手机端可长按保存，再从微信“扫一扫”的相册中识别':'On mobile, press and hold to save it, then choose it from the WeChat scanner album'
 });
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 const pageParams = new URLSearchParams(window.location.search);
@@ -242,7 +244,8 @@ function applyLanguage() {
     ['.sequence-row:not(.type-row) figure:nth-of-type(1) img', 'alt', 'Coffee visual thumbnail', '咖啡视觉缩略帧'],
     ['.sequence-row:not(.type-row) figure:nth-of-type(2) img', 'alt', 'Skincare visual thumbnail', '护肤视觉缩略帧'],
     ['.sequence-row:not(.type-row) figure:nth-of-type(3) img', 'alt', 'Travel visual thumbnail', '旅行视觉缩略帧'],
-    ['.wechat-contact img', 'alt', 'Wonder Ad Lab WeChat QR code, ID Wonder07090518', 'Wonder Ad Lab 微信二维码，微信号 Wonder07090518']
+    ['.wechat-contact img', 'alt', 'Wonder Ad Lab WeChat QR code, ID Wonder07090518', 'Wonder Ad Lab 微信二维码，微信号 Wonder07090518'],
+    ['.wechat-qr-link', 'aria-label', 'Open the full-resolution WeChat QR code', '点击打开高清微信二维码']
   ];
   localizedAttributes.forEach(([selector, attribute, en, zh]) => {
     document.querySelector(selector)?.setAttribute(attribute, language === 'en' ? en : zh);
