@@ -1,33 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://www.wonderadlab.com/</loc>
-    <lastmod>2026-08-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <lastmod>2026-09-01</lastmod><changefreq>weekly</changefreq><priority>1.0</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/hero-wonder-3d-1660.webp</image:loc><image:title>Wonder Ad Lab creative design studio</image:title></image:image>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-coffee.webp</image:loc><image:title>Morning Coffee campaign visual</image:title></image:image>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-skincare.webp</image:loc><image:title>Skincare product visual</image:title></image:image>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-travel.webp</image:loc><image:title>Travel campaign visual</image:title></image:image>
   </url>
   <url>
     <loc>https://www.wonderadlab.com/services/ai-poster-design.html</loc>
-    <lastmod>2026-08-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-coffee.webp</image:loc><image:title>AI poster and advertising visual design</image:title></image:image>
   </url>
   <url>
     <loc>https://www.wonderadlab.com/services/social-cover-design.html</loc>
-    <lastmod>2026-08-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-travel.webp</image:loc><image:title>Social media cover design</image:title></image:image>
   </url>
   <url>
     <loc>https://www.wonderadlab.com/services/ecommerce-visual-design.html</loc>
-    <lastmod>2026-08-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-skincare.webp</image:loc><image:title>E-commerce product visual design</image:title></image:image>
   </url>
   <url>
     <loc>https://www.wonderadlab.com/services/ppt-design.html</loc>
-    <lastmod>2026-08-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/hero-wonder-3d-960.webp</image:loc><image:title>Presentation and slide design</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://www.wonderadlab.com/services/logo-design.html</loc>
+    <lastmod>2026-09-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/hero-wonder-3d-960.webp</image:loc><image:title>Brand logo concept design</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://www.wonderadlab.com/services/banner-design.html</loc>
+    <lastmod>2026-09-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-travel.webp</image:loc><image:title>Website and campaign banner design</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://www.wonderadlab.com/services/menu-price-list-design.html</loc>
+    <lastmod>2026-09-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-coffee.webp</image:loc><image:title>Menu and price list design</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://www.wonderadlab.com/services/ai-image-design.html</loc>
+    <lastmod>2026-09-01</lastmod><changefreq>monthly</changefreq><priority>0.8</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/portfolio-skincare.webp</image:loc><image:title>AI image and scene visual design</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://www.wonderadlab.com/services/creative-design-services.html</loc>
+    <lastmod>2026-09-01</lastmod><changefreq>monthly</changefreq><priority>0.9</priority>
+    <image:image><image:loc>https://www.wonderadlab.com/wonder-ad-lab-social.jpg</image:loc><image:title>Wonder Ad Lab creative design services</image:title></image:image>
   </url>
 </urlset>

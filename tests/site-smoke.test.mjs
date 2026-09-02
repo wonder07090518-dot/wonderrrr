@@ -62,6 +62,30 @@ test('new visitors start in English while explicit and saved language choices ar
   assert.match(script, /savedLanguage : 'en'/);
 });
 
+test('search engines can discover focused service guides and their images', async () => {
+  const servicePages = [
+    'ai-poster-design.html', 'social-cover-design.html', 'ecommerce-visual-design.html',
+    'ppt-design.html', 'logo-design.html', 'banner-design.html',
+    'menu-price-list-design.html', 'ai-image-design.html', 'creative-design-services.html'
+  ];
+  const [home, sitemap, robots] = await Promise.all([read('index.html'), read('sitemap.xml'), read('robots.txt')]);
+  assert.match(sitemap, /xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/);
+  assert.match(sitemap, /<image:image>/);
+  assert.match(robots, /Sitemap: https:\/\/www\.wonderadlab\.com\/sitemap\.xml/);
+
+  for (const file of servicePages) {
+    const route = `/services/${file}`;
+    const page = await read(route.slice(1));
+    assert.ok(home.includes(`href="${route}"`), `home link missing: ${route}`);
+    assert.ok(sitemap.includes(`https://www.wonderadlab.com${route}`), `sitemap URL missing: ${route}`);
+    assert.match(page, /<meta name="description" content="[^"]+">/);
+    assert.match(page, /<meta name="robots" content="index,follow,max-image-preview:large">/);
+    assert.ok(page.includes(`<link rel="canonical" href="https://www.wonderadlab.com${route}">`), `canonical missing: ${route}`);
+    assert.match(page, /<script type="application\/ld\+json">/);
+    assert.match(page, /<h1>/);
+  }
+});
+
 test('closed account modals cannot cover mobile navigation', async () => {
   const [css, script] = await Promise.all([read('manuscript.css'), read('script.js')]);
   assert.match(css, /\.inbox-modal \{[^}]*display: none;[^}]*pointer-events: none;/);

@@ -146,7 +146,7 @@ Object.assign(zhToEn, {
   '申请修改':'Request a revision'
 });
 Object.assign(zhToEn, {
-  '先看最常见的四类设计需求':'Start with four common design needs',
+  '先看最常见的设计需求':'Start with the most common design needs',
   '每一页都写清楚适合场景、需要准备的材料、交付内容和起步价格，方便你选对服务。':'Each guide explains suitable use cases, what to prepare, deliverables and starting prices.',
   'AI 海报与广告图':'AI posters and advertising visuals',
   '活动、上新、开业与节日宣传，适配社媒和印刷尺寸。':'For campaigns, launches, openings and seasonal promotions in social and print sizes.',
@@ -156,6 +156,15 @@ Object.assign(zhToEn, {
   '主图、场景图、卖点图与详情页视觉，按平台尺寸交付。':'Hero images, lifestyle scenes, selling-point graphics and product-detail visuals.',
   'PPT 美化设计':'PPT and slide design',
   '汇报、提案、课程与品牌演示，让内容更清楚、更好讲。':'Clearer reports, proposals, class presentations and brand decks.',
+  '为店铺、个人品牌和活动建立清楚、易识别的视觉标志。':'A clear, recognizable visual mark for shops, personal brands and campaigns.',
+  '查看 Logo 设计说明 →':'View the logo design guide →',
+  '网站与活动 Banner':'Website and campaign banners',
+  '网站横幅、店铺首页与活动头图，按桌面端和移动端交付。':'Website banners, storefront headers and campaign visuals for desktop and mobile.',
+  '查看 Banner 设计说明 →':'View the banner design guide →',
+  '餐饮菜单、服务价格和项目清单，让顾客快速看懂怎么买。':'Restaurant menus, service prices and product lists that are easy to understand.',
+  '查看菜单设计说明 →':'View the menu design guide →',
+  '文章插图、商品氛围和场景配图，生成后由人工筛选检查。':'Article illustrations, product moods and scene visuals with human review.',
+  '查看 AI 配图说明 →':'View the AI image guide →',
   '查看服务说明与下单建议 →':'View the service guide →',
   '不知道选哪种？直接在下单区选择“其他需求”，用一句话告诉我们用途即可。':'Not sure which service fits? Choose “Custom request” in the order form and describe the use in one sentence.'
 });
