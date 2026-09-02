@@ -1,6 +1,6 @@
 import { isAdmin, kv, storageConfigured } from './_admin.js';
 import { getCurrentUser } from './_user.js';
-import { balanceKey, loadRecharge, readBalance, rechargeAmounts, rechargeKey, rechargeMethods } from './_balance.js';
+import { balanceKey, loadRecharge, readBalance, rechargeAmounts, rechargeBonus, rechargeCredit, rechargeKey, rechargeMethods } from './_balance.js';
 
 const OWNER_EMAIL = 'wonder07090518@gmail.com';
 
@@ -18,8 +18,8 @@ async function notifyOwner(item) {
   return sendEmail({
     to: OWNER_EMAIL,
     replyTo: item.email,
-    subject: `Wonder Ad Lab 余额充值待核对 · ${item.id}`,
-    text: `客户已提交充值付款确认。请先核对实际到账，再在管理后台点击“确认到账并入账”。\n\n充值编号：${item.id}\n客户邮箱：${item.email}\n支付方式：${item.payment}\n付款金额：¥${item.amount}\n待入余额：¥${item.creditedAmount}`,
+    subject: `Wonder Ad Lab 储值卡充值待核对 · ${item.id}`,
+    text: `客户已提交储值卡充值付款确认。请先核对实际到账，再在管理后台点击“确认到账并入账”。\n\n充值编号：${item.id}\n客户邮箱：${item.email}\n支付方式：${item.payment}\n实付金额：¥${item.amount}\n赠送金额：¥${item.bonusAmount}\n待入余额：¥${item.creditedAmount}`,
     idempotencyKey: `recharge-owner-${item.id}`
   });
 }
@@ -28,8 +28,8 @@ async function notifyCustomer(item, balance) {
   return sendEmail({
     to: item.email,
     replyTo: OWNER_EMAIL,
-    subject: `Wonder Ad Lab 余额已到账 · ${item.id}`,
-    text: `你好，\n\n你的充值已经核对到账，并已按 1:1 计入 Wonder Ad Lab 账户余额。\n\n充值编号：${item.id}\n充值金额：¥${item.amount}\n到账余额：¥${item.creditedAmount}\n当前余额：¥${balance}\n\nWonder Ad Lab`,
+    subject: `Wonder Ad Lab 储值卡余额已到账 · ${item.id}`,
+    text: `你好，\n\n你的储值卡充值已经核对到账，本金和赠送金额均已计入 Wonder Ad Lab 账户余额。\n\n充值编号：${item.id}\n实付金额：¥${item.amount}\n赠送金额：¥${item.bonusAmount}\n到账余额：¥${item.creditedAmount}\n当前余额：¥${balance}\n\nWonder Ad Lab`,
     idempotencyKey: `recharge-customer-${item.id}`
   });
 }
@@ -55,7 +55,9 @@ export default async function rechargesHandler(req, res) {
       }
       return res.status(200).json({ ok: true, status: existing.status, emailSent });
     }
-    const item = { id, email: user.email, name: user.name, amount, creditedAmount: amount, payment, currency: 'CNY', status: '待确认支付', requestedAt: new Date().toISOString(), ownerEmailSent: false };
+    const bonusAmount = rechargeBonus(amount);
+    const creditedAmount = rechargeCredit(amount);
+    const item = { id, email: user.email, name: user.name, amount, bonusAmount, creditedAmount, payment, currency: 'CNY', status: '待确认支付', requestedAt: new Date().toISOString(), ownerEmailSent: false };
     await kv('set', rechargeKey(id), JSON.stringify(item));
     await kv('zadd', 'wonder:recharges', Date.now(), id);
     let emailSent = false;

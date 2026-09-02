@@ -219,25 +219,31 @@ test('feedback form saves suggestions and emails the studio with abuse controls'
   assert.match(vercel, /"source": "\/api\/feedback"/);
 });
 
-test('balance top-ups are credited one-to-one only after idempotent admin approval', async () => {
+test('value-card top-ups include a ten-percent bonus only after idempotent admin approval', async () => {
   const [html, script, payment, api, balanceApi, balanceHelpers, adminHtml, adminScript] = await Promise.all([
     read('index.html'), read('script.js'), read('payment.js'), read('api/_recharges-route.js'), read('api/_balance-route.js'), read('api/_balance.js'), read('admin.html'), read('admin.js')
   ]);
   assert.match(html, /id="rechargeModal"/);
-  assert.match(html, /支付 ¥50，确认后余额增加 ¥50/);
-  assert.match(html, /核对实际到账并在后台确认后/);
+  assert.match(html, /支付 ¥100，赠送 ¥10，到账余额 ¥110/);
+  assert.match(html, /value="500"/);
+  assert.match(html, /核对实际到账/);
   assert.match(script, /kind: 'recharge'/);
   assert.match(script, /accountApi\('\/api\/balance'\)/);
   assert.match(payment, /fetch\('\/api\/recharges'/);
   assert.match(payment, /topUpNotice/);
-  assert.match(balanceHelpers, /new Set\(\[20, 50, 100, 200\]\)/);
-  assert.match(api, /creditedAmount: amount/);
+  assert.match(balanceHelpers, /new Set\(\[100, 200, 300, 400, 500\]\)/);
+  assert.match(balanceHelpers, /function rechargeBonus/);
+  assert.match(balanceHelpers, /function rechargeCredit/);
+  assert.match(api, /bonusAmount = rechargeBonus\(amount\)/);
+  assert.match(api, /creditedAmount = rechargeCredit\(amount\)/);
   assert.match(api, /isAdmin\(req\)/);
   assert.match(api, /kv\('setnx', `wonder:recharge-applied:/);
   assert.match(api, /kv\('incrby', balanceKey\(item\.email\), item\.creditedAmount\)/);
   assert.match(balanceApi, /getCurrentUser/);
+  assert.match(balanceApi, /bonusAmount: item\.bonusAmount \|\| 0/);
   assert.match(adminHtml, /id="recharges"/);
   assert.match(adminScript, /action: 'approve'/);
+  assert.match(adminHtml, /每充 ¥100 赠 ¥10/);
   assert.match(adminScript, /确认实际到账并入账/);
 });
 
@@ -246,6 +252,7 @@ test('signed-in customers can pay an order from balance without duplicate deduct
     read('index.html'), read('script.js'), read('api/orders.js'), read('api/_balance-payment-route.js'), read('api/account-actions.js'), read('vercel.json')
   ]);
   assert.match(script, /value="余额支付"/);
+  assert.match(html, /value="微信支付" checked/);
   assert.match(script, /fetch\(path, \{ credentials: 'same-origin'/);
   assert.match(script, /accountApi\('\/api\/balance-payment'/);
   assert.match(script, /data-balance-pay-order/);

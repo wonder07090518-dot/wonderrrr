@@ -1,7 +1,17 @@
 import { kv } from './_admin.js';
 
-export const rechargeAmounts = new Set([20, 50, 100, 200]);
+export const rechargeAmounts = new Set([100, 200, 300, 400, 500]);
 export const rechargeMethods = new Set(['微信支付', '支付宝']);
+
+export function rechargeBonus(amount) {
+  const value = Number(amount);
+  return rechargeAmounts.has(value) ? Math.floor(value / 10) : 0;
+}
+
+export function rechargeCredit(amount) {
+  const value = Number(amount);
+  return rechargeAmounts.has(value) ? value + rechargeBonus(value) : 0;
+}
 
 export function balanceKey(email) {
   return `wonder:balance:${String(email || '').trim().toLowerCase()}`;

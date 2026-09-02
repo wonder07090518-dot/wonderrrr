@@ -18,9 +18,9 @@ const copy = language === 'en' ? {
   submitting: 'Submitting confirmation…',
   failed: 'Payment confirmation could not be submitted. Please stay on this page and try again.',
   qrFailed: 'The payment QR code could not be loaded. Please return to My Orders and try again.',
-  topUp: 'Account balance top-up',
-  topUpNotice: 'After you confirm, the top-up will wait for studio verification. Your balance is credited one-to-one only after the funds received are confirmed.',
-  topUpSuccess: 'Your top-up confirmation has been submitted. The balance will be credited after Wonder Ad Lab verifies the payment received.',
+  topUp: 'Wonder value card top-up',
+  topUpNotice: 'After you confirm, the top-up will wait for studio verification. The paid amount and bonus are added only after the funds received are confirmed.',
+  topUpSuccess: 'Your value-card top-up confirmation has been submitted. The paid amount and bonus will be credited after Wonder Ad Lab verifies the payment received.',
   plan: { monthly: 'Monthly membership', yearly: 'Yearly membership' }
 } : {
   title: 'Wonder Ad Lab · 支付订单',
@@ -38,9 +38,9 @@ const copy = language === 'en' ? {
   submitting: '正在提交付款确认…',
   failed: '付款确认暂时无法提交，请留在此页面并重试。',
   qrFailed: '收款码加载失败，请返回“我的订单”后重新打开。',
-  topUp: '账户余额充值',
-  topUpNotice: '点击确认后，充值会等待工作室核对。只有确认实际到账后，才会按 1:1 增加账户余额。',
-  topUpSuccess: '充值付款确认已提交。Wonder Ad Lab 核对实际到账后，余额才会入账。',
+  topUp: 'Wonder 储值卡充值',
+  topUpNotice: '点击确认后，充值会等待工作室核对。只有确认实际到账后，才会把本金和赠送金额一起计入储值卡余额。',
+  topUpSuccess: '储值卡充值付款确认已提交。Wonder Ad Lab 核对实际到账后，本金和赠送金额才会入账。',
   plan: { monthly: '月会员', yearly: '年会员' }
 };
 const membershipPlans = {
@@ -80,7 +80,14 @@ else {
   const localizedTitle = transaction.kind === 'membership' && copy.plan[planKey] ? copy.plan[planKey] : (transaction.kind === 'recharge' ? copy.topUp : transaction.title);
   description.textContent = `${localizedTitle} · ${transaction.id}`;
   amount.textContent = `¥${transaction.amount}`;
-  if (transaction.kind === 'recharge') document.querySelector('#paymentNotice').textContent = copy.topUpNotice;
+  if (transaction.kind === 'recharge') {
+    const paid = Number(transaction.amount) || 0;
+    const bonus = Number(transaction.bonusAmount) || 0;
+    const credit = Number(transaction.creditedAmount) || paid + bonus;
+    document.querySelector('#paymentNotice').textContent = language === 'en'
+      ? `Pay ¥${paid} and receive ¥${credit} in value-card balance, including a ¥${bonus} bonus. ${copy.topUpNotice}`
+      : `实付 ¥${paid}，赠送 ¥${bonus}，核验后储值卡到账 ¥${credit}。${copy.topUpNotice}`;
+  }
 }
 function renderMethod() {
   document.querySelectorAll('[data-method]').forEach(button => button.classList.toggle('active', button.dataset.method === method));

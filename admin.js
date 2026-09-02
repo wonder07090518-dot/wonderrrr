@@ -54,7 +54,7 @@ function renderRecharges() {
     const card = document.createElement('article');
     card.className = 'recharge-admin-card';
     const approved = item.status === '已到账';
-    card.innerHTML = `<div class="recharge-admin-copy"><div class="row"><strong>${escapeHtml(item.id)}</strong><span class="status ${approved ? 'is-done' : 'is-pending'}">${escapeHtml(item.status)}</span></div><h3>付款 ¥${Number(item.amount) || 0} · 入账 ¥${Number(item.creditedAmount) || 0}</h3><p>${escapeHtml(item.email)} · ${escapeHtml(item.payment)}</p><small>提交：${escapeHtml(formatDate(item.requestedAt))}${item.approvedAt ? ` · 到账：${escapeHtml(formatDate(item.approvedAt))}` : ''}</small></div><button type="button" class="approve-recharge" ${approved ? 'disabled' : ''}>${approved ? `已到账 · 余额 ¥${Number(item.balanceAfter) || 0}` : '确认实际到账并入账'}</button>`;
+    card.innerHTML = `<div class="recharge-admin-copy"><div class="row"><strong>${escapeHtml(item.id)}</strong><span class="status ${approved ? 'is-done' : 'is-pending'}">${escapeHtml(item.status)}</span></div><h3>实付 ¥${Number(item.amount) || 0} · 赠送 ¥${Number(item.bonusAmount) || 0} · 入账 ¥${Number(item.creditedAmount) || 0}</h3><p>${escapeHtml(item.email)} · ${escapeHtml(item.payment)}</p><small>提交：${escapeHtml(formatDate(item.requestedAt))}${item.approvedAt ? ` · 到账：${escapeHtml(formatDate(item.approvedAt))}` : ''}</small></div><button type="button" class="approve-recharge" ${approved ? 'disabled' : ''}>${approved ? `已到账 · 余额 ¥${Number(item.balanceAfter) || 0}` : '确认实际到账并入账'}</button>`;
     const button = card.querySelector('.approve-recharge');
     if (!approved) button.addEventListener('click', () => approveRecharge(item, button));
     list.appendChild(card);
@@ -66,7 +66,7 @@ async function loadRecharges() {
   catch (error) { rechargeNotice.textContent = error.setup ? '充值存储尚未配置。' : `无法读取充值申请：${error.message}`; }
 }
 async function approveRecharge(item, button) {
-  if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户余额将增加 ¥${item.creditedAmount}。`)) return;
+  if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户储值卡将增加 ¥${item.creditedAmount}，其中赠送 ¥${Number(item.bonusAmount) || 0}。`)) return;
   button.disabled = true; button.textContent = '正在入账…';
   try {
     const result = await api('/api/recharges', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, action: 'approve' }) });

@@ -499,11 +499,15 @@ footer { padding: 72px 0 32px; color: #fff; background: var(--ink); }
 .recharge-form fieldset { padding: 0; margin: 0; border: 0; }
 .recharge-form legend { margin-bottom: 10px; color: var(--muted); font-size: 12px; font-weight: 720; }
 .recharge-amounts, .recharge-methods { display: grid; gap: 8px; }
-.recharge-amounts { grid-template-columns: repeat(4, 1fr); }
+.recharge-amounts { grid-template-columns: repeat(5, 1fr); }
 .recharge-methods { grid-template-columns: repeat(2, 1fr); }
 .recharge-amounts label, .recharge-methods label { position: relative; }
 .recharge-amounts input, .recharge-methods input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .recharge-amounts span, .recharge-methods span { min-height: 46px; display: grid; place-items: center; border: 1px solid var(--rule); background: #fff; font-size: 12px; font-weight: 760; cursor: pointer; transition: border-color .2s ease, color .2s ease, background .2s ease; }
+.recharge-amounts span { align-content: center; gap: 4px; padding: 8px 5px; }
+.recharge-amounts span b, .recharge-amounts span small { display: block; line-height: 1; }
+.recharge-amounts span small { color: var(--muted); font-size: 9px; font-weight: 680; }
+.recharge-amounts input:checked + span small { color: var(--blue); }
 .recharge-amounts input:checked + span, .recharge-methods input:checked + span { border-color: var(--blue); background: #edf2ff; color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
 .recharge-rate { margin: 0; padding: 13px 14px; border-left: 3px solid var(--blue); background: #edf2ff; color: var(--blue); font: 720 12px/1.55 var(--sans); }
 .recharge-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.7; }

@@ -30,6 +30,20 @@ function installBalancePaymentOption() {
   if (note) note.textContent = '使用余额支付会直接扣除本次固定项目价格；选择微信或支付宝时，收款码与价格会发送到邮箱';
 }
 installBalancePaymentOption();
+const rechargeCardAmounts = new Set([100, 200, 300, 400, 500]);
+function rechargeCardBonus(amount) {
+  const value = Number(amount);
+  return rechargeCardAmounts.has(value) ? Math.floor(value / 10) : 0;
+}
+function updateRechargeRate() {
+  const amount = Number(document.querySelector('input[name="rechargeAmount"]:checked')?.value || 100);
+  const bonus = rechargeCardBonus(amount);
+  const target = document.querySelector('#rechargeRate');
+  if (!target) return;
+  target.textContent = language === 'en'
+    ? `Pay ¥${amount}, receive a ¥${bonus} bonus, and add ¥${amount + bonus} to your balance.`
+    : `支付 ¥${amount}，赠送 ¥${bonus}，到账余额 ¥${amount + bonus}。`;
+}
 const servicePrices = {
   '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张', '电商详情页': '¥35 / 页起', '电商上新套装': '¥79 / 套起', 'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起', 'Banner 设计': '¥16 / 张', '创意字贴': '¥15 / 张', '壁纸设计': '¥16 / 张', '菜单与价目表': '¥22 / 张', '活动物料套装': '¥59 / 套起', '品牌视觉套装': '¥99 / 套起', '社媒月更包': '¥129 / 10 张起', '印刷物料设计': '¥22 / 张起', '其他需求': 'AI 评估报价',
   'Social cover': '¥16 / image', 'Marketing poster': '¥19 / image', 'E-commerce visual': '¥22 / image', 'E-commerce detail page': '¥35 / page from', 'E-commerce launch kit': '¥79 / kit from', 'Slide design': '¥20 / slide from', 'AI quick image': '¥12 / image', 'Brand logo': '¥25 / mark from', 'Banner design': '¥16 / image', 'Creative type sticker': '¥15 / image', 'Wallpaper design': '¥16 / image', 'Custom request': 'AI-estimated quote'
@@ -143,7 +157,13 @@ Object.assign(zhToEn, {
   '为持续创作，准备的更快通道':'A faster lane for ongoing creativity','直接加我微信':'Add me on WeChat','选择项目、写下需求，提交后会发送确认邮件与付款指引':'Choose a service, share your brief, then receive an email confirmation and payment instructions','提交后显示“正在审核中”，付款二维码与固定项目价格将发送至你的邮箱':'Your order will be reviewed. A payment QR code and the fixed project price will be emailed to you.',
   '你的隐私，值得被认真对待':'Your privacy deserves care','我们仅使用你提交的邮箱与创意需求来处理订单、发送付款指引及交付成品。':'We only use the email address and creative brief you submit to process the order, send payment instructions and deliver the final files.','不会出售你的个人信息。订单邮件由 Wonder Ad Lab 发送至':'We never sell your personal information. Order email is handled by Wonder Ad Lab at','处理。':'for order processing.','定制需求':'Custom brief','请在你的邮箱查收付款方式与订单确认信息。':'Check your email for payment instructions and order confirmation.',
   '移动端快捷操作':'Mobile quick actions','主导航':'Main navigation',
-  '申请修改':'Request a revision'
+  '申请修改':'Request a revision',
+  '储值卡充值':'Value card top-up',
+  '选择充值档位':'Choose a top-up tier',
+  '选择充值支付方式':'Choose how to top up',
+  '赠 ¥10':'Bonus ¥10','赠 ¥20':'Bonus ¥20','赠 ¥30':'Bonus ¥30','赠 ¥40':'Bonus ¥40','赠 ¥50':'Bonus ¥50',
+  '支付 ¥100，赠送 ¥10，到账余额 ¥110。':'Pay ¥100, receive a ¥10 bonus, and add ¥110 to your balance.',
+  '提交付款确认后不会立即增加余额。工作室会先在微信或支付宝核对实际到账，再把本金和赠送金额一起计入储值卡余额。下单时可选择微信支付、支付宝或储值卡余额支付。':'Your balance is not credited immediately. The studio first verifies the WeChat Pay or Alipay receipt, then adds both the paid amount and bonus to your value card. At checkout, choose WeChat Pay, Alipay or your value-card balance.'
 });
 Object.assign(zhToEn, {
   '先看最常见的设计需求':'Start with the most common design needs',
@@ -219,6 +239,7 @@ function applyLanguage() {
   if (siteNav) siteNav.setAttribute('aria-label', language === 'en' ? 'Main navigation' : '主导航');
   const mobileActions = document.querySelector('.mobile-nav-actions');
   if (mobileActions) mobileActions.setAttribute('aria-label', language === 'en' ? 'Mobile quick actions' : '移动端快捷操作');
+  updateRechargeRate();
   const serviceGrid = document.querySelector('.price-grid');
   if (serviceGrid) serviceGrid.setAttribute('aria-label', language === 'en' ? 'Wonder Ad Lab services and pricing' : 'Wonder Ad Lab 服务与报价');
   const localizedAttributes = [
@@ -235,7 +256,7 @@ function applyLanguage() {
     ['.order-steps', 'aria-label', 'Order steps', '下单步骤'],
     ['#closeOrdersButton', 'aria-label', 'Close orders', '关闭订单'],
     ['#closeRevisionButton', 'aria-label', 'Close revision request', '关闭修改申请'],
-    ['#closeRechargeButton', 'aria-label', 'Close balance top-up', '关闭余额充值'],
+    ['#closeRechargeButton', 'aria-label', 'Close value card top-up', '关闭储值卡充值'],
     ['#closeFeedbackButton', 'aria-label', 'Close feedback', '关闭意见建议'],
     ['[data-reel-frame="0"] img', 'alt', 'Wonder Ad Lab black-metal brand mark', 'Wonder Ad Lab 黑色金属品牌标志'],
     ['[data-reel-frame="1"] img', 'alt', 'Morning Coffee brand visual', '晨光咖啡品牌视觉案例'],
@@ -578,7 +599,7 @@ function renderRechargeHistory(items = []) {
   const target = document.querySelector('#rechargeHistory');
   if (!target) return;
   if (!items.length) { target.innerHTML = `<p>${language === 'en' ? 'No top-up records yet.' : '暂时没有充值记录。'}</p>`; return; }
-  target.innerHTML = `<h3>${language === 'en' ? 'Top-up history' : '充值记录'}</h3>${items.map(item => `<article><div><strong>¥${Number(item.amount) || 0}</strong><span>${escapeHtml(rechargeStatusText(item.status))}</span></div><small>${escapeHtml(item.id)} · ${escapeHtml(item.payment)}</small></article>`).join('')}`;
+  target.innerHTML = `<h3>${language === 'en' ? 'Value card history' : '储值记录'}</h3>${items.map(item => { const amount = Number(item.amount) || 0; const bonus = Number(item.bonusAmount) || 0; const credit = Number(item.creditedAmount) || amount; return `<article><div><strong>${language === 'en' ? `Paid ¥${amount} · Credit ¥${credit}` : `实付 ¥${amount} · 到账 ¥${credit}`}</strong><span>${escapeHtml(rechargeStatusText(item.status))}</span></div><small>${bonus ? (language === 'en' ? `Bonus ¥${bonus} · ` : `赠送 ¥${bonus} · `) : ''}${escapeHtml(item.id)} · ${escapeHtml(item.payment)}</small></article>`; }).join('')}`;
 }
 async function renderCustomerOrders() {
   const user = getCurrentUser();
@@ -720,11 +741,13 @@ document.querySelector('#closeFeedback').addEventListener('click', () => closeMo
 document.querySelector('#closeFeedbackButton').addEventListener('click', () => closeModal(feedbackModal));
 document.querySelector('#accountOrders').addEventListener('click', () => { closeModal(accountModal); openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#rechargeButton').addEventListener('click', async () => { closeModal(accountModal); await renderAccountStats(); openModal(rechargeModal); });
+document.querySelectorAll('input[name="rechargeAmount"]').forEach(input => input.addEventListener('change', updateRechargeRate));
 document.querySelector('#rechargeForm').addEventListener('submit', event => {
   event.preventDefault();
-  const amount = event.target.querySelector('input[name="rechargeAmount"]:checked')?.value;
+  const amount = Number(event.target.querySelector('input[name="rechargeAmount"]:checked')?.value);
   const payment = event.target.querySelector('input[name="rechargePayment"]:checked')?.value || '微信支付';
-  startPayment({ id: `RC${Date.now()}`, kind: 'recharge', title: language === 'en' ? 'Account balance top-up' : '账户余额充值', amount, payment });
+  const bonusAmount = rechargeCardBonus(amount);
+  startPayment({ id: `RC${Date.now()}`, kind: 'recharge', title: language === 'en' ? 'Wonder value card top-up' : 'Wonder 储值卡充值', amount, bonusAmount, creditedAmount: amount + bonusAmount, payment });
 });
 document.querySelector('#inviteButton').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText('WONDER-2026'); showToast('邀请代码已复制。'); } catch { showToast('邀请代码：WONDER-2026'); }
