@@ -85,7 +85,7 @@ else {
 function renderMethod() {
   document.querySelectorAll('[data-method]').forEach(button => button.classList.toggle('active', button.dataset.method === method));
   confirmButton.disabled = !transactionValid;
-  qr.src = method === '支付宝' ? 'alipay.jpg' : 'wechat.jpg';
+  qr.src = method === '支付宝' ? 'alipay.jpg' : 'wechat.jpg?v=20260901a';
   const visibleMethod = method === '支付宝' ? copy.alipay : copy.wechat;
   qr.alt = copy.qrAlt(visibleMethod);
   hint.textContent = copy.hint(visibleMethod);
