@@ -16,20 +16,41 @@ export default async function handler(req, res) {
   if (!storedRaw) return res.status(404).json({ error: 'Order not found' });
   const storedOrder = JSON.parse(storedRaw);
   if (String(storedOrder.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'This order does not belong to your account' });
-  const { service, email, wechat, idea, size, style, payment, date, price } = storedOrder;
+  const { service, email, wechat, idea, size, style, payment, date, price, turnaround = 'standard' } = storedOrder;
   if (!servicePrices[service] || !email || !idea || !['微信支付', '支付宝', '余额支付'].includes(payment)) return res.status(400).json({ error: 'Invalid order details' });
   if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return res.status(503).json({ error: 'Email service is not configured' });
   const references = Array.isArray(storedOrder.referenceFiles) ? storedOrder.referenceFiles : [];
   const orderPrice = servicePrices[service] || price || '待确认报价';
+  const turnaroundText = turnaround === 'rush-request'
+    ? '申请加急（待确认能否接单、交付时间与加急费用）'
+    : '常规制作（需求、素材与付款确认后，通常 24 小时内完成首版）';
+  const recordNotification = async fields => {
+    const latestRaw = await kv('get', `wonder:order:${id}`);
+    const latest = latestRaw ? JSON.parse(latestRaw) : storedOrder;
+    await kv('set', `wonder:order:${id}`, JSON.stringify({ ...latest, ...fields, notificationUpdatedAt: new Date().toISOString() }));
+  };
   const referenceText = references.length ? `\n\n参考文件（共 ${references.length} 个，已安全存入私有空间）：\n${references.map(item => `- ${item.path || item.name}`).join('\n')}\n\n请登录 Wonder Ad Lab 管理后台生成短时下载链接。` : '\n\n参考文件：未上传';
-  const text = `新创意订单\n\n订单号：${id}\n服务：${service}\n本次应付项目价格：${orderPrice}\n客户邮箱：${email}\n客户微信：${wechat || '未填写'}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n提交时间：${date}\n\n需求：\n${idea}${referenceText}`;
+  const text = `新创意订单\n\n订单号：${id}\n服务：${service}\n本次应付项目价格：${orderPrice}\n交付速度：${turnaroundText}\n客户邮箱：${email}\n客户微信：${wechat || '未填写'}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n提交时间：${date}\n\n需求：\n${idea}${referenceText}\n\n管理后台：https://www.wonderadlab.com/admin.html`;
   const ownerPayload = { from: process.env.MAIL_FROM, to: ['wonder07090518@gmail.com'], subject: `Wonder Ad Lab 新创意订单 ${id}`, text, reply_to: email };
   const ownerResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': `order-owner-${id}` },
     body: JSON.stringify(ownerPayload)
   });
-  if (payment === '余额支付') return res.status(ownerResponse.ok ? 200 : 502).json(ownerResponse.ok ? { ok: true } : { error: 'Email delivery failed' });
+  if (turnaround === 'rush-request') {
+    const customerResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': `order-customer-${id}` },
+      body: JSON.stringify({ from: process.env.MAIL_FROM, to: [email], subject: `Wonder Ad Lab 已收到你的加急申请 ${id}`, text: `你好，\n\n我们已收到你的 ${service} 加急申请，订单已保存并正在审核。\n订单号：${id}\n当前项目基础价格：${orderPrice}\n\n请先不要付款，也不要假定加急时间已经确认。我们会先通过邮件回复能否接单、确认交付时间，并给出包含加急费用的最终报价。\n\nWonder Ad Lab`, reply_to: 'wonder07090518@gmail.com' })
+    });
+    await recordNotification({ ownerEmailSent: ownerResponse.ok, customerEmailSent: customerResponse.ok });
+    if (!ownerResponse.ok || !customerResponse.ok) return res.status(502).json({ error: 'Email delivery failed' });
+    return res.status(200).json({ ok: true });
+  }
+  if (payment === '余额支付') {
+    await recordNotification({ ownerEmailSent: ownerResponse.ok });
+    return res.status(ownerResponse.ok ? 200 : 502).json(ownerResponse.ok ? { ok: true } : { error: 'Email delivery failed' });
+  }
   const qrFile = payment === '支付宝' ? 'alipay.jpg' : 'wechat.jpg';
   const qrLabel = payment === '支付宝' ? '支付宝收款码' : '微信支付收款码';
   let qrContent;
@@ -42,8 +63,9 @@ export default async function handler(req, res) {
   const customerResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': `order-customer-${id}` },
-    body: JSON.stringify({ from: process.env.MAIL_FROM, to: [email], subject: `Wonder Ad Lab 已收到你的订单 ${id}`, text: `你好，\n\n我们已收到你的 ${service} 订单，当前状态为：已提交，正在审核中。\n订单号：${id}\n本次应付项目价格：${orderPrice}\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n参考文件：${references.length ? `已安全保存 ${references.length} 个` : '未上传'}\n\n请使用附件中的${qrLabel}完成付款。付款后请等待 Wonder Ad Lab 团队确认。作品完成后会通过邮件发送给你。\n\nWonder Ad Lab`, reply_to: 'wonder07090518@gmail.com', attachments: [{ filename: `${qrLabel}.jpg`, content: qrContent }] })
+    body: JSON.stringify({ from: process.env.MAIL_FROM, to: [email], subject: `Wonder Ad Lab 已收到你的订单 ${id}`, text: `你好，\n\n我们已收到你的 ${service} 订单，当前状态为：已提交，正在审核中。\n订单号：${id}\n本次应付项目价格：${orderPrice}\n交付速度：常规制作\n尺寸：${size}\n风格：${style}\n支付方式：${payment}\n参考文件：${references.length ? `已安全保存 ${references.length} 个` : '未上传'}\n\n请使用附件中的${qrLabel}完成付款。需求、素材与付款确认后，通常会在 24 小时内完成首版；复杂项目以确认时间为准。作品完成后会通过邮件发送给你。\n\nWonder Ad Lab`, reply_to: 'wonder07090518@gmail.com', attachments: [{ filename: `${qrLabel}.jpg`, content: qrContent }] })
   });
+  await recordNotification({ ownerEmailSent: ownerResponse.ok, customerEmailSent: customerResponse.ok });
   if (!ownerResponse.ok || !customerResponse.ok) return res.status(502).json({ error: 'Email delivery failed' });
   return res.status(200).json({ ok: true });
 }

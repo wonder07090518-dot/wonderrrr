@@ -166,6 +166,15 @@ Object.assign(zhToEn, {
   '提交付款确认后不会立即增加余额。工作室会先在微信或支付宝核对实际到账，再把本金和赠送金额一起计入储值卡余额。下单时可选择微信支付、支付宝或储值卡余额支付。':'Your balance is not credited immediately. The studio first verifies the WeChat Pay or Alipay receipt, then adds both the paid amount and bonus to your value card. At checkout, choose WeChat Pay, Alipay or your value-card balance.'
 });
 Object.assign(zhToEn, {
+  '交付速度':'Turnaround',
+  '常规制作':'Standard',
+  '需求、素材与付款确认后，通常 24 小时内完成首版':'The first draft is usually ready within 24 hours after the brief, files and payment are confirmed',
+  '申请加急':'Request rush service',
+  '请先等我们确认能否接单与加急费用，不保证所有急单':'Wait for us to confirm availability and the rush fee; not every urgent request can be accepted',
+  '如需特别赶的时间，请先选择“申请加急”，不要先付款；我们确认能接后再给出加急费用。复杂项目交付时间会单独确认。':'For urgent work, choose “Request rush service” and do not pay yet. We will confirm availability and the additional fee first. Complex projects receive a separate timeline.',
+  '提交需求后会收到订单与付款指引。需求、素材与付款确认后，常规项目通常在 24 小时内完成首版；复杂项目与加急申请会另行确认时间和费用。完成制作后，成品会通过邮箱交付；登录后可在“我的订单”提交修改申请，也可以直接回复交付邮件。':'After submitting a brief, you receive order and payment instructions. Standard first drafts are usually ready within 24 hours after the brief, files and payment are confirmed; complex projects and rush requests receive a separate confirmed timeline and quote. Final files are delivered by email, and revisions can be requested in My Orders or by replying to the delivery email.'
+});
+Object.assign(zhToEn, {
   '先看最常见的设计需求':'Start with the most common design needs',
   '每一页都写清楚适合场景、需要准备的材料、交付内容和起步价格，方便你选对服务。':'Each guide explains suitable use cases, what to prepare, deliverables and starting prices.',
   'AI 海报与广告图':'AI posters and advertising visuals',
@@ -617,14 +626,19 @@ async function renderCustomerOrders() {
   };
   ordersList.innerHTML = orders.length ? orders.map(order => {
     const canRevise = order.status === '已交付';
-    const canPay = ['审核中', '待支付', '待确认支付'].includes(order.status) && paymentAmountFromPrice(order.price || servicePrices[order.service]);
+    const canPay = order.turnaround !== 'rush-request' && ['审核中', '待支付', '待确认支付'].includes(order.status) && paymentAmountFromPrice(order.price || servicePrices[order.service]);
     const payLabel = order.status === '待确认支付' ? (language === 'en' ? 'View payment QR again' : '重新查看收款码') : (language === 'en' ? 'Pay by QR' : '收款码支付');
     const balanceAmount = paymentAmountFromPrice(order.price || servicePrices[order.service]);
     const balancePayLabel = language === 'en' ? `Use balance ¥${balanceAmount}` : `余额支付 ¥${balanceAmount}`;
     const revisionNotice = ['修改申请', '修改中'].includes(order.status) ? `<p class="revision-active">${language === 'en' ? 'Your revision request is recorded. We will update the status here and by email.' : '修改申请已经记录，处理进度会在这里和邮件中同步。'}</p>` : '';
     const referenceFiles = Array.isArray(order.referenceFiles) ? order.referenceFiles : [];
     const referenceSummary = referenceFiles.length ? `<p class="order-reference-summary"><strong>${language === 'en' ? 'Reference files:' : '参考文件：'}</strong> ${referenceFiles.map(file => escapeHtml(file.path || file.name)).join(' · ')}</p>` : '';
-    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${referenceSummary}${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-balance-payment" type="button" data-balance-pay-order="${escapeHtml(order.id)}">${balancePayLabel}</button><button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
+    const turnaroundSummary = order.turnaround === 'rush-request'
+      ? `<p class="order-turnaround is-rush">${language === 'en' ? 'Rush requested · wait for availability and the additional fee before paying' : '已申请加急 · 请等待确认档期与加急费用后再付款'}</p>`
+      : order.turnaround === 'rush-approved'
+        ? `<p class="order-turnaround">${language === 'en' ? `Rush approved · final total ${escapeHtml(order.price)} · payment is now available` : `加急已确认 · 最终总价 ${escapeHtml(order.price)} · 现在可以付款`}</p>`
+        : `<p class="order-turnaround">${language === 'en' ? 'Standard · first draft usually within 24 hours after all details, files and payment are confirmed' : '常规制作 · 需求、素材与付款确认后，通常 24 小时内完成首版'}</p>`;
+    return `<article class="inbox-item customer-order"><div class="inbox-item-top"><span class="inbox-tag">${escapeHtml(order.service)}</span><span class="status ${statusClass(order.status)}">${escapeHtml(statusText(order.status))}</span></div><p class="inbox-idea">${escapeHtml(order.idea)}</p><p class="customer-email">${language === 'en' ? 'Price: ' : '项目价格：'}${escapeHtml(order.price || servicePrices[order.service] || (language === 'en' ? 'Quote pending' : '待确认报价'))} · ${escapeHtml(order.size)} · ${escapeHtml(order.style)} · ${escapeHtml(order.payment)} · ${language === 'en' ? 'Ordered ' : '下单于 '}${escapeHtml(order.date)}</p>${turnaroundSummary}${referenceSummary}${order.result ? `<a class="result-link" href="${order.result.data}" download="${escapeHtml(order.result.name)}">${language === 'en' ? 'Download final file' : '下载你的成品'}</a>` : `<p class="delivery-wait">${language === 'en' ? 'Your final file will appear here after delivery.' : '设计师完成后，成品会显示在这里。'}</p>`}${canPay ? `<button class="order-balance-payment" type="button" data-balance-pay-order="${escapeHtml(order.id)}">${balancePayLabel}</button><button class="order-payment" type="button" data-pay-order="${escapeHtml(order.id)}">${payLabel}</button>` : ''}${canRevise ? `<button class="revision-request" type="button" data-revision-order="${escapeHtml(order.id)}">${language === 'en' ? 'Request a revision' : '申请修改'}</button>` : ''}${revisionNotice}${revisionHistory(order)}</article>`;
   }).join('') : `<p class="empty-inbox">${language === 'en' ? 'No orders found for this account.' : '这个账户暂时没有订单。'}</p>`;
   ordersList.querySelectorAll('[data-revision-order]').forEach(button => button.addEventListener('click', () => openRevisionRequest(button.dataset.revisionOrder)));
   ordersList.querySelectorAll('[data-pay-order]').forEach(button => button.addEventListener('click', () => { const order = customerOrders.find(item => item.id === button.dataset.payOrder); if (order) startOrderPayment(order); }));
@@ -885,12 +899,13 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
   const submitLabel = submit.textContent;
   const referenceUpload = form.querySelector('.reference-upload');
   const payment = form.querySelector('input[name="payment"]:checked').value;
+  const turnaround = form.querySelector('input[name="turnaround"]:checked')?.value === 'rush-request' ? 'rush-request' : 'standard';
   submit.disabled = true;
   referenceUpload?.classList.add('is-busy');
   referenceUpload?.querySelectorAll('input').forEach(input => { input.disabled = true; });
   submit.textContent = language === 'en' ? 'Preparing files…' : '正在整理文件…';
   try {
-    if (payment === '余额支付') {
+    if (payment === '余额支付' && turnaround !== 'rush-request') {
       const amount = Number(paymentAmountFromPrice(servicePrices[service.value]));
       if (!amount) throw new Error(language === 'en' ? 'This project needs a confirmed fixed quote before balance payment.' : '这个项目需要先确认固定报价，才能使用余额支付。');
       const latestBalance = await accountApi('/api/balance');
@@ -900,13 +915,13 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
     }
     const orderId = `WA${Date.now().toString().slice(-7)}`;
     const referenceFiles = await uploadOrderReferenceFiles(orderId, submit);
-    const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, referenceFiles, status: '审核中', date: formatDate() };
+    const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, turnaround, referenceFiles, status: '审核中', date: formatDate() };
     submit.textContent = language === 'en' ? 'Submitting order…' : '正在提交订单…';
     const saved = await saveSharedOrder(order);
     if (!saved) { showToast(language === 'en' ? 'The order could not be saved. Please try again or contact us.' : '订单暂时无法同步，请稍后重试或联系客服。'); return; }
     let completedOrder = order;
     let balancePaymentResult = null;
-    if (payment === '余额支付') {
+    if (payment === '余额支付' && turnaround !== 'rush-request') {
       submit.textContent = language === 'en' ? 'Paying from balance…' : '正在从余额扣款…';
       balancePaymentResult = await payOrderWithBalance(order, null, false);
       if (!balancePaymentResult) {
@@ -916,14 +931,19 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
       completedOrder = { ...order, ...balancePaymentResult.order };
     }
     const orders = getOrders(); orders.unshift(completedOrder); saveOrders(orders);
-    const emailSent = payment === '余额支付' ? balancePaymentResult.emailSent : await notifyOwner(order);
+    const emailSent = payment === '余额支付' && turnaround !== 'rush-request' ? balancePaymentResult.emailSent : await notifyOwner(order);
     renderAccountStats();
-    pendingSubmittedOrder = payment === '余额支付' ? null : order;
+    pendingSubmittedOrder = payment === '余额支付' || turnaround === 'rush-request' ? null : order;
     const submittedTitle = document.querySelector('#submittedTitle');
     const submittedDescription = document.querySelector('#submittedDescription');
     const openOrderPayment = document.querySelector('#openOrderPayment');
     const returnHome = document.querySelector('#returnHome');
-    if (payment === '余额支付') {
+    if (turnaround === 'rush-request') {
+      submittedTitle.innerHTML = language === 'en' ? 'Rush request received.<br>Please wait for confirmation.' : '加急申请已收到，<br>请等待我们确认。';
+      submittedDescription.textContent = language === 'en' ? 'Do not pay yet. We will first confirm availability, the delivery time and the additional rush fee by email.' : '请先不要付款。我们会先通过邮件确认能否接单、交付时间和加急费用。';
+      openOrderPayment.hidden = true;
+      returnHome.textContent = language === 'en' ? 'Done' : '完成';
+    } else if (payment === '余额支付') {
       submittedTitle.innerHTML = language === 'en' ? 'Balance payment complete.<br>Your order is paid.' : '余额支付成功，<br>订单已完成付款。';
       submittedDescription.textContent = language === 'en' ? `¥${balancePaymentResult.amount} deducted. Remaining balance: ¥${balancePaymentResult.balance}. A receipt has been sent by email.` : `已扣除 ¥${balancePaymentResult.amount}，剩余余额 ¥${balancePaymentResult.balance}。支付凭证会发送到邮箱。`;
       openOrderPayment.hidden = true;
@@ -936,7 +956,9 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
       returnHome.textContent = language === 'en' ? 'Pay later' : '稍后付款';
     }
     openModal(submittedModal);
-    showToast(payment === '余额支付' ? (emailSent ? (language === 'en' ? 'Balance payment complete. Your paid order and email receipt are ready.' : '余额支付完成，订单已标记为“已支付”，邮件凭证已发送。') : (language === 'en' ? 'Balance payment complete; the email receipt is delayed.' : '余额支付完成，邮件凭证暂时延迟。')) : (emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. You can now open the payment QR.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。')));
+    showToast(turnaround === 'rush-request'
+      ? (emailSent ? (language === 'en' ? 'Rush request saved. Wait for our confirmed timeline and fee before paying.' : '加急申请已保存，请等待确认时间和费用后再付款。') : (language === 'en' ? 'Rush request saved; the email notice may arrive later.' : '加急申请已保存，邮件通知可能稍后送达。'))
+      : payment === '余额支付' ? (emailSent ? (language === 'en' ? 'Balance payment complete. Your paid order and email receipt are ready.' : '余额支付完成，订单已标记为“已支付”，邮件凭证已发送。') : (language === 'en' ? 'Balance payment complete; the email receipt is delayed.' : '余额支付完成，邮件凭证暂时延迟。')) : (emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. You can now open the payment QR.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。')));
     form.reset();
     selectedOrderFiles = [];
     orderUploadProgress = new Map();

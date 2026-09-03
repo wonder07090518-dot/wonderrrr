@@ -3,7 +3,8 @@ import { availableServices, servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
 import { head, issueSignedToken, presignUrl } from '@vercel/blob';
 
-function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝', '余额支付'].includes(order.payment); }
+const TURNAROUNDS = new Set(['standard', 'rush-request']);
+function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝', '余额支付'].includes(order.payment) && (!order.turnaround || TURNAROUNDS.has(order.turnaround)); }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
 const MAX_REFERENCE_FILES = 100;
 const MAX_REFERENCE_BYTES = 1024 * 1024 * 1024;
@@ -53,10 +54,16 @@ export default async function handler(req, res) {
     const user = await getCurrentUser(req);
     if (!user) return res.status(401).json({ error: 'Please sign in before submitting an order' });
     if (String(req.body.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'Order email does not match the signed-in account' });
+    const existing = await load(req.body.id);
+    if (existing) {
+      if (String(existing.email).toLowerCase() !== user.email) return res.status(409).json({ error: 'Order ID already exists' });
+      return res.status(200).json({ ok: true, duplicate: true });
+    }
     let references;
     try { references = await referenceMetadata(req.body.referenceFiles, req.body.id); }
     catch (error) { return res.status(error.status || 400).json({ error: error.message }); }
-    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: references, email: user.email, price: servicePrices[req.body.service], status: '审核中', createdAt: new Date().toISOString() };
+    const now = new Date().toISOString();
+    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: references, email: user.email, price: servicePrices[req.body.service], turnaround: TURNAROUNDS.has(req.body.turnaround) ? req.body.turnaround : 'standard', status: '审核中', createdAt: now, updatedAt: now };
     delete order.referenceAttachments;
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
@@ -80,6 +87,15 @@ export default async function handler(req, res) {
   if (req.method === 'PUT') {
     const id = req.query.id; const existing = await load(id);
     if (!existing) return res.status(404).json({ error: 'Order not found' });
+    if (req.body?.action === 'approve-rush') {
+      if (existing.turnaround !== 'rush-request') return res.status(409).json({ error: 'This order has no pending rush request' });
+      const finalAmount = Number(req.body?.finalAmount);
+      if (!Number.isFinite(finalAmount) || finalAmount <= 0 || finalAmount > 99999) return res.status(400).json({ error: 'Invalid rush quote' });
+      const now = new Date().toISOString();
+      const approved = { ...existing, basePrice: existing.price, price: `¥${Math.round(finalAmount * 100) / 100}`, turnaround: 'rush-approved', rushApprovedAt: now, status: '待确认支付', updatedAt: now };
+      await kv('set', `wonder:order:${id}`, JSON.stringify(approved));
+      return res.status(200).json({ ok: true, order: approved });
+    }
     const status = req.body?.status;
     if (!['审核中', '待确认支付', '已支付', '制作中', '修改申请', '修改中', '已交付'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
     const revisions = Array.isArray(existing.revisions) ? [...existing.revisions] : [];

@@ -1,0 +1,53 @@
+.turnaround-options {
+  margin-top: 2px;
+}
+
+.turnaround-options label {
+  min-width: calc(50% - 4px);
+}
+
+.turnaround-options span {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  text-align: left;
+}
+
+.turnaround-options b {
+  font-size: 12px;
+}
+
+.turnaround-options small {
+  color: inherit;
+  font-size: 10px;
+  line-height: 1.5;
+  opacity: 0.72;
+}
+
+.rush-policy {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  color: #c7c7cc;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.order-turnaround {
+  margin: 8px 0 0;
+  color: #6e6e73;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.order-turnaround.is-rush {
+  color: #b54708;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .turnaround-options label {
+    min-width: 100%;
+  }
+}

@@ -149,6 +149,33 @@ test('admin can see and process revision history', async () => {
   assert.match(css, /\.revision-card/);
 });
 
+test('orders share a durable admin queue with clear 24-hour and rush handling', async () => {
+  const [html, script, orders, notify, adminHtml, adminScript, adminCss, statusNotify] = await Promise.all([
+    read('index.html'), read('script.js'), read('api/orders.js'), read('api/notify-order.js'),
+    read('admin.html'), read('admin.js'), read('admin-live.css'), read('api/notify-status.js')
+  ]);
+  assert.match(html, /name="turnaround" value="standard" checked/);
+  assert.match(html, /name="turnaround" value="rush-request"/);
+  assert.match(html, /通常 24 小时内完成首版/);
+  assert.match(html, /不要先付款/);
+  assert.match(script, /turnaround, referenceFiles/);
+  assert.match(script, /order\.turnaround !== 'rush-request'/);
+  assert.match(script, /Rush request received/);
+  assert.match(orders, /TURNAROUNDS = new Set\(\['standard', 'rush-request'\]\)/);
+  assert.match(orders, /duplicate: true/);
+  assert.match(orders, /action === 'approve-rush'/);
+  assert.match(orders, /turnaround: 'rush-approved'/);
+  assert.match(notify, /ownerEmailSent/);
+  assert.match(notify, /customerEmailSent/);
+  assert.match(notify, /请先不要付款/);
+  assert.match(adminHtml, /id="new24h"/);
+  assert.match(adminHtml, /确认加急最终报价/);
+  assert.match(adminScript, /setInterval\(\(\) => loadDashboard\(true\), 60 \* 1000\)/);
+  assert.match(adminScript, /approveRush/);
+  assert.match(adminCss, /\.order-card\.is-new/);
+  assert.match(statusNotify, /'待确认支付'/);
+});
+
 test('ordinary orders can open the payment QR and confirm to the shared backend', async () => {
   const [html, script, paymentHtml, paymentScript, api] = await Promise.all([read('index.html'), read('script.js'), read('payment.html'), read('payment.js'), read('api/payment-confirm.js')]);
   assert.match(html, /id="openOrderPayment"/);
