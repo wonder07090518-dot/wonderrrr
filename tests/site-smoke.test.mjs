@@ -303,6 +303,24 @@ test('serverless API routes stay within the Vercel Hobby deployment limit', asyn
   assert.ok(apiFiles.includes('account-actions.js'));
 });
 
+test('privacy policy is public and signed-in users can permanently delete their account', async () => {
+  const [html, policy, route, router, vercel] = await Promise.all([
+    read('index.html'), read('privacy.html'), read('api/_account-delete-route.js'),
+    read('api/account-actions.js'), read('vercel.json')
+  ]);
+  assert.match(html, /href="\/privacy\.html"/);
+  assert.match(policy, /Your ideas stay yours\./);
+  assert.match(policy, /你的选择与账户注销/);
+  assert.match(policy, /wonder07090518@gmail\.com/);
+  assert.match(route, /getCurrentUser/);
+  assert.match(route, /confirmation !== 'DELETE'/);
+  assert.match(route, /timingSafeEqual/);
+  assert.match(route, /deleteBlob\(blobPathnames\)/);
+  assert.match(route, /clearUserSession\(res\)/);
+  assert.match(router, /route === 'account-delete'/);
+  assert.match(vercel, /"source": "\/api\/account-delete"/);
+});
+
 test('website removes unavailable or scripted AI conversations', async () => {
   const [html, script, css] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css')]);
   assert.doesNotMatch(html, /id="buildPrompt"|id="supportPanel"|id="openSupport"/);
