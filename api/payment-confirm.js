@@ -1,5 +1,6 @@
 import { kv, storageConfigured } from './_admin.js';
 import { getCurrentUser } from './_user.js';
+import { servicePrices } from './_catalog.js';
 import {
   STRIPE_CURRENCY,
   checkoutIdempotencyKey,
@@ -22,6 +23,65 @@ async function loadOrder(id) {
 
 async function saveOrder(order) {
   await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
+}
+
+function stripeTestMode() {
+  return Boolean(process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_'));
+}
+
+async function requireTestOwner(req, res) {
+  if (!stripeTestMode()) {
+    res.status(404).json({ error: 'Test checkout is unavailable' });
+    return null;
+  }
+  const user = await getCurrentUser(req);
+  if (!user) {
+    res.status(401).json({ error: 'Please sign in before testing checkout' });
+    return null;
+  }
+  if (user.email !== OWNER_EMAIL) {
+    res.status(403).json({ error: 'This test tool is restricted to the studio owner' });
+    return null;
+  }
+  return user;
+}
+
+async function createTestFixture(req, res) {
+  const user = await requireTestOwner(req, res);
+  if (!user) return;
+  const now = new Date().toISOString();
+  const id = `WATEST${Date.now().toString(36).toUpperCase()}`.slice(0, 40);
+  const order = {
+    id,
+    email: user.email,
+    service: 'AI 快速配图',
+    price: servicePrices['AI 快速配图'],
+    size: '方形社媒 1:1（1080×1080）',
+    style: '极简',
+    idea: 'Stripe sandbox end-to-end verification',
+    payment: '安全付款',
+    turnaround: 'standard',
+    status: '审核中',
+    referenceFiles: [],
+    isTest: true,
+    createdAt: now,
+    updatedAt: now
+  };
+  await saveOrder(order);
+  return res.status(201).json({ ok: true, orderId: order.id });
+}
+
+async function cleanupTestFixture(req, res, body) {
+  const user = await requireTestOwner(req, res);
+  if (!user) return;
+  const orderId = String(body?.orderId || '').trim().slice(0, 40);
+  const order = orderId ? await loadOrder(orderId) : null;
+  if (!order) return res.status(200).json({ ok: true, alreadyRemoved: true });
+  if (!order.isTest || !userOwnsOrder(user, order)) {
+    return res.status(403).json({ error: 'Only an isolated test order can be removed here' });
+  }
+  await kv('del', `wonder:order:${order.id}`);
+  return res.status(200).json({ ok: true, removed: true });
 }
 
 async function rawBody(req) {
@@ -193,8 +253,10 @@ async function stripeWebhook(req, res) {
     updatedAt: new Date().toISOString()
   };
   await saveOrder(updatedOrder);
-  let emailSent = true;
-  try { emailSent = await notifyOwner(updatedOrder, 'stripe-paid'); } catch { emailSent = false; }
+  let emailSent = false;
+  if (!updatedOrder.isTest) {
+    try { emailSent = await notifyOwner(updatedOrder, 'stripe-paid'); } catch { emailSent = false; }
+  }
   return res.status(200).json({ received: true, paid: true, emailSent });
 }
 
@@ -227,6 +289,8 @@ export default async function handler(req, res) {
   let body;
   try { body = await jsonBody(req); }
   catch (error) { return res.status(error.status || 400).json({ error: error.message }); }
+  if (action === 'test-create') return createTestFixture(req, res);
+  if (action === 'test-cleanup') return cleanupTestFixture(req, res, body);
   if (action === 'create-checkout') return createCheckout(req, res, body);
   return manualConfirmation(req, res, body);
 }

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Wonder Ad Lab · Stripe 沙盒检查</title>
+  <style>
+    :root { color-scheme: light; font-family: ui-rounded, "SF Pro Rounded", "PingFang SC", system-ui, sans-serif; background: #f5f7fb; color: #10131a; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; }
+    main { width: min(560px, 100%); padding: 36px; background: rgba(255,255,255,.92); border: 1px solid #dbe2f0; border-radius: 28px; box-shadow: 0 28px 80px rgba(29,55,108,.14); }
+    small { color: #315df4; font-weight: 800; letter-spacing: .12em; }
+    h1 { margin: 14px 0 12px; font-size: clamp(28px, 6vw, 42px); }
+    p { color: #596274; line-height: 1.7; }
+    button, a { width: 100%; min-height: 52px; display: grid; place-items: center; margin-top: 14px; border: 0; border-radius: 16px; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; }
+    button { color: white; background: #315df4; }
+    button[disabled] { opacity: .55; cursor: wait; }
+    a { color: #253047; background: #edf1f8; }
+    #cleanup { background: #132039; }
+    #status { min-height: 28px; color: #253047; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main>
+    <small>OWNER ONLY / TEST MODE</small>
+    <h1>Stripe 沙盒检查</h1>
+    <p>这里只创建一笔与真实客户列表隔离的 ¥12 测试订单，不扣真钱，也不会发送客户订单邮件。</p>
+    <p id="status" role="status">准备就绪</p>
+    <button id="create" type="button">创建隔离测试订单</button>
+    <button id="cleanup" type="button" hidden>清理本次测试订单</button>
+    <a href="/">返回 Wonder Ad Lab</a>
+  </main>
+  <script src="stripe-test.js" defer></script>
+</body>
+</html>

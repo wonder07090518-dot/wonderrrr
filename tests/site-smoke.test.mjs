@@ -221,6 +221,23 @@ test('ordinary orders use Stripe secure checkout with manual QR fallback', async
   assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
 });
 
+test('Stripe sandbox verification uses an owner-only isolated test order', async () => {
+  const [api, testPage, testScript] = await Promise.all([
+    read('api/payment-confirm.js'), read('stripe-test.html'), read('stripe-test.js')
+  ]);
+  assert.match(api, /action === 'test-create'/);
+  assert.match(api, /action === 'test-cleanup'/);
+  assert.match(api, /user\.email !== OWNER_EMAIL/);
+  assert.match(api, /isTest: true/);
+  assert.match(api, /if \(!updatedOrder\.isTest\)/);
+  assert.match(api, /kv\('del', `wonder:order:\$\{order\.id\}`\)/);
+  assert.doesNotMatch(api, /isTest[\s\S]{0,300}zadd/);
+  assert.match(testPage, /noindex,nofollow,noarchive/);
+  assert.match(testPage, /stripe-test\.js/);
+  assert.match(testScript, /action=test-create/);
+  assert.match(testScript, /action=test-cleanup/);
+});
+
 test('orders upload up to 100 reference files and 1 GB directly into private storage', async () => {
   const [html, script, css, notify, orders, uploadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
   assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
