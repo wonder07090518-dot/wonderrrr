@@ -167,7 +167,6 @@ async function createCheckout(req, res, body) {
     mode: 'payment',
     client_reference_id: order.id,
     customer_email: user.email,
-    automatic_payment_methods: { enabled: true },
     line_items: [{
       quantity: 1,
       price_data: {
