@@ -2,6 +2,15 @@ import { servicePrices } from './_catalog.js';
 
 const news = [
   {
+    id: 'service-specific-specs',
+    date: '2026-09-03',
+    titleEN: 'Each service now has the right specifications',
+    titleZH: '每项服务已有专属规格',
+    bodyEN: 'Logo, social, poster, commerce, print and other services now show their own delivery specifications, with custom size and style fields when needed.',
+    bodyZH: 'Logo、社媒、海报、电商、印刷等服务会显示各自的交付规格，也可填写自定义尺寸与自定义风格。',
+    symbol: 'slider.horizontal.3'
+  },
+  {
     id: 'app-visual-refresh',
     date: '2026-09-03',
     titleEN: 'A clearer, Chinese-first app experience',

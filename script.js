@@ -68,8 +68,8 @@ const serviceOptions = {
   '其他需求': { sizes: ['请在需求中说明尺寸', '按平台规范制作', '印刷文件', '网页文件', '社媒文件', '其他尺寸'], styles: ['请描述想要的风格', '极简', '商务高级', '潮流时尚', '国风', '其他风格'] }
 };
 const creativeOptionTranslations = {
-  '小红书 3:4（1242×1660）':'Xiaohongshu 3:4 (1242×1660)','抖音封面 9:16（1080×1920）':'Douyin cover 9:16 (1080×1920)','公众号首图 2.35:1（900×383）':'WeChat header 2.35:1 (900×383)','视频号封面 16:9（1920×1080）':'Channels cover 16:9 (1920×1080)','方形社媒 1:1（1080×1080）':'Square social 1:1 (1080×1080)','其他尺寸':'Other size',
-  '极简':'Minimal','清新生活':'Fresh lifestyle','潮流时尚':'Fashion-forward','品牌商业':'Brand commercial','可爱插画':'Cute illustration','其他风格':'Other style',
+  '小红书 3:4（1242×1660）':'Xiaohongshu 3:4 (1242×1660)','抖音封面 9:16（1080×1920）':'Douyin cover 9:16 (1080×1920)','公众号首图 2.35:1（900×383）':'WeChat header 2.35:1 (900×383)','视频号封面 16:9（1920×1080）':'Channels cover 16:9 (1920×1080)','方形社媒 1:1（1080×1080）':'Square social 1:1 (1080×1080)','其他尺寸':'Custom size',
+  '极简':'Minimal','清新生活':'Fresh lifestyle','潮流时尚':'Fashion-forward','品牌商业':'Brand commercial','可爱插画':'Cute illustration','其他风格':'Custom style',
   '竖版海报 3:4（1080×1440）':'Portrait poster 3:4 (1080×1440)','横版海报 16:9（1920×1080）':'Landscape poster 16:9 (1920×1080)','A4 印刷（210×297mm）':'A4 print (210×297mm)','A3 印刷（297×420mm）':'A3 print (297×420mm)','易拉宝（80×200cm）':'Roll-up banner (80×200cm)','科技未来':'Future tech','商务高级':'Premium business','节日氛围':'Festive','国风':'Chinese-inspired',
   '主图 1:1（800×800）':'Hero image 1:1 (800×800)','商品卡 3:4（1080×1440）':'Product card 3:4 (1080×1440)','详情页 750×1000':'Detail page 750×1000','横版展示 16:9（1920×1080）':'Landscape display 16:9 (1920×1080)','平台横幅 1200×628':'Platform banner 1200×628','电商质感':'E-commerce polish','干净白底':'Clean white background','场景氛围':'Lifestyle scene','轻奢高级':'Quiet luxury','促销醒目':'Bold promotion',
   '手机详情页 750×1000':'Mobile detail page 750×1000','淘宝 / 天猫详情页':'Taobao / Tmall detail page','京东详情页':'JD detail page','拼多多详情页':'Pinduoduo detail page','独立站长图':'Independent shop long image','卖点清晰':'Clear selling points',
@@ -349,14 +349,67 @@ function updateSelectedPrice() {
   const target = document.querySelector('#selectedPrice');
   if (target) target.textContent = `${label} ${price}`;
 }
-function renderCreativeOptions() {
-  const config = serviceOptions[service.value] || serviceOptions['其他需求'];
-  const render = (targetId, name, items) => {
+function installCustomCreativeInputs() {
+  const install = (targetId, fieldId, inputId, zhLabel, enLabel, zhPlaceholder, enPlaceholder) => {
     const target = document.querySelector(targetId);
-    target.innerHTML = items.map((item, index) => `<label><input type="radio" name="${name}" value="${item}" ${index === 0 ? 'checked' : ''}><span>${language === 'en' ? (creativeOptionTranslations[item] || item) : item}</span></label>`).join('');
+    if (!target || document.querySelector(`#${fieldId}`)) return;
+    const field = document.createElement('label');
+    field.className = 'creative-custom-input';
+    field.id = fieldId;
+    field.hidden = true;
+    field.dataset.zhLabel = zhLabel;
+    field.dataset.enLabel = enLabel;
+    field.innerHTML = `<span>${language === 'en' ? enLabel : zhLabel}</span><input id="${inputId}" type="text" maxlength="80" autocomplete="off" placeholder="${language === 'en' ? enPlaceholder : zhPlaceholder}"><small>${language === 'en' ? 'The studio will manually confirm feasibility from your description.' : '工作室会根据你的描述人工确认可行性。'}</small>`;
+    target.parentElement.append(field);
   };
-  render('#sizeOptions', 'size', config.sizes);
-  render('#styleOptions', 'style', config.styles);
+  install('#sizeOptions', 'customSizeField', 'customSizeInput', '填写自定义尺寸', 'Enter a custom size', '例如：1200 × 628 px，或填写平台规格', 'Example: 1200 × 628 px or a platform specification');
+  install('#styleOptions', 'customStyleField', 'customStyleInput', '填写自定义风格', 'Enter a custom style', '例如：暖色手绘、黑金轻奢，或跟随参考图', 'Example: warm hand-drawn, black-and-gold, or match a reference');
+}
+function syncCustomCreativeInputs() {
+  const update = (name, sentinel, fieldId, inputId) => {
+    const isCustom = document.querySelector(`input[name="${name}"]:checked`)?.value === sentinel;
+    const field = document.querySelector(`#${fieldId}`);
+    const input = document.querySelector(`#${inputId}`);
+    if (!field || !input) return;
+    field.hidden = !isCustom;
+    input.required = isCustom;
+    if (isCustom) window.requestAnimationFrame(() => input.focus({ preventScroll: true }));
+  };
+  update('size', '其他尺寸', 'customSizeField', 'customSizeInput');
+  update('style', '其他风格', 'customStyleField', 'customStyleInput');
+}
+function renderCreativeOptions({ reset = false } = {}) {
+  installCustomCreativeInputs();
+  const config = serviceOptions[service.value] || serviceOptions['其他需求'];
+  const selectedSize = reset ? null : document.querySelector('input[name="size"]:checked')?.value;
+  const selectedStyle = reset ? null : document.querySelector('input[name="style"]:checked')?.value;
+  if (reset) {
+    document.querySelector('#customSizeInput').value = '';
+    document.querySelector('#customStyleInput').value = '';
+  }
+  const render = (targetId, name, items, previous) => {
+    const target = document.querySelector(targetId);
+    target.innerHTML = items.map((item, index) => {
+      const checked = items.includes(previous) ? item === previous : index === 0;
+      const label = item === '其他尺寸'
+        ? (language === 'en' ? 'Custom size' : '自定义尺寸')
+        : item === '其他风格'
+          ? (language === 'en' ? 'Custom style' : '自定义风格')
+          : (language === 'en' ? (creativeOptionTranslations[item] || item) : item);
+      return `<label><input type="radio" name="${name}" value="${item}" ${checked ? 'checked' : ''}><span>${label}</span></label>`;
+    }).join('');
+  };
+  render('#sizeOptions', 'size', config.sizes, selectedSize);
+  render('#styleOptions', 'style', config.styles, selectedStyle);
+  document.querySelectorAll('.creative-custom-input').forEach(field => {
+    field.querySelector('span').textContent = language === 'en' ? field.dataset.enLabel : field.dataset.zhLabel;
+    field.querySelector('small').textContent = language === 'en' ? 'The studio will manually confirm feasibility from your description.' : '工作室会根据你的描述人工确认可行性。';
+  });
+  const sizeInput = document.querySelector('#customSizeInput');
+  const styleInput = document.querySelector('#customStyleInput');
+  sizeInput.placeholder = language === 'en' ? 'Example: 1200 × 628 px or a platform specification' : '例如：1200 × 628 px，或填写平台规格';
+  styleInput.placeholder = language === 'en' ? 'Example: warm hand-drawn, black-and-gold, or match a reference' : '例如：暖色手绘、黑金轻奢，或跟随参考图';
+  syncCustomCreativeInputs();
 }
 const serviceCategories = {
   social: ['社媒封面', '营销海报', '创意字贴', '壁纸设计', '社媒月更包'],
@@ -675,7 +728,7 @@ function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute(
 
 document.querySelectorAll('[data-scroll]').forEach(button => button.addEventListener('click', () => {
   const chosenService = button.dataset.choose;
-  if (chosenService && [...service.options].some(option => option.value === chosenService)) { service.value = chosenService; renderCreativeOptions(); updateSelectedPrice(); }
+  if (chosenService && [...service.options].some(option => option.value === chosenService)) { service.value = chosenService; renderCreativeOptions({ reset: true }); updateSelectedPrice(); }
   closeMobileMenu();
   document.querySelector(button.dataset.scroll).scrollIntoView({ behavior: 'smooth' });
 }));
@@ -714,7 +767,7 @@ menuToggle?.addEventListener('click', () => {
 siteNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMobileMenu));
 function chooseServiceCard(card) {
   service.value = card.dataset.product;
-  renderCreativeOptions();
+  renderCreativeOptions({ reset: true });
   updateSelectedPrice();
   document.querySelector('#order').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   showToast(language === 'en' ? `${zhToEn[card.dataset.product] || card.dataset.product} selected. Tell us your idea.` : `已选择「${card.dataset.product}」，说说你的想法吧。`);
@@ -732,7 +785,9 @@ document.querySelectorAll('.price-card').forEach(card => {
     window.setTimeout(() => card.classList.remove('is-touched'), 300);
   });
 });
-service.addEventListener('change', () => { renderCreativeOptions(); updateSelectedPrice(); });
+service.addEventListener('change', () => { renderCreativeOptions({ reset: true }); updateSelectedPrice(); });
+document.querySelector('#sizeOptions').addEventListener('change', syncCustomCreativeInputs);
+document.querySelector('#styleOptions').addEventListener('change', syncCustomCreativeInputs);
 document.querySelector('#openOrders').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in to view your orders.' : '请先登录后查看自己的订单。'); return; } openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#openAccount').addEventListener('click', () => { if (!getCurrentUser()) { openModal(authModal); showToast(language === 'en' ? 'Sign in or create an account first.' : '请先登录或注册账户。'); return; } renderAccountStats(); openModal(accountModal); });
 function openAuthOrAccount() { if (getCurrentUser()) { renderAccountStats(); openModal(accountModal); } else openModal(authModal); }
@@ -913,9 +968,15 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
       updateOrderBalanceHint();
       if ((Number(latestBalance.balance) || 0) < amount) throw new Error(language === 'en' ? `Insufficient balance. Available ¥${Number(latestBalance.balance) || 0}; required ¥${amount}.` : `余额不足：可用 ¥${Number(latestBalance.balance) || 0}，需要 ¥${amount}。请先充值或选择收款码支付。`);
     }
+    const selectedSize = form.querySelector('input[name="size"]:checked').value;
+    const selectedStyle = form.querySelector('input[name="style"]:checked').value;
+    const resolvedSize = selectedSize === '其他尺寸' ? form.querySelector('#customSizeInput').value.trim() : selectedSize;
+    const resolvedStyle = selectedStyle === '其他风格' ? form.querySelector('#customStyleInput').value.trim() : selectedStyle;
+    if (!resolvedSize) throw new Error(language === 'en' ? 'Please enter a custom size before submitting.' : '请先填写自定义尺寸。');
+    if (!resolvedStyle) throw new Error(language === 'en' ? 'Please enter a custom style before submitting.' : '请先填写自定义风格。');
     const orderId = `WA${Date.now().toString().slice(-7)}`;
     const referenceFiles = await uploadOrderReferenceFiles(orderId, submit);
-    const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: form.querySelector('input[name="size"]:checked').value, style: form.querySelector('input[name="style"]:checked').value, payment, turnaround, referenceFiles, status: '审核中', date: formatDate() };
+    const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: resolvedSize, style: resolvedStyle, payment, turnaround, referenceFiles, status: '审核中', date: formatDate() };
     submit.textContent = language === 'en' ? 'Submitting order…' : '正在提交订单…';
     const saved = await saveSharedOrder(order);
     if (!saved) { showToast(language === 'en' ? 'The order could not be saved. Please try again or contact us.' : '订单暂时无法同步，请稍后重试或联系客服。'); return; }
@@ -966,7 +1027,7 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
     document.querySelector('#promptOutput').className = 'prompt-output';
     document.querySelector('#promptOutput').textContent = '';
     updateAccountUI();
-    renderCreativeOptions();
+    renderCreativeOptions({ reset: true });
     updateSelectedPrice();
   } catch (error) {
     showToast(error.message || (language === 'en' ? 'Could not prepare the reference files.' : '参考文件整理失败，请重新选择。'));

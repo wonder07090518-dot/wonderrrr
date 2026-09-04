@@ -4,7 +4,20 @@ import { getCurrentUser } from './_user.js';
 import { head, issueSignedToken, presignUrl } from '@vercel/blob';
 
 const TURNAROUNDS = new Set(['standard', 'rush-request']);
-function validOrder(order) { return order && order.id && availableServices.has(order.service) && order.email && order.idea && ['微信支付', '支付宝', '余额支付'].includes(order.payment) && (!order.turnaround || TURNAROUNDS.has(order.turnaround)); }
+function validChoice(value, forbidden) {
+  return typeof value === 'string' && value.trim().length > 0 && value.trim().length <= 80 && !forbidden.includes(value.trim());
+}
+function validOrder(order) {
+  return order
+    && order.id
+    && availableServices.has(order.service)
+    && order.email
+    && order.idea
+    && validChoice(order.size, ['其他尺寸', '自定义尺寸'])
+    && validChoice(order.style, ['其他风格', '自定义风格'])
+    && ['微信支付', '支付宝', '余额支付'].includes(order.payment)
+    && (!order.turnaround || TURNAROUNDS.has(order.turnaround));
+}
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
 const MAX_REFERENCE_FILES = 100;
 const MAX_REFERENCE_BYTES = 1024 * 1024 * 1024;

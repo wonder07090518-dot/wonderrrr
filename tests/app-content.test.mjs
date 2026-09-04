@@ -19,14 +19,14 @@ test('app content exposes the live catalog and bilingual studio updates', () => 
   handler({ method: 'GET' }, res);
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.payload.servicePrices, servicePrices);
-  assert.equal(res.payload.news.length, 20);
+  assert.equal(res.payload.news.length, 21);
   assert.ok(res.payload.news.every(item => item.titleEN && item.titleZH && item.bodyEN && item.bodyZH));
   assert.equal(new Set(res.payload.news.map(item => item.id)).size, res.payload.news.length);
   assert.deepEqual(
     res.payload.news.map(item => item.date),
     res.payload.news.map(item => item.date).toSorted().reverse()
   );
-  assert.equal(res.payload.news.at(0).id, 'app-visual-refresh');
+  assert.equal(res.payload.news.at(0).id, 'service-specific-specs');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
   assert.match(res.headers['Cache-Control'], /s-maxage=300/);
 });

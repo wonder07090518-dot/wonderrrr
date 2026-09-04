@@ -121,6 +121,23 @@ test('service prices are synchronized to the new affordable catalog', async () =
   assert.doesNotMatch(notify, /const servicePrices\s*=/);
 });
 
+test('each service keeps its own specifications and supports custom size and style', async () => {
+  const [script, css, orders] = await Promise.all([read('script.js'), read('manuscript.css'), read('api/orders.js')]);
+  assert.match(script, /'品牌 Logo': \{ sizes: \['PNG 透明底（2000px）', 'SVG 矢量源文件'/);
+  assert.match(script, /installCustomCreativeInputs/);
+  assert.match(script, /'customSizeInput'/);
+  assert.match(script, /'customStyleInput'/);
+  assert.match(script, /renderCreativeOptions\(\{ reset: true \}\)/);
+  assert.match(script, /size: resolvedSize, style: resolvedStyle/);
+  assert.match(script, /请先填写自定义尺寸/);
+  assert.match(script, /请先填写自定义风格/);
+  assert.match(css, /\.creative-options \.creative-custom-input\[hidden\]/);
+  assert.match(orders, /validChoice\(order\.size/);
+  assert.match(orders, /validChoice\(order\.style/);
+  assert.match(orders, /\['其他尺寸', '自定义尺寸'\]/);
+  assert.match(orders, /\['其他风格', '自定义风格'\]/);
+});
+
 test('delivered orders support persisted revision requests and email notices', async () => {
   const [html, script, css, api, orders] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/revisions.js'), read('api/orders.js')]);
   assert.match(html, /id="revisionModal"/);
