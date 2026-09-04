@@ -181,8 +181,7 @@ async function stripeWebhook(req, res) {
   const order = orderId ? await loadOrder(orderId) : null;
   if (!order) return res.status(200).json({ received: true, ignored: true });
   if (!paidSessionMatchesOrder(session, order)) return res.status(400).json({ error: 'Checkout details do not match the order' });
-  const alreadyProcessed = order.status === '已支付' && order.stripeCheckoutSessionId === session.id;
-  if (alreadyProcessed) return res.status(200).json({ received: true, duplicate: true });
+  if (order.status === '已支付') return res.status(200).json({ received: true, duplicate: true });
   const updatedOrder = {
     ...order,
     payment: '安全付款',

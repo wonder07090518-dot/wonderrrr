@@ -214,6 +214,7 @@ test('ordinary orders use Stripe secure checkout with manual QR fallback', async
   assert.match(api, /STRIPE_ENABLE_LIVE/);
   assert.match(api, /checkout\.sessions\.retrieve\(order\.stripeCheckoutSessionId\)/);
   assert.match(api, /existing\.status === 'open'/);
+  assert.match(api, /if \(order\.status === '已支付'\) return res\.status\(200\)\.json\(\{ received: true, duplicate: true \}\)/);
   assert.match(api, /getCurrentUser/);
   assert.match(api, /status: '待确认支付'/);
   assert.match(api, /客户已确认付款/);

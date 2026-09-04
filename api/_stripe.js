@@ -29,9 +29,11 @@ export function orderAmountMinor(order) {
 
 export function paidSessionMatchesOrder(session, order) {
   const expected = orderAmountMinor(order);
+  const expectedSessionId = String(order?.stripeCheckoutSessionId || '');
   return Boolean(
     expected
     && session
+    && (!expectedSessionId || session.id === expectedSessionId)
     && session.client_reference_id === order.id
     && session.metadata?.orderId === order.id
     && session.currency === STRIPE_CURRENCY

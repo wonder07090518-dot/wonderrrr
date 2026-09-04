@@ -17,7 +17,7 @@ test('Stripe amount is derived only from a fixed server order price', () => {
 });
 
 test('only a paid matching Stripe Checkout Session can mark the order paid', () => {
-  const order = { id: 'WA1234567', price: '¥19 / 张' };
+  const order = { id: 'WA1234567', price: '¥19 / 张', stripeCheckoutSessionId: 'cs_test_123' };
   const session = {
     id: 'cs_test_123',
     client_reference_id: order.id,
@@ -30,6 +30,7 @@ test('only a paid matching Stripe Checkout Session can mark the order paid', () 
   assert.equal(paidSessionMatchesOrder({ ...session, payment_status: 'unpaid' }, order), false);
   assert.equal(paidSessionMatchesOrder({ ...session, amount_total: 1800 }, order), false);
   assert.equal(paidSessionMatchesOrder({ ...session, currency: 'cad' }, order), false);
+  assert.equal(paidSessionMatchesOrder({ ...session, id: 'cs_test_other' }, order), false);
   assert.equal(paidSessionMatchesOrder({ ...session, metadata: { orderId: 'WAOTHER' } }, order), false);
 });
 
