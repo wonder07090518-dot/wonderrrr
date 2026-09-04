@@ -386,6 +386,14 @@ test('homepage exposes a source-backed international AI radar', async () => {
   assert.match(script, /Official source/);
 });
 
+test('latest studio news is visible on the website and translated for English visitors', async () => {
+  const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
+  assert.match(html, /2026\.09\.04 \/ SOCIAL/);
+  assert.match(html, /Wonder iLabs 正式入驻小红书/);
+  assert.match(script, /Wonder iLabs is now on Xiaohongshu/);
+  assert.match(script, /more social channels to follow/);
+});
+
 test('public indexing focuses on the main service page, not checkout', async () => {
   const [html, script, sitemap, payment, manifest] = await Promise.all([read('index.html'), read('script.js'), read('sitemap.xml'), read('payment.html'), read('site.webmanifest')]);
   assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>/);

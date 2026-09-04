@@ -19,14 +19,14 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   handler({ method: 'GET' }, res);
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.payload.servicePrices, servicePrices);
-  assert.equal(res.payload.news.length, 21);
+  assert.equal(res.payload.news.length, 22);
   assert.ok(res.payload.news.every(item => item.titleEN && item.titleZH && item.bodyEN && item.bodyZH));
   assert.equal(new Set(res.payload.news.map(item => item.id)).size, res.payload.news.length);
   assert.deepEqual(
     res.payload.news.map(item => item.date),
     res.payload.news.map(item => item.date).toSorted().reverse()
   );
-  assert.equal(res.payload.news.at(0).id, 'service-specific-specs');
+  assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
   assert.ok(res.payload.industryNews.length >= 1);
   assert.ok(res.payload.industryNews.every(item =>
