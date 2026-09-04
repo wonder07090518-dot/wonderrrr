@@ -35,7 +35,7 @@ test('English mode covers previously untranslated key sections', async () => {
   ]) assert.ok(script.includes(phrase), `missing translation: ${phrase}`);
   assert.match(payment, /heading: 'Complete payment'/);
   assert.match(payment, /wechat: 'WeChat Pay'/);
-  assert.match(payment, /notice: 'After you confirm/);
+  assert.match(payment, /notice: 'Manual payments are marked/);
 });
 
 test('language switching localizes accessible labels and image descriptions', async () => {
@@ -193,17 +193,27 @@ test('orders share a durable admin queue with clear 24-hour and rush handling', 
   assert.match(statusNotify, /'待确认支付'/);
 });
 
-test('ordinary orders can open the payment QR and confirm to the shared backend', async () => {
+test('ordinary orders use Stripe secure checkout with manual QR fallback', async () => {
   const [html, script, paymentHtml, paymentScript, api] = await Promise.all([read('index.html'), read('script.js'), read('payment.html'), read('payment.js'), read('api/payment-confirm.js')]);
   assert.match(html, /id="openOrderPayment"/);
-  assert.match(html, /查看微信收款码并付款/);
+  assert.match(html, /前往安全付款/);
   assert.match(script, /function startOrderPayment/);
+  assert.match(script, /value="安全付款" checked/);
   assert.match(script, /data-pay-order/);
   assert.match(script, /kind: 'order'/);
+  assert.match(paymentHtml, /id="startStripeCheckout"/);
   assert.match(paymentHtml, /id="paymentQr"/);
   assert.doesNotMatch(paymentHtml, /class="qr-logo"/);
+  assert.match(paymentScript, /action=create-checkout/);
+  assert.match(paymentScript, /action=status/);
   assert.match(paymentScript, /fetch\('\/api\/payment-confirm'/);
   assert.match(paymentScript, /credentials: 'same-origin'/);
+  assert.match(api, /bodyParser: false/);
+  assert.match(api, /constructEvent/);
+  assert.match(api, /paidSessionMatchesOrder/);
+  assert.match(api, /STRIPE_ENABLE_LIVE/);
+  assert.match(api, /checkout\.sessions\.retrieve\(order\.stripeCheckoutSessionId\)/);
+  assert.match(api, /existing\.status === 'open'/);
   assert.match(api, /getCurrentUser/);
   assert.match(api, /status: '待确认支付'/);
   assert.match(api, /客户已确认付款/);
@@ -296,7 +306,7 @@ test('signed-in customers can pay an order from balance without duplicate deduct
     read('index.html'), read('script.js'), read('api/orders.js'), read('api/_balance-payment-route.js'), read('api/account-actions.js'), read('vercel.json')
   ]);
   assert.match(script, /value="余额支付"/);
-  assert.match(html, /value="微信支付" checked/);
+  assert.match(script, /value="安全付款" checked/);
   assert.match(script, /fetch\(path, \{ credentials: 'same-origin'/);
   assert.match(script, /accountApi\('\/api\/balance-payment'/);
   assert.match(script, /data-balance-pay-order/);

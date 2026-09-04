@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const storedOrder = JSON.parse(storedRaw);
   if (String(storedOrder.email).toLowerCase() !== user.email) return res.status(403).json({ error: 'This order does not belong to your account' });
   const { service, email, wechat, idea, size, style, payment, date, price, turnaround = 'standard' } = storedOrder;
-  if (!servicePrices[service] || !email || !idea || !['微信支付', '支付宝', '余额支付'].includes(payment)) return res.status(400).json({ error: 'Invalid order details' });
+  if (!servicePrices[service] || !email || !idea || !['安全付款', '微信支付', '支付宝', '余额支付'].includes(payment)) return res.status(400).json({ error: 'Invalid order details' });
   if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return res.status(503).json({ error: 'Email service is not configured' });
   const references = Array.isArray(storedOrder.referenceFiles) ? storedOrder.referenceFiles : [];
   const orderPrice = servicePrices[service] || price || '待确认报价';
@@ -50,6 +50,23 @@ export default async function handler(req, res) {
   if (payment === '余额支付') {
     await recordNotification({ ownerEmailSent: ownerResponse.ok });
     return res.status(ownerResponse.ok ? 200 : 502).json(ownerResponse.ok ? { ok: true } : { error: 'Email delivery failed' });
+  }
+  if (payment === '安全付款') {
+    const paymentUrl = `https://www.wonderadlab.com/payment.html?id=${encodeURIComponent(id)}`;
+    const customerResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': `order-customer-${id}` },
+      body: JSON.stringify({
+        from: process.env.MAIL_FROM,
+        to: [email],
+        subject: `Wonder Ad Lab 已收到你的订单 ${id}`,
+        text: `你好，\n\n我们已收到你的 ${service} 订单，当前状态为：已提交，正在审核中。\n订单号：${id}\n本次应付项目价格：${orderPrice}\n交付速度：常规制作\n尺寸：${size}\n风格：${style}\n支付方式：安全付款（Stripe）\n参考文件：${references.length ? `已安全保存 ${references.length} 个` : '未上传'}\n\n请登录你的 Wonder Ad Lab 账户后打开安全付款：\n${paymentUrl}\n\n银行卡与可用的钱包方式会在 Stripe 官方页面完成，Wonder Ad Lab 不会保存卡号。需求、素材与付款确认后，通常会在 24 小时内完成首版；复杂项目以确认时间为准。\n\nWonder Ad Lab`,
+        reply_to: 'wonder07090518@gmail.com'
+      })
+    });
+    await recordNotification({ ownerEmailSent: ownerResponse.ok, customerEmailSent: customerResponse.ok });
+    if (!ownerResponse.ok || !customerResponse.ok) return res.status(502).json({ error: 'Email delivery failed' });
+    return res.status(200).json({ ok: true });
   }
   const qrFile = payment === '支付宝' ? 'alipay.jpg' : 'wechat.jpg';
   const qrLabel = payment === '支付宝' ? '支付宝收款码' : '微信支付收款码';

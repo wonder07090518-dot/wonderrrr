@@ -21,13 +21,20 @@ const MAX_ORDER_REFERENCE_BYTES = 1024 * 1024 * 1024;
 const orderReferenceExtension = /\.(jpe?g|png|webp|gif|svg|pdf|txt|docx?|pptx?|xlsx?|zip|psd|ai|mp4|mov|m4v|webm|mp3|wav|m4a)$/i;
 function installBalancePaymentOption() {
   const fieldset = document.querySelector('.payment-methods');
-  if (!fieldset || fieldset.querySelector('input[value="余额支付"]')) return;
+  if (!fieldset) return;
+  const legend = fieldset.querySelector('legend');
+  fieldset.replaceChildren();
+  if (legend) fieldset.append(legend);
+  const secure = document.createElement('label');
+  secure.className = 'payment-option secure-payment-option';
+  secure.innerHTML = '<input type="radio" name="payment" value="安全付款" checked><span><b>安全付款</b><small>由 Stripe 官方处理</small></span>';
+  fieldset.append(secure);
   const option = document.createElement('label');
   option.className = 'payment-option balance-payment-option';
   option.innerHTML = '<input type="radio" name="payment" value="余额支付"><span><b>余额支付</b><small id="orderBalanceHint">请先登录</small></span>';
   fieldset.append(option);
   const note = document.querySelector('#orderForm .form-note');
-  if (note) note.textContent = '使用余额支付会直接扣除本次固定项目价格；选择微信或支付宝时，收款码与价格会发送到邮箱';
+  if (note) note.textContent = '安全付款会前往 Stripe 官方页面；本站不保存卡号。余额支付会直接扣除本次固定项目价格';
 }
 installBalancePaymentOption();
 const rechargeCardAmounts = new Set([100, 200, 300, 400, 500]);
@@ -663,8 +670,8 @@ function startOrderPayment(order) {
     showToast(language === 'en' ? 'This project needs a confirmed quote before payment.' : '这个项目需要先确认报价，再安排付款。');
     return;
   }
-  const qrPayment = ['微信支付', '支付宝'].includes(order.payment) ? order.payment : '微信支付';
-  startPayment({ id: order.id, kind: 'order', title: order.service, amount, priceLabel: price, payment: qrPayment });
+  const selectedPayment = ['微信支付', '支付宝'].includes(order.payment) ? order.payment : '安全付款';
+  startPayment({ id: order.id, kind: 'order', title: order.service, amount, priceLabel: price, payment: selectedPayment });
 }
 function updateOrderBalanceHint() {
   const hint = document.querySelector('#orderBalanceHint');
@@ -732,7 +739,7 @@ async function renderCustomerOrders() {
   try { orders = (await accountApi('/api/orders')).orders || []; }
   catch (error) { ordersList.innerHTML = `<p class="empty-inbox">${language === 'en' ? 'Orders are temporarily unavailable: ' : '暂时无法读取订单：'}${escapeHtml(error.message)}</p>`; return; }
   customerOrders = orders;
-  const statusText = status => language === 'en' ? ({ '审核中':'Under review', '待确认支付':'Awaiting payment', '已支付':'Paid', '制作中':'In production', '修改申请':'Revision requested', '修改中':'Revision in progress', '已交付':'Delivered' }[status] || status) : status;
+  const statusText = status => language === 'en' ? ({ '审核中':'Under review', '待支付':'Awaiting payment', '待确认支付':'Awaiting verification', '已支付':'Paid', '制作中':'In production', '修改申请':'Revision requested', '修改中':'Revision in progress', '已交付':'Delivered' }[status] || status) : status;
   const revisionStatusText = status => language === 'en' ? ({ '待处理':'Pending', '修改中':'In progress', '已完成':'Completed' }[status] || status) : status;
   const revisionHistory = order => {
     const revisions = Array.isArray(order.revisions) ? [...order.revisions].reverse() : [];
@@ -742,7 +749,7 @@ async function renderCustomerOrders() {
   ordersList.innerHTML = orders.length ? orders.map(order => {
     const canRevise = order.status === '已交付';
     const canPay = order.turnaround !== 'rush-request' && ['审核中', '待支付', '待确认支付'].includes(order.status) && paymentAmountFromPrice(order.price || servicePrices[order.service]);
-    const payLabel = order.status === '待确认支付' ? (language === 'en' ? 'View payment QR again' : '重新查看收款码') : (language === 'en' ? 'Pay by QR' : '收款码支付');
+    const payLabel = order.status === '待支付' ? (language === 'en' ? 'Continue secure payment' : '继续安全付款') : (language === 'en' ? 'Secure payment' : '安全付款');
     const balanceAmount = paymentAmountFromPrice(order.price || servicePrices[order.service]);
     const balancePayLabel = language === 'en' ? `Use balance ¥${balanceAmount}` : `余额支付 ¥${balanceAmount}`;
     const revisionNotice = ['修改申请', '修改中'].includes(order.status) ? `<p class="revision-active">${language === 'en' ? 'Your revision request is recorded. We will update the status here and by email.' : '修改申请已经记录，处理进度会在这里和邮件中同步。'}</p>` : '';
@@ -1073,15 +1080,15 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
       returnHome.textContent = language === 'en' ? 'Done' : '完成';
     } else {
       submittedTitle.innerHTML = language === 'en' ? 'Order submitted.<br>You can pay now.' : '订单已提交，<br>现在可以付款。';
-      submittedDescription.textContent = language === 'en' ? 'The payment QR is also emailed to you. Open it now, or continue later from My Orders.' : '收款码也会发送到邮箱；你可以现在打开，或稍后在“我的订单”中继续付款。';
+      submittedDescription.textContent = language === 'en' ? 'Continue to Stripe secure checkout now, or pay later from My Orders. Card details are never stored by Wonder Ad Lab.' : '现在可以前往 Stripe 安全付款，也可以稍后从“我的订单”继续。Wonder Ad Lab 不会保存卡号。';
       openOrderPayment.hidden = false;
-      openOrderPayment.textContent = language === 'en' ? `View ${payment === '支付宝' ? 'Alipay' : 'WeChat Pay'} QR and pay` : `查看${payment === '支付宝' ? '支付宝' : '微信'}收款码并付款`;
+      openOrderPayment.textContent = language === 'en' ? 'Continue to secure payment' : '前往安全付款';
       returnHome.textContent = language === 'en' ? 'Pay later' : '稍后付款';
     }
     openModal(submittedModal);
     showToast(turnaround === 'rush-request'
       ? (emailSent ? (language === 'en' ? 'Rush request saved. Wait for our confirmed timeline and fee before paying.' : '加急申请已保存，请等待确认时间和费用后再付款。') : (language === 'en' ? 'Rush request saved; the email notice may arrive later.' : '加急申请已保存，邮件通知可能稍后送达。'))
-      : payment === '余额支付' ? (emailSent ? (language === 'en' ? 'Balance payment complete. Your paid order and email receipt are ready.' : '余额支付完成，订单已标记为“已支付”，邮件凭证已发送。') : (language === 'en' ? 'Balance payment complete; the email receipt is delayed.' : '余额支付完成，邮件凭证暂时延迟。')) : (emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. You can now open the payment QR.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以打开收款码付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。')));
+      : payment === '余额支付' ? (emailSent ? (language === 'en' ? 'Balance payment complete. Your paid order and email receipt are ready.' : '余额支付完成，订单已标记为“已支付”，邮件凭证已发送。') : (language === 'en' ? 'Balance payment complete; the email receipt is delayed.' : '余额支付完成，邮件凭证暂时延迟。')) : (emailSent ? (language === 'en' ? `Order submitted${referenceFiles.length ? ` with ${referenceFiles.length} securely stored reference files` : ''}. Secure payment is ready.` : `订单已提交${referenceFiles.length ? `，${referenceFiles.length} 个参考文件已安全保存` : ''}，现在可以进入安全付款。`) : (language === 'en' ? 'The order and reference files were saved, but the email notice is delayed.' : '订单和参考文件已保存，但邮件通知暂时延迟。')));
     form.reset();
     selectedOrderFiles = [];
     orderUploadProgress = new Map();
@@ -1102,6 +1109,9 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
 });
 
 Object.assign(zhToEn, {
+  '安全付款':'Secure payment',
+  '由 Stripe 官方处理':'Processed by Stripe',
+  '安全付款会前往 Stripe 官方页面；本站不保存卡号。余额支付会直接扣除本次固定项目价格':'Secure payment opens Stripe’s official checkout. We never store card details. Balance payment deducts the fixed project price immediately.',
   '奇迹创意工作室': 'Wonder Creative Studio',
   '正在接单': 'Now taking projects',
   '海报、社媒、电商与品牌视觉，从一句需求到可以直接发布的成品': 'Posters, social, commerce and brand visuals — from one brief to ready-to-publish work',

@@ -15,7 +15,7 @@ function validOrder(order) {
     && order.idea
     && validChoice(order.size, ['其他尺寸', '自定义尺寸'])
     && validChoice(order.style, ['其他风格', '自定义风格'])
-    && ['微信支付', '支付宝', '余额支付'].includes(order.payment)
+    && ['安全付款', '微信支付', '支付宝', '余额支付'].includes(order.payment)
     && (!order.turnaround || TURNAROUNDS.has(order.turnaround));
 }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }

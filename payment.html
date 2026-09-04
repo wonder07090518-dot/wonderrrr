@@ -18,20 +18,35 @@
       <h1 id="paymentTitle">完成付款</h1>
       <p class="description" id="paymentDescription">正在载入订单…</p>
       <div class="amount" id="paymentAmount">¥0</div>
-      <div class="methods">
-        <button data-method="微信支付" id="wechatMethod">微信支付</button>
-        <button data-method="支付宝" id="alipayMethod">支付宝</button>
-      </div>
-      <div class="qr-wrap">
-        <div class="qr-image">
-          <img id="paymentQr" alt="支付收款码" />
+      <section class="secure-checkout" id="secureCheckout">
+        <div class="secure-heading"><span>STRIPE</span><b id="secureTitle">安全付款</b></div>
+        <p id="secureDescription">银行卡与可用的钱包方式会在 Stripe 官方付款页中完成，本站不会保存卡号。</p>
+        <button class="confirm secure-button" id="startStripeCheckout">前往安全付款</button>
+        <small id="secureMode">测试连接阶段不会产生真实扣款</small>
+      </section>
+      <section class="payment-result" id="paymentResult" hidden aria-live="polite">
+        <span class="result-spinner" aria-hidden="true"></span>
+        <strong id="paymentResultTitle">正在确认付款结果</strong>
+        <p id="paymentResultMessage">只以 Stripe 官方回调为准，请稍候。</p>
+        <a href="index.html" id="paymentResultHome">返回网站</a>
+      </section>
+      <button class="manual-toggle" id="manualToggle" type="button" aria-expanded="false">无法使用？改用微信或支付宝人工付款</button>
+      <div class="manual-payment" id="manualPayment" hidden>
+        <div class="methods">
+          <button data-method="微信支付" id="wechatMethod">微信支付</button>
+          <button data-method="支付宝" id="alipayMethod">支付宝</button>
         </div>
-        <p id="paymentHint">请使用对应 App 扫码付款</p>
+        <div class="qr-wrap">
+          <div class="qr-image">
+            <img id="paymentQr" alt="支付收款码" />
+          </div>
+          <p id="paymentHint">请使用对应 App 扫码付款</p>
+        </div>
+        <button class="confirm" id="confirmPayment">我已完成付款</button>
+        <p class="notice" id="paymentNotice">人工付款需要工作室核对实际到账后，订单才会标记为已支付。</p>
       </div>
-      <button class="confirm" id="confirmPayment">我已完成付款</button>
-      <p class="notice" id="paymentNotice">点击后订单将标记为“待确认支付”。到账确认由 Wonder Ad Lab 团队完成。</p>
     </section>
   </main>
-  <script src="payment.js?v=20260902b"></script>
+  <script src="payment.js?v=20260904a"></script>
 </body>
 </html>
