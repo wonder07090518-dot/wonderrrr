@@ -158,6 +158,7 @@
 }
 
 .service-matrix .price-grid {
+  view-transition-name: service-grid;
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -166,6 +167,25 @@
   padding: 12px;
   border: 1px solid var(--matrix-ink);
   background: #0c1018;
+}
+
+@supports (view-transition-name: service-grid) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+  ::view-transition-old(service-grid) { animation: service-grid-out 180ms ease both; }
+  ::view-transition-new(service-grid) { animation: service-grid-in 260ms cubic-bezier(.2, .72, .2, 1) both; }
+}
+
+@keyframes service-grid-out {
+  to { opacity: 0; transform: translateY(-6px) scale(.992); }
+}
+
+@keyframes service-grid-in {
+  from { opacity: 0; transform: translateY(10px) scale(.988); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-matrix .price-grid { view-transition-name: none; }
 }
 
 .service-matrix .service-group-label {

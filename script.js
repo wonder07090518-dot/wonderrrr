@@ -549,6 +549,15 @@ function updateServiceView() {
       : `${language === 'en' ? 'View all 16 services' : '查看全部 16 项服务'} <span>＋</span>`;
   }
 }
+
+function transitionServiceView() {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || typeof document.startViewTransition !== 'function') {
+    updateServiceView();
+    return;
+  }
+  document.startViewTransition(() => updateServiceView());
+}
 async function notifyOwner(order) {
   try {
     const response = await fetch('/api/notify-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
@@ -787,7 +796,7 @@ document.querySelectorAll('[data-scroll]').forEach(button => button.addEventList
 }));
 document.querySelectorAll('[data-service-filter]').forEach(button => button.addEventListener('click', () => {
   activeServiceFilter = button.dataset.serviceFilter;
-  updateServiceView();
+  transitionServiceView();
 }));
 document.querySelectorAll('[data-service-filter]').forEach(button => button.addEventListener('keydown', event => {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -804,7 +813,7 @@ document.querySelectorAll('[data-process-step]').forEach(button => button.addEve
 }));
 document.querySelector('#toggleAllServices')?.addEventListener('click', () => {
   showAllServices = !showAllServices;
-  updateServiceView();
+  transitionServiceView();
 });
 const menuToggle = document.querySelector('#menuToggle');
 const siteNav = document.querySelector('#siteNav');
