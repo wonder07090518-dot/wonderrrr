@@ -4,10 +4,10 @@ const news = [
   {
     id: 'wonder-ilabs-social',
     date: '2026-09-04',
-    titleEN: 'Wonder iLabs is now on Xiaohongshu',
-    titleZH: 'Wonder iLabs 正式入驻小红书',
-    bodyEN: 'Wonder iLabs is now on Xiaohongshu, with more social channels to follow. We will share our design process, work highlights and studio updates there.',
-    bodyZH: 'Wonder iLabs 现已入驻小红书，后续也将陆续开通更多社交媒体账号。我们会分享设计过程、作品细节与工作室动态。',
+    titleEN: 'Wonder Ad Lab is now on Xiaohongshu',
+    titleZH: 'Wonder Ad Lab 正式入驻小红书',
+    bodyEN: 'Wonder Ad Lab is now officially on Xiaohongshu, with more social channels to follow. We will share our design process, work highlights and studio updates there.',
+    bodyZH: 'Wonder Ad Lab 现已正式入驻小红书，并将陆续开通更多社交媒体账号。我们会分享设计过程、作品细节与工作室动态。',
     symbol: 'megaphone.fill'
   },
   {

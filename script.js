@@ -103,8 +103,8 @@ Object.assign(zhToEn, {
   '其他需求': 'Custom request', '没有合适的分类？直接写下你的想法': 'No matching category? Tell us what you need.', '我们会按需求确认报价与交付方式。': 'We will confirm the quote and delivery method for your request.', '/ 定制': '/ custom', 'AI 评估报价': 'AI-estimated quote'
 });
 Object.assign(zhToEn, {
-  'Wonder iLabs 正式入驻小红书': 'Wonder iLabs is now on Xiaohongshu',
-  'Wonder iLabs 现已入驻小红书，后续也将陆续开通更多社交媒体账号。我们会分享设计过程、作品细节与工作室动态。': 'Wonder iLabs is now on Xiaohongshu, with more social channels to follow. We will share our design process, work highlights and studio updates there.'
+  'Wonder Ad Lab 正式入驻小红书': 'Wonder Ad Lab is now on Xiaohongshu',
+  'Wonder Ad Lab 现已正式入驻小红书，并将陆续开通更多社交媒体账号。我们会分享设计过程、作品细节与工作室动态。': 'Wonder Ad Lab is now officially on Xiaohongshu, with more social channels to follow. We will share our design process, work highlights and studio updates there.'
 });
 Object.assign(zhToEn, {
   '电商详情页':'E-commerce detail page','菜单与价目表':'Menu & price list','活动物料套装':'Campaign kit','品牌视觉套装':'Brand visual kit','社媒月更包':'Monthly social pack','印刷物料设计':'Print design','卖点长图、模块排版、上新详情页':'Product storytelling, modules and launch detail pages','把商品信息讲得更清楚。':'Make product information clearer.','餐饮菜单、服务价目、项目清单':'Restaurant menus, service prices and product lists','让顾客一眼看懂怎么买。':'Help customers understand what to buy at a glance.','主海报、社媒图、横幅一次配齐':'A hero poster, social images and banner — all together','适合开业、节日和促销。':'For launches, holidays and promotions.','Logo、配色、头像、社媒模板':'Logo, colours, avatar and social templates','让一个新品牌看起来更完整。':'Give a new brand a complete look.','每月固定内容图，适合店铺与博主':'Monthly visuals for shops and creators','持续更新，省下反复沟通。':'Stay consistent and save repeated briefing.','传单、折页、展架、名片与桌牌':'Flyers, brochures, stands, cards and table signs','按印刷规范交付可用文件。':'Print-ready files made to the right specs.','10 / 详情页':'10 / Detail','11 / 菜单':'11 / Menu','12 / 活动':'12 / Campaign','13 / 品牌':'13 / Brand','14 / 月更':'14 / Monthly','15 / 印刷':'15 / Print','16 / 其他':'16 / Other','/ 套起':'/ kit from','/ 10 张起':'/ 10 images from','/ 张起':'/ image from'

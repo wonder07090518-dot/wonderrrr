@@ -389,8 +389,8 @@ test('homepage exposes a source-backed international AI radar', async () => {
 test('latest studio news is visible on the website and translated for English visitors', async () => {
   const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
   assert.match(html, /2026\.09\.04 \/ SOCIAL/);
-  assert.match(html, /Wonder iLabs 正式入驻小红书/);
-  assert.match(script, /Wonder iLabs is now on Xiaohongshu/);
+  assert.match(html, /Wonder Ad Lab 正式入驻小红书/);
+  assert.match(script, /Wonder Ad Lab is now on Xiaohongshu/);
   assert.match(script, /more social channels to follow/);
 });
 
