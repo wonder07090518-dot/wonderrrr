@@ -206,6 +206,58 @@ const savedLanguage = localStorage.getItem('wonderad-language');
 let language = ['en', 'zh'].includes(requestedLanguage)
   ? requestedLanguage
   : (['en', 'zh'].includes(savedLanguage) ? savedLanguage : 'en');
+let aiRadarData = [];
+
+function renderAIRadar(items = aiRadarData, updatedAt = '') {
+  const list = document.querySelector('#aiRadarList');
+  const updated = document.querySelector('#aiRadarUpdated');
+  if (!list || !Array.isArray(items) || items.length === 0) return;
+
+  list.replaceChildren(...items.map(item => {
+    const article = document.createElement('article');
+    const meta = document.createElement('div');
+    const date = document.createElement('time');
+    const category = document.createElement('span');
+    const title = document.createElement('h3');
+    const body = document.createElement('p');
+    const source = document.createElement('a');
+    const arrow = document.createElement('b');
+
+    meta.className = 'ai-radar-meta';
+    date.dateTime = item.date || '';
+    date.textContent = item.date || '';
+    category.textContent = language === 'en' ? item.categoryEN : item.categoryZH;
+    title.textContent = language === 'en' ? item.titleEN : item.titleZH;
+    body.textContent = language === 'en' ? item.bodyEN : item.bodyZH;
+    source.textContent = language === 'en' ? `Official source · ${item.sourceName}` : `官方来源 · ${item.sourceName}`;
+    try {
+      const sourceURL = new URL(item.sourceURL);
+      if (sourceURL.protocol === 'https:') source.href = sourceURL.href;
+    } catch { source.removeAttribute('href'); }
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    arrow.textContent = '↗';
+    source.append(arrow);
+    meta.append(date, category);
+    article.append(meta, title, body, source);
+    return article;
+  }));
+
+  if (updated && updatedAt) {
+    updated.textContent = language === 'en' ? `Updated ${updatedAt}` : `更新于 ${updatedAt}`;
+  }
+}
+
+async function loadAIRadar() {
+  try {
+    const response = await fetch('/api/app-content', { headers: { Accept: 'application/json' } });
+    if (!response.ok) return;
+    const content = await response.json();
+    if (!Array.isArray(content.industryNews) || content.industryNews.length === 0) return;
+    aiRadarData = content.industryNews;
+    renderAIRadar(aiRadarData, content.updatedAt || '');
+  } catch { /* Keep the verified server-rendered fallback visible. */ }
+}
 function applyLanguage() {
   const dictionary = language === 'en' ? zhToEn : enToZh;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -291,6 +343,7 @@ function applyLanguage() {
   renderRechargeHistory(accountBalanceData.recharges);
   renderOrderReferenceList();
   updateOrderBalanceHint();
+  renderAIRadar(aiRadarData);
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
@@ -1520,4 +1573,5 @@ initCinematicMotion();
 initScrollStory();
 initAiLab();
 applyLanguage();
+loadAIRadar();
 refreshSession().then(() => renderAccountStats());

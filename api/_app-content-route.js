@@ -192,12 +192,30 @@ const news = [
   }
 ];
 
+const industryNews = [
+  {
+    id: 'openai-gpt-6-astra',
+    date: '2026-09-03',
+    titleEN: 'OpenAI releases GPT-6 Astra',
+    titleZH: 'OpenAI 发布 GPT-6 Astra',
+    bodyEN: 'OpenAI announced GPT-6 Astra and said access is rolling out in stages across ChatGPT paid plans and the API. This summary is based on OpenAI’s official release.',
+    bodyZH: 'OpenAI 已公布 GPT-6 Astra，并表示将分阶段向 ChatGPT 付费方案与 API 开放。本摘要依据 OpenAI 官方发布整理。',
+    sourceName: 'OpenAI',
+    sourceURL: 'https://openai.com/index/gpt-6-astra/',
+    categoryEN: 'Model release',
+    categoryZH: '模型发布',
+    verified: true,
+    symbol: 'sparkles'
+  }
+];
+
 export default function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
   return res.status(200).json({
-    updatedAt: '2026-09-03',
+    updatedAt: '2026-09-04',
     servicePrices,
-    news
+    news,
+    industryNews
   });
 }

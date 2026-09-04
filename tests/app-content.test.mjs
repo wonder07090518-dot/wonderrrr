@@ -14,7 +14,7 @@ function responseRecorder() {
   };
 }
 
-test('app content exposes the live catalog and bilingual studio updates', () => {
+test('app content exposes the live catalog, studio updates and verified AI news', () => {
   const res = responseRecorder();
   handler({ method: 'GET' }, res);
   assert.equal(res.statusCode, 200);
@@ -28,6 +28,18 @@ test('app content exposes the live catalog and bilingual studio updates', () => 
   );
   assert.equal(res.payload.news.at(0).id, 'service-specific-specs');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
+  assert.ok(res.payload.industryNews.length >= 1);
+  assert.ok(res.payload.industryNews.every(item =>
+    item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&
+    item.categoryEN && item.categoryZH && item.verified === true &&
+    /^https:\/\//.test(item.sourceURL)
+  ));
+  assert.equal(new Set(res.payload.industryNews.map(item => item.id)).size, res.payload.industryNews.length);
+  assert.deepEqual(
+    res.payload.industryNews.map(item => item.date),
+    res.payload.industryNews.map(item => item.date).toSorted().reverse()
+  );
+  assert.equal(res.payload.industryNews.at(0).id, 'openai-gpt-6-astra');
   assert.match(res.headers['Cache-Control'], /s-maxage=300/);
 });
 

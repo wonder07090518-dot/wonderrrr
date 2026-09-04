@@ -347,6 +347,16 @@ test('website removes unavailable or scripted AI conversations', async () => {
   await assert.rejects(() => access(new URL('../api/ai-brief.js', import.meta.url)));
 });
 
+test('homepage exposes a source-backed international AI radar', async () => {
+  const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
+  assert.match(html, /id="ai-radar"/);
+  assert.match(html, /id="aiRadarList"/);
+  assert.match(html, /OpenAI releases GPT-6 Astra/);
+  assert.match(html, /https:\/\/openai\.com\/index\/gpt-6-astra\//);
+  assert.match(script, /fetch\('\/api\/app-content'/);
+  assert.match(script, /Official source/);
+});
+
 test('public indexing focuses on the main service page, not checkout', async () => {
   const [html, script, sitemap, payment, manifest] = await Promise.all([read('index.html'), read('script.js'), read('sitemap.xml'), read('payment.html'), read('site.webmanifest')]);
   assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>/);
