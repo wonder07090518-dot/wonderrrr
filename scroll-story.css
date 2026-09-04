@@ -332,7 +332,7 @@
 @keyframes story-data { to { background-position: 14px 0; } }
 
 @media (max-width: 900px) {
-  .process-rail { height: 490vh; }
+  .process-rail { height: 420vh; }
   .rail-sticky { min-height: 620px; }
   .rail-head { top: 76px; left: 20px; right: 20px; display: block; }
   .rail-head h2 { max-width: 92vw; font-size: clamp(28px,7.2vw,40px); }
@@ -368,7 +368,7 @@
 }
 
 @media (max-width: 480px) {
-  .process-rail { height: 430vh; }
+  .process-rail { height: 380vh; }
   .rail-sticky { min-height: 560px; }
   .rail-head { top:65px; }.rail-head .eyebrow{margin-bottom:7px;font-size:7px}.rail-head h2{font-size:27px;white-space:nowrap}.rail-head > p{max-width:80vw}
   .scene__stage { top:18%;height:40%; }.scene__copy{bottom:100px}.scene__copy h3{font-size:28px}.scene__copy p{font-size:10px}.scene__num::before{width:25px}

@@ -318,7 +318,9 @@ body::after {
 }
 
 @media (max-width: 1000px) {
-  .hero-hud { display: none; }
+  .hero-hud { display: block; top: 134px; right: 20px; width: 42vw; height: min(62vw, 560px); }
+  .hero-hud .hud-model { right: 0; top: 28px; width: 164px; }
+  .hero-hud .hud-flow { left: 0; bottom: 50px; width: 190px; }
   .hero-commandbar { left: max(24px, calc((100vw - 900px)/2 + 40px)); width: 42vw; }
   .lab-body { grid-template-columns: 150px 1fr 180px; }
   .model-core { width: 190px; height: 190px; }

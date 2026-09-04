@@ -1118,7 +1118,7 @@ Object.assign(zhToEn, {
   '安全付款会前往 Stripe 官方页面；本站不保存卡号。余额支付会直接扣除本次固定项目价格':'Secure payment opens Stripe’s official checkout. We never store card details. Balance payment deducts the fixed project price immediately.',
   '奇迹创意工作室': 'Wonder Creative Studio',
   '正在接单': 'Now taking projects',
-  '海报、社媒、电商与品牌视觉，从一句需求到可以直接发布的成品': 'Posters, social, commerce and brand visuals — from one brief to ready-to-publish work',
+  '一句需求，AI 起稿、人工把关，做成可以直接发布的海报、社媒、电商与品牌视觉': 'One brief, AI-drafted and human-checked, becomes publish-ready posters, social, commerce and brand visuals',
   '开始一个项目': 'Start a project',
   '查看工作室作品': 'View studio work',
   '把需求写清楚': 'Write a clear brief',
