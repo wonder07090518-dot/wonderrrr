@@ -16,6 +16,9 @@ test('mobile navigation exposes language, account and order controls', async () 
 
 test('membership plans have direct checkout fallbacks', async () => {
   const [html, script, payment] = await Promise.all([read('index.html'), read('script.js'), read('payment.js')]);
+  assert.match(html, /按次下单/);
+  assert.match(html, /无月费/);
+  assert.doesNotMatch(html, /每天 5 次生成|<h3>免费<\/h3>/);
   assert.match(html, /href="payment\.html\?plan=monthly"/);
   assert.match(html, /href="payment\.html\?plan=yearly"/);
   assert.match(script, /window\.location\.assign/);
