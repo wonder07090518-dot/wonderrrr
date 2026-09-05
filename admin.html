@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
   <title>Wonder Ad Lab · 管理后台</title>
-  <link rel="stylesheet" href="admin.css?v=20260903c" />
+  <link rel="stylesheet" href="admin.css?v=20260905a" />
   <link rel="stylesheet" href="admin-live.css?v=20260903c" />
   <link rel="stylesheet" href="admin-revisions.css?v=20260831c" />
+  <link rel="stylesheet" href="admin-analytics.css?v=20260905a" />
 </head>
 <body>
   <main class="shell">
@@ -27,6 +28,25 @@
 
     <section id="dashboard" hidden>
       <div class="dashboard-head"><div><p class="eyebrow">ORDER MANAGEMENT</p><h1>创意订单</h1><p>App 与官网的新订单进入同一个后台；登录后每分钟自动刷新。你可以查看需求、确认加急报价、更新进度并交付成品。</p></div><button class="refresh" id="refresh">立即刷新</button></div>
+      <section class="analytics-admin" aria-labelledby="analyticsTitle">
+        <header class="analytics-head">
+          <div><p class="eyebrow">REAL WEBSITE ANALYTICS</p><h2 id="analyticsTitle">真实访问数据</h2><p>只统计功能上线后真实打开官网的访问，不补造历史数字。独立访客按匿名浏览器计算，国家由网站平台提供的粗略国家代码汇总。</p></div>
+          <span class="analytics-live"><i></i>真实数据</span>
+        </header>
+        <div class="analytics-kpis">
+          <article><small>累计独立访客</small><strong id="analyticsVisitors">0</strong><span>匿名浏览器</span></article>
+          <article><small>累计浏览次数</small><strong id="analyticsViews">0</strong><span>公开页面打开次数</span></article>
+          <article><small>今日独立访客</small><strong id="analyticsTodayVisitors">0</strong><span id="analyticsTodayDate">多伦多时间</span></article>
+          <article><small>今日浏览次数</small><strong id="analyticsTodayViews">0</strong><span>当天累计</span></article>
+        </div>
+        <div class="analytics-country-card">
+          <div class="analytics-country-head"><div><h3>访客国家</h3><p>按累计独立访客排序</p></div><small id="analyticsUpdated">等待第一条真实访问</small></div>
+          <div class="analytics-table-wrap">
+            <table><thead><tr><th>国家或地区</th><th>独立访客</th><th>浏览次数</th><th>占比</th><th>最近访问</th></tr></thead><tbody id="analyticsCountries"><tr><td colspan="5" class="analytics-empty">正在读取真实访问数据…</td></tr></tbody></table>
+          </div>
+        </div>
+        <p class="analytics-privacy">隐私说明：后台不会保存或显示访客真实 IP、姓名、邮箱或精确位置；“独立访客”是匿名浏览器估算值。开启浏览器隐私拒绝追踪的访问不会计入。</p>
+      </section>
       <div class="stats"><article><small>24 小时新订单</small><strong id="new24h">0</strong></article><article><small>全部订单</small><strong id="total">0</strong></article><article><small>待处理</small><strong id="pending">0</strong></article><article><small>修改申请</small><strong id="revisions">0</strong></article><article><small>制作中</small><strong id="making">0</strong></article><article><small>已交付</small><strong id="done">0</strong></article></div>
       <div class="notice" id="notice">正在加载订单…</div>
       <section class="orders" id="orders"></section>
@@ -40,6 +60,6 @@
     </section>
   </main>
   <template id="orderTemplate"><article class="order-card"><div class="order-main"><div class="row"><span class="service"></span><span class="order-chips"><span class="turnaround"></span><span class="status"></span></span></div><h2 class="idea"></h2><p class="meta"></p><p class="order-sla"></p><p class="notification-state"></p><p class="references" hidden></p><p class="date"></p><div class="revision-list"></div></div><div class="actions"><div class="rush-approval" hidden><strong>确认加急最终报价</strong><p>先确认能接、交付时间和包含加急费的最终总价，再通知客户付款。</p><div><label>最终总价（元）<input class="rush-final-amount" type="number" min="1" max="99999" step="0.01" inputmode="decimal"></label><button class="approve-rush" type="button">确认报价并邮件通知</button></div></div><label>订单状态<select class="status-select"><option>审核中</option><option>待确认支付</option><option>已支付</option><option>制作中</option><option>修改申请</option><option>修改中</option><option disabled>已交付</option></select></label><label class="file-label"><span class="delivery-label-text">上传成品并邮件交付</span><input class="file-input" type="file" accept="image/*,video/*,audio/*,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.zip" /></label><p class="delivery-note">客户参考样板会安全存入私有空间；在订单左侧点击文件即可生成 10 分钟有效的安全下载链接。上传成品成功后才会标记为“已交付”，并将成品发送至客户邮箱。大文件视频请使用云端链接交付。</p></div></article></template>
-  <script src="admin.js?v=20260903c"></script>
+  <script src="admin.js?v=20260905a"></script>
 </body>
 </html>

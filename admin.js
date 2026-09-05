@@ -4,6 +4,7 @@ const notice = document.querySelector('#notice');
 let currentOrders = [];
 let currentRecharges = [];
 let dashboardRefreshTimer = null;
+let currentAnalytics = null;
 
 function statusClass(status) { return status === '已交付' ? 'is-done' : ['制作中', '修改中'].includes(status) ? 'is-making' : status === '修改申请' ? 'is-revision' : 'is-pending'; }
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; if (!loggedIn) stopDashboardRefresh(); }
@@ -109,6 +110,39 @@ async function loadRecharges() {
   try { rechargeNotice.textContent = '正在加载充值申请…'; const data = await api('/api/recharges'); currentRecharges = data.recharges || []; renderRecharges(); }
   catch (error) { rechargeNotice.textContent = error.setup ? '充值存储尚未配置。' : `无法读取充值申请：${error.message}`; }
 }
+function countryName(code) {
+  if (code === 'ZZ') return '未知国家';
+  try { return new Intl.DisplayNames(['zh-CN'], { type: 'region' }).of(code) || code; } catch { return code; }
+}
+function countryFlag(code) {
+  if (!/^[A-Z]{2}$/.test(code) || code === 'ZZ') return '◌';
+  return String.fromCodePoint(...[...code].map(letter => 127397 + letter.charCodeAt(0)));
+}
+function renderAnalytics() {
+  const data = currentAnalytics || { totals: {}, today: {}, countries: [] };
+  document.querySelector('#analyticsVisitors').textContent = Number(data.totals?.visitors) || 0;
+  document.querySelector('#analyticsViews').textContent = Number(data.totals?.views) || 0;
+  document.querySelector('#analyticsTodayVisitors').textContent = Number(data.today?.visitors) || 0;
+  document.querySelector('#analyticsTodayViews').textContent = Number(data.today?.views) || 0;
+  document.querySelector('#analyticsTodayDate').textContent = data.today?.date ? `${data.today.date} · 多伦多时间` : '多伦多时间';
+  document.querySelector('#analyticsUpdated').textContent = data.updatedAt ? `最近记录 ${formatDate(data.updatedAt)}` : '等待第一条真实访问';
+  const body = document.querySelector('#analyticsCountries');
+  const countries = Array.isArray(data.countries) ? data.countries : [];
+  const totalVisitors = Number(data.totals?.visitors) || 0;
+  if (!countries.length) {
+    body.innerHTML = '<tr><td colspan="5" class="analytics-empty">功能上线后还没有记录到真实访客；不会使用演示数字填充。</td></tr>';
+    return;
+  }
+  body.innerHTML = countries.map(item => {
+    const shareValue = totalVisitors ? (Number(item.visitors) || 0) / totalVisitors * 100 : 0;
+    const share = `${shareValue.toFixed(1)}%`;
+    return `<tr><td><span class="country-name"><i>${countryFlag(item.code)}</i><strong>${escapeHtml(countryName(item.code))}</strong><small>${escapeHtml(item.code)}</small></span></td><td>${Number(item.visitors) || 0}</td><td>${Number(item.views) || 0}</td><td><span class="country-share"><i style="--share:${Math.min(100, shareValue)}%"></i><b>${share}</b></span></td><td>${escapeHtml(formatDate(item.lastSeen)) || '—'}</td></tr>`;
+  }).join('');
+}
+async function loadAnalytics() {
+  try { currentAnalytics = await api('/api/analytics'); renderAnalytics(); }
+  catch (error) { document.querySelector('#analyticsCountries').innerHTML = `<tr><td colspan="5" class="analytics-empty">${escapeHtml(error.setup ? '真实统计存储尚未配置。' : `无法读取访问数据：${error.message}`)}</td></tr>`; }
+}
 async function approveRecharge(item, button) {
   if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户储值卡将增加 ¥${item.creditedAmount}，其中赠送 ¥${Number(item.bonusAmount) || 0}。`)) return;
   button.disabled = true; button.textContent = '正在入账…';
@@ -118,7 +152,7 @@ async function approveRecharge(item, button) {
     document.querySelector('#rechargeNotice').textContent = `已确认 ${item.id}，客户当前余额为 ¥${Number(result.balance) || 0}${result.emailSent ? '，通知邮件已发送。' : '；余额已入账，通知邮件暂时未发送。'}`;
   } catch (error) { button.disabled = false; button.textContent = '确认实际到账并入账'; document.querySelector('#rechargeNotice').textContent = `入账失败：${error.message}`; }
 }
-async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges()]); }
+async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadAnalytics()]); }
 async function approveRush(order, container) {
   const input = container.querySelector('.rush-final-amount');
   const button = container.querySelector('.approve-rush');

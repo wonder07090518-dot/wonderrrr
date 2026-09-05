@@ -323,6 +323,39 @@ test('value-card top-ups include a ten-percent bonus only after idempotent admin
   assert.match(adminScript, /确认实际到账并入账/);
 });
 
+test('admin dashboard shows real privacy-safe visitor totals and countries', async () => {
+  const publicPages = [
+    'index.html', 'payment.html', 'privacy.html',
+    'services/ai-image-design.html', 'services/ai-poster-design.html', 'services/banner-design.html',
+    'services/creative-design-services.html', 'services/ecommerce-visual-design.html',
+    'services/logo-design.html', 'services/menu-price-list-design.html',
+    'services/ppt-design.html', 'services/social-cover-design.html'
+  ];
+  const [adminHtml, adminScript, analyticsClient, analyticsRoute, router, vercel, privacy, ...pages] = await Promise.all([
+    read('admin.html'), read('admin.js'), read('analytics.js'), read('api/_analytics-route.js'),
+    read('api/account-actions.js'), read('vercel.json'), read('privacy.html'),
+    ...publicPages.map(read)
+  ]);
+  assert.match(adminHtml, /id="analyticsVisitors"/);
+  assert.match(adminHtml, /id="analyticsCountries"/);
+  assert.match(adminHtml, /真实访问数据/);
+  assert.match(adminHtml, /不补造历史数字/);
+  assert.match(adminScript, /api\('\/api\/analytics'\)/);
+  assert.match(adminScript, /Intl\.DisplayNames/);
+  assert.match(analyticsClient, /\['wonderadlab\.com', 'www\.wonderadlab\.com'\]/);
+  assert.match(analyticsClient, /navigator\.globalPrivacyControl/);
+  assert.match(analyticsRoute, /x-vercel-ip-country/);
+  assert.match(analyticsRoute, /wonder:analytics:visitors/);
+  assert.match(analyticsRoute, /wonder:analytics:country:/);
+  assert.match(analyticsRoute, /isAdmin\(req\)/);
+  assert.doesNotMatch(analyticsRoute, /x-forwarded-for|remoteAddress/);
+  assert.match(router, /route === 'analytics'/);
+  assert.match(vercel, /"source": "\/api\/analytics"/);
+  assert.match(privacy, /We do not save or display visitor IP addresses/);
+  assert.match(privacy, /不会保存或显示访客 IP/);
+  pages.forEach((page, index) => assert.match(page, /\/analytics\.js\?v=20260905a/, `analytics missing from ${publicPages[index]}`));
+});
+
 test('signed-in customers can pay an order from balance without duplicate deductions', async () => {
   const [html, script, orderApi, route, router, vercel] = await Promise.all([
     read('index.html'), read('script.js'), read('api/orders.js'), read('api/_balance-payment-route.js'), read('api/account-actions.js'), read('vercel.json')

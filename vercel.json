@@ -5,6 +5,7 @@
     { "source": "/api/feedback", "destination": "/api/account-actions?route=feedback" },
     { "source": "/api/recharges", "destination": "/api/account-actions?route=recharges" },
     { "source": "/api/app-content", "destination": "/api/account-actions?route=app-content" },
-    { "source": "/api/account-delete", "destination": "/api/account-actions?route=account-delete" }
+    { "source": "/api/account-delete", "destination": "/api/account-actions?route=account-delete" },
+    { "source": "/api/analytics", "destination": "/api/account-actions?route=analytics" }
   ]
 }
