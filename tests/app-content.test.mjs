@@ -40,6 +40,9 @@ test('app content exposes the live catalog, studio updates and verified AI news'
     res.payload.industryNews.map(item => item.date).toSorted().reverse()
   );
   assert.equal(res.payload.industryNews.at(0).id, 'openai-gpt-6-astra');
+  assert.match(res.payload.industryNews.at(0).bodyZH, /宣传片创意、脚本、分镜与制作流程/);
+  assert.match(res.payload.industryNews.at(0).bodyZH, /成片仍需由专门的视频生成或剪辑工具完成/);
+  assert.match(res.payload.industryNews.at(0).bodyEN, /finished footage still requires a dedicated video-generation or editing tool/);
   assert.match(res.headers['Cache-Control'], /s-maxage=300/);
 });
 

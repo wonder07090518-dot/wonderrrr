@@ -205,14 +205,14 @@ const industryNews = [
   {
     id: 'openai-gpt-6-astra',
     date: '2026-09-03',
-    titleEN: 'OpenAI releases GPT-6 Astra',
-    titleZH: 'OpenAI 发布 GPT-6 Astra',
-    bodyEN: 'OpenAI announced GPT-6 Astra and said access is rolling out in stages across ChatGPT paid plans and the API. This summary is based on OpenAI’s official release.',
-    bodyZH: 'OpenAI 已公布 GPT-6 Astra，并表示将分阶段向 ChatGPT 付费方案与 API 开放。本摘要依据 OpenAI 官方发布整理。',
+    titleEN: 'How GPT-6 Astra can support promo films',
+    titleZH: 'GPT-6 Astra 能怎样协助宣传片',
+    bodyEN: 'OpenAI says GPT-6 Astra is stronger at complex professional work, media production, visual judgment and multi-step workflows. Wonder’s practical take: it can help organize a promo-film concept, script, storyboard and production workflow, while finished footage still requires a dedicated video-generation or editing tool.',
+    bodyZH: 'OpenAI 表示 GPT-6 Astra 在复杂专业工作、媒体制作、视觉判断与多步骤工作流方面更强。Wonder 应用解读：它可以协助梳理宣传片创意、脚本、分镜与制作流程；成片仍需由专门的视频生成或剪辑工具完成。',
     sourceName: 'OpenAI',
     sourceURL: 'https://openai.com/index/gpt-6-astra/',
-    categoryEN: 'Model release',
-    categoryZH: '模型发布',
+    categoryEN: 'Model capabilities',
+    categoryZH: '模型能力',
     verified: true,
     symbol: 'sparkles'
   }
@@ -222,7 +222,7 @@ export default function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
   return res.status(200).json({
-    updatedAt: '2026-09-04',
+    updatedAt: '2026-09-05',
     servicePrices,
     news,
     industryNews

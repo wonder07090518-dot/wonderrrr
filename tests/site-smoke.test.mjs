@@ -416,7 +416,8 @@ test('homepage exposes a source-backed international AI radar', async () => {
   const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
   assert.match(html, /id="ai-radar"/);
   assert.match(html, /id="aiRadarList"/);
-  assert.match(html, /OpenAI releases GPT-6 Astra/);
+  assert.match(html, /How GPT-6 Astra can support promo films/);
+  assert.match(html, /finished footage still requires a dedicated video-generation or editing tool/);
   assert.match(html, /https:\/\/openai\.com\/index\/gpt-6-astra\//);
   assert.match(script, /fetch\('\/api\/app-content'/);
   assert.match(script, /Official source/);
