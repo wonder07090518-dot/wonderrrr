@@ -15,7 +15,10 @@ test('mobile navigation exposes language, account and order controls', async () 
 });
 
 test('membership plans have direct checkout fallbacks', async () => {
-  const [html, script, payment] = await Promise.all([read('index.html'), read('script.js'), read('payment.js')]);
+  const [html, script, payment, route, router, vercel, adminHtml, adminScript] = await Promise.all([
+    read('index.html'), read('script.js'), read('payment.js'), read('api/_memberships-route.js'),
+    read('api/account-actions.js'), read('vercel.json'), read('admin.html'), read('admin.js')
+  ]);
   assert.match(html, /按次下单/);
   assert.match(html, /无月费/);
   assert.doesNotMatch(html, /每天 5 次生成|<h3>免费<\/h3>/);
@@ -26,6 +29,18 @@ test('membership plans have direct checkout fallbacks', async () => {
   assert.match(payment, /monthly: \{ amount: '29' \}/);
   assert.match(payment, /yearly: \{ amount: '199' \}/);
   assert.match(payment, /!params\.get\('id'\)/);
+  assert.match(script, /购买会员前请先登录/);
+  assert.match(script, /recoverLegacyMembershipRequests/);
+  assert.match(script, /Number\(item\.amount\) === 199 \? 'yearly'/);
+  assert.match(payment, /fetch\('\/api\/memberships'/);
+  assert.doesNotMatch(payment, /wonderad-membership-requests/);
+  assert.match(route, /membershipPlans = new Map/);
+  assert.match(route, /status: '待核对'/);
+  assert.match(route, /membershipActivationScript/);
+  assert.match(router, /route === 'memberships'/);
+  assert.match(vercel, /"source": "\/api\/memberships"/);
+  assert.match(adminHtml, /id="memberships"/);
+  assert.match(adminScript, /确认实际到账并生效/);
 });
 
 test('English mode covers previously untranslated key sections', async () => {

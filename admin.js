@@ -3,6 +3,7 @@ const dashboard = document.querySelector('#dashboard');
 const notice = document.querySelector('#notice');
 let currentOrders = [];
 let currentRecharges = [];
+let currentMemberships = [];
 let dashboardRefreshTimer = null;
 let currentAnalytics = null;
 
@@ -110,6 +111,29 @@ async function loadRecharges() {
   try { rechargeNotice.textContent = '正在加载充值申请…'; const data = await api('/api/recharges'); currentRecharges = data.recharges || []; renderRecharges(); }
   catch (error) { rechargeNotice.textContent = error.setup ? '充值存储尚未配置。' : `无法读取充值申请：${error.message}`; }
 }
+function renderMemberships() {
+  const list = document.querySelector('#memberships');
+  const membershipNotice = document.querySelector('#membershipNotice');
+  list.innerHTML = '';
+  if (!currentMemberships.length) { membershipNotice.textContent = '暂时没有会员付款确认。'; return; }
+  const pending = currentMemberships.filter(item => item.status !== '已生效').length;
+  membershipNotice.textContent = `已加载 ${currentMemberships.length} 条会员记录${pending ? `，其中 ${pending} 条待核对` : ''}。`;
+  currentMemberships.forEach(item => {
+    const card = document.createElement('article');
+    card.className = 'recharge-admin-card';
+    const approved = item.status === '已生效';
+    const expiry = item.expiresAt ? ` · 有效期至 ${escapeHtml(formatDate(item.expiresAt))}` : '';
+    card.innerHTML = `<div class="recharge-admin-copy"><div class="row"><strong>${escapeHtml(item.id)}</strong><span class="status ${approved ? 'is-done' : 'is-pending'}">${escapeHtml(item.status)}</span></div><h3>${escapeHtml(item.planName)} · ¥${Number(item.amount) || 0}</h3><p>${escapeHtml(item.email)} · ${escapeHtml(item.payment)}</p><small>提交：${escapeHtml(formatDate(item.requestedAt))}${item.approvedAt ? ` · 生效：${escapeHtml(formatDate(item.approvedAt))}` : ''}${expiry}</small></div><button type="button" class="approve-membership" ${approved ? 'disabled' : ''}>${approved ? '已生效' : '确认实际到账并生效'}</button>`;
+    const button = card.querySelector('.approve-membership');
+    if (!approved) button.addEventListener('click', () => approveMembership(item, button));
+    list.appendChild(card);
+  });
+}
+async function loadMemberships() {
+  const membershipNotice = document.querySelector('#membershipNotice');
+  try { membershipNotice.textContent = '正在加载会员付款确认…'; const data = await api('/api/memberships'); currentMemberships = data.memberships || []; renderMemberships(); }
+  catch (error) { membershipNotice.textContent = error.setup ? '会员存储尚未配置。' : `无法读取会员付款确认：${error.message}`; }
+}
 function countryName(code) {
   if (code === 'ZZ') return '未知国家';
   try { return new Intl.DisplayNames(['zh-CN'], { type: 'region' }).of(code) || code; } catch { return code; }
@@ -152,7 +176,16 @@ async function approveRecharge(item, button) {
     document.querySelector('#rechargeNotice').textContent = `已确认 ${item.id}，客户当前余额为 ¥${Number(result.balance) || 0}${result.emailSent ? '，通知邮件已发送。' : '；余额已入账，通知邮件暂时未发送。'}`;
   } catch (error) { button.disabled = false; button.textContent = '确认实际到账并入账'; document.querySelector('#rechargeNotice').textContent = `入账失败：${error.message}`; }
 }
-async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadAnalytics()]); }
+async function approveMembership(item, button) {
+  if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户的${item.planName}会立即生效。`)) return;
+  button.disabled = true; button.textContent = '正在生效…';
+  try {
+    const result = await api('/api/memberships', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, action: 'approve' }) });
+    await loadMemberships();
+    document.querySelector('#membershipNotice').textContent = `已确认 ${item.id}，${item.planName}有效期至 ${formatDate(result.expiresAt)}${result.emailSent ? '，通知邮件已发送。' : '；会员已生效，通知邮件暂时未发送。'}`;
+  } catch (error) { button.disabled = false; button.textContent = '确认实际到账并生效'; document.querySelector('#membershipNotice').textContent = `会员生效失败：${error.message}`; }
+}
+async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadMemberships(), loadAnalytics()]); }
 async function approveRush(order, container) {
   const input = container.querySelector('.rush-final-amount');
   const button = container.querySelector('.approve-rush');

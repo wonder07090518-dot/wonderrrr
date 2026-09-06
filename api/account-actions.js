@@ -5,6 +5,7 @@ import rechargesHandler from './_recharges-route.js';
 import appContentHandler from './_app-content-route.js';
 import accountDeleteHandler from './_account-delete-route.js';
 import analyticsHandler from './_analytics-route.js';
+import membershipsHandler from './_memberships-route.js';
 
 export default async function handler(req, res) {
   const route = String(req.query?.route || new URL(req.url || '/', 'https://wonderadlab.com').searchParams.get('route') || '');
@@ -15,5 +16,6 @@ export default async function handler(req, res) {
   if (route === 'app-content') return appContentHandler(req, res);
   if (route === 'account-delete') return accountDeleteHandler(req, res);
   if (route === 'analytics') return analyticsHandler(req, res);
+  if (route === 'memberships') return membershipsHandler(req, res);
   return res.status(404).json({ error: 'Unknown account action' });
 }

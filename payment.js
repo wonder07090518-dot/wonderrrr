@@ -83,6 +83,7 @@ if (membershipPlans[planKey] && (!params.get('id') || !transaction || params.get
   transaction = {
     id: params.get('id') || `MB${Date.now().toString().slice(-7)}`,
     kind: 'membership',
+    plan: planKey,
     title: copy.plan[planKey],
     amount: membershipPlans[planKey].amount,
     payment: '微信支付'
@@ -276,9 +277,9 @@ confirmButton.addEventListener('click', async () => {
   confirmButton.textContent = copy.submitting;
   try {
     if (transaction.kind === 'membership') {
-      const memberships = JSON.parse(localStorage.getItem('wonderad-membership-requests') || '[]');
-      memberships.unshift({ ...transaction, payment: method, status: copy.status, date: new Date().toLocaleString(language === 'en' ? 'en-CA' : 'zh-CN') });
-      localStorage.setItem('wonderad-membership-requests', JSON.stringify(memberships));
+      const response = await fetch('/api/memberships', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: transaction.id, plan: transaction.plan || planKey, payment: method }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || copy.failed);
     } else if (transaction.kind === 'recharge') {
       const response = await fetch('/api/recharges', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: transaction.id, amount: Number(transaction.amount), payment: method }) });
       const body = await response.json().catch(() => ({}));

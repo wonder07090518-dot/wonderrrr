@@ -1,0 +1,9 @@
+.approve-membership:disabled {
+  background: #e8f8ed;
+  color: #167338;
+  cursor: default;
+}
+
+@media (max-width: 720px) {
+  .approve-membership { width: 100%; }
+}

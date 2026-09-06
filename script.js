@@ -393,6 +393,23 @@ async function refreshSession() {
   updateAccountUI();
   return currentUser;
 }
+async function recoverLegacyMembershipRequests() {
+  if (!getCurrentUser()) return;
+  let legacyRequests = [];
+  try { legacyRequests = JSON.parse(localStorage.getItem('wonderad-membership-requests') || '[]'); } catch { return; }
+  if (!Array.isArray(legacyRequests) || !legacyRequests.length) return;
+  const remaining = legacyRequests.slice(20);
+  for (const item of legacyRequests.slice(0, 20)) {
+    const plan = item.plan || (Number(item.amount) === 199 ? 'yearly' : Number(item.amount) === 29 ? 'monthly' : '');
+    if (!/^MB\d{7,16}$/.test(String(item.id || '')) || !plan || !['微信支付', '支付宝'].includes(item.payment)) { remaining.push(item); continue; }
+    try {
+      const response = await fetch('/api/memberships', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, plan, payment: item.payment }) });
+      if (!response.ok) remaining.push(item);
+    } catch { remaining.push(item); }
+  }
+  if (remaining.length) localStorage.setItem('wonderad-membership-requests', JSON.stringify(remaining));
+  else localStorage.removeItem('wonderad-membership-requests');
+}
 function updateAccountUI() {
   const user = getCurrentUser();
   document.querySelectorAll('#openAuth, #mobileOpenAuth').forEach(accountButton => { accountButton.textContent = user ? user.name : (language === 'en' ? 'Sign in' : '登录 / 注册'); });
@@ -913,7 +930,7 @@ document.querySelector('#registerForm').addEventListener('submit', async event =
   try {
     const data = await accountApi('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'register', name, email, password }) });
     currentUser = data.user; localStorage.setItem(sessionKey, JSON.stringify(currentUser));
-    event.target.reset(); updateAccountUI(); closeModal(authModal); showToast('注册成功，欢迎来到 Wonder Ad Lab。');
+    event.target.reset(); updateAccountUI(); await recoverLegacyMembershipRequests(); closeModal(authModal); showToast('注册成功，欢迎来到 Wonder Ad Lab。');
   } catch (error) {
     showToast(error.setup ? '账户服务正在配置中，请稍后再试。' : error.message);
     if (/已注册|already registered/i.test(error.message)) showAuthForm('login');
@@ -926,7 +943,7 @@ document.querySelector('#loginForm').addEventListener('submit', async event => {
   try {
     const data = await accountApi('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', email, password }) });
     currentUser = data.user; localStorage.setItem(sessionKey, JSON.stringify(currentUser));
-    event.target.reset(); updateAccountUI(); closeModal(authModal); showToast(`欢迎回来，${currentUser.name}。`);
+    event.target.reset(); updateAccountUI(); await recoverLegacyMembershipRequests(); closeModal(authModal); showToast(`欢迎回来，${currentUser.name}。`);
   } catch (error) { showToast(error.setup ? '账户服务正在配置中，请稍后再试。' : '邮箱或密码不正确。'); }
 });
 document.querySelector('#lookupForm')?.addEventListener('submit', event => { event.preventDefault(); renderCustomerOrders(); });
@@ -961,7 +978,14 @@ revisionForm.addEventListener('submit', async event => {
 });
 document.querySelectorAll('.membership-pay').forEach(link => link.addEventListener('click', event => {
   event.preventDefault();
-  startPayment({ id: `MB${Date.now().toString().slice(-7)}`, kind: 'membership', title: link.dataset.plan, amount: link.dataset.amount, payment: '微信支付' }, link.getAttribute('href'));
+  if (!getCurrentUser()) {
+    openModal(authModal);
+    showToast(language === 'en' ? 'Sign in before purchasing a membership.' : '购买会员前请先登录。');
+    return;
+  }
+  const destination = link.getAttribute('href');
+  const plan = new URL(destination, window.location.href).searchParams.get('plan');
+  startPayment({ id: `MB${Date.now().toString().slice(-7)}`, kind: 'membership', plan, title: link.dataset.plan, amount: link.dataset.amount, payment: '微信支付' }, destination);
 }));
 const contactModal = document.querySelector('#contactModal');
 document.querySelector('#openContact').addEventListener('click', () => openModal(contactModal));
@@ -1598,4 +1622,4 @@ initScrollStory();
 initAiLab();
 applyLanguage();
 loadAIRadar();
-refreshSession().then(() => renderAccountStats());
+refreshSession().then(async () => { await recoverLegacyMembershipRequests(); renderAccountStats(); });
