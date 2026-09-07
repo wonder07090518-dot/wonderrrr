@@ -1,10 +1,11 @@
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { kv } from './_admin.js';
-import { clearUserSession, getCurrentUser, issueUserSession, userConfigured, userKey } from './_user.js';
+import { clearUserSession, getCurrentUser, issueUserSession, safeUser, userConfigured, userKey } from './_user.js';
 
 function validEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '')); }
 function hashPassword(password, salt) { return scryptSync(password, salt, 64).toString('base64'); }
 function passwordMatches(password, user) {
+  if (!user?.passwordHash || !user?.passwordSalt) return false;
   const expected = Buffer.from(user.passwordHash, 'base64');
   const received = Buffer.from(hashPassword(password, user.passwordSalt), 'base64');
   return expected.length === received.length && timingSafeEqual(expected, received);
@@ -30,10 +31,10 @@ export default async function handler(req, res) {
     if (!normalizedName) return res.status(400).json({ error: 'Name is required' });
     if (raw) return res.status(409).json({ error: 'This email is already registered' });
     const passwordSalt = randomBytes(16).toString('base64');
-    const user = { email: normalizedEmail, name: normalizedName.slice(0, 60), passwordSalt, passwordHash: hashPassword(password, passwordSalt), createdAt: new Date().toISOString() };
+    const user = { email: normalizedEmail, name: normalizedName.slice(0, 60), provider: 'password', passwordSalt, passwordHash: hashPassword(password, passwordSalt), createdAt: new Date().toISOString() };
     await kv('set', key, JSON.stringify(user));
     issueUserSession(res, user);
-    return res.status(201).json({ ok: true, user: { email: user.email, name: user.name } });
+    return res.status(201).json({ ok: true, user: safeUser(user) });
   }
 
   if (action === 'login') {
@@ -41,7 +42,7 @@ export default async function handler(req, res) {
     const user = JSON.parse(raw);
     if (!passwordMatches(password, user)) return res.status(401).json({ error: 'Email or password is incorrect' });
     issueUserSession(res, user);
-    return res.status(200).json({ ok: true, user: { email: user.email, name: user.name } });
+    return res.status(200).json({ ok: true, user: safeUser(user) });
   }
 
   return res.status(400).json({ error: 'Invalid account action' });

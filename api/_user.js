@@ -18,6 +18,16 @@ function matches(a, b) {
 export function userConfigured() { return Boolean(storageConfigured() && secret()); }
 export function userKey(email) { return `wonder:user:${String(email).trim().toLowerCase()}`; }
 
+export function safeUser(user) {
+  return {
+    email: user.email,
+    name: user.name,
+    provider: user.provider || 'password',
+    hasPassword: Boolean(user.passwordSalt && user.passwordHash),
+    appleLinked: Boolean(user.appleSub)
+  };
+}
+
 export function issueUserSession(res, user) {
   const payload = Buffer.from(JSON.stringify({ email: user.email, name: user.name, expires: Date.now() + MAX_AGE_SECONDS * 1000 })).toString('base64url');
   const token = `${payload}.${signature(payload)}`;
@@ -47,5 +57,5 @@ export async function getCurrentUser(req) {
   const raw = await kv('get', userKey(session.email));
   if (!raw) return null;
   const user = JSON.parse(raw);
-  return user.email === session.email ? { email: user.email, name: user.name } : null;
+  return user.email === session.email ? safeUser(user) : null;
 }

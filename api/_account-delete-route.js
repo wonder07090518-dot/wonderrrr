@@ -3,6 +3,13 @@ import { del as deleteBlob } from '@vercel/blob';
 import { kv, storageConfigured } from './_admin.js';
 import { clearUserSession, getCurrentUser, userConfigured, userKey } from './_user.js';
 import { balanceKey, balancePaymentKey, rechargeKey } from './_balance.js';
+import {
+  AppleAuthError,
+  appleIdentityKey,
+  encryptAppleRefreshToken,
+  exchangeAppleAuthorization,
+  revokeAppleRefreshToken
+} from './_apple-auth.js';
 
 function hashPassword(password, salt) {
   return scryptSync(password, salt, 64).toString('base64');
@@ -10,6 +17,7 @@ function hashPassword(password, salt) {
 
 function passwordMatches(password, user) {
   try {
+    if (!user?.passwordHash || !user?.passwordSalt) return false;
     const expected = Buffer.from(user.passwordHash, 'base64');
     const received = Buffer.from(hashPassword(password, user.passwordSalt), 'base64');
     return expected.length === received.length && timingSafeEqual(expected, received);
@@ -33,14 +41,38 @@ export default async function handler(req, res) {
 
   const current = await getCurrentUser(req);
   if (!current) return res.status(401).json({ error: 'Please sign in before deleting your account' });
-  if (req.body?.confirmation !== 'DELETE' || typeof req.body?.password !== 'string') {
-    return res.status(400).json({ error: 'Password confirmation is required' });
-  }
+  if (req.body?.confirmation !== 'DELETE') return res.status(400).json({ error: 'Account deletion confirmation is required' });
 
   const stored = await kv('get', userKey(current.email));
   const user = stored ? JSON.parse(stored) : null;
-  if (!user || !passwordMatches(req.body.password, user)) {
-    return res.status(401).json({ error: 'Password is incorrect' });
+  if (!user) return res.status(401).json({ error: '登录状态已失效，请重新登录' });
+  if (user.passwordHash && user.passwordSalt) {
+    if (typeof req.body?.password !== 'string' || !passwordMatches(req.body.password, user)) {
+      return res.status(401).json({ error: 'Password is incorrect' });
+    }
+  } else if (user.appleSub) {
+    try {
+      const authorization = req.body?.appleAuthorization || {};
+      const apple = await exchangeAppleAuthorization({
+        authorizationCode: authorization.authorizationCode,
+        rawNonce: authorization.rawNonce
+      });
+      if (apple.sub !== user.appleSub) return res.status(401).json({ error: '请使用当前账户关联的 Apple 账户确认注销' });
+      if (apple.refreshToken) user.appleRefreshToken = encryptAppleRefreshToken(apple.refreshToken);
+    } catch (error) {
+      if (error instanceof AppleAuthError) return res.status(error.status).json({ error: error.message, code: error.code });
+      return res.status(401).json({ error: 'Apple 账户确认失败，请重新尝试' });
+    }
+  } else {
+    return res.status(409).json({ error: '这个账户没有可用的重新验证方式，请联系支持' });
+  }
+
+  if (user.appleRefreshToken) {
+    try { await revokeAppleRefreshToken(user.appleRefreshToken); }
+    catch (error) {
+      if (error instanceof AppleAuthError) return res.status(error.status).json({ error: error.message, code: error.code });
+      return res.status(502).json({ error: 'Apple 授权未能撤销，请稍后再试' });
+    }
   }
 
   const normalizedEmail = current.email.toLowerCase();
@@ -86,7 +118,8 @@ export default async function handler(req, res) {
 
   await Promise.all([
     kv('del', balanceKey(normalizedEmail)),
-    kv('del', userKey(normalizedEmail))
+    kv('del', userKey(normalizedEmail)),
+    ...(user.appleSub ? [kv('del', appleIdentityKey(user.appleSub))] : [])
   ]);
   clearUserSession(res);
   return res.status(200).json({ ok: true, deleted: { orders: orders.length, recharges: recharges.length, feedback: feedback.length, files: blobPathnames.length } });
