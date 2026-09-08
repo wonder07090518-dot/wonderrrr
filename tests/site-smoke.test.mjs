@@ -224,9 +224,11 @@ test('orders share a durable admin queue with clear 24-hour and rush handling', 
   assert.match(adminHtml, /审核后发送给客户/);
   assert.match(adminHtml, /class="payment-evidence"/);
   assert.match(adminHtml, /class="next-action"/);
+  assert.match(adminHtml, /class="audit-trail"/);
   assert.match(adminScript, /测试 · \$\{order\.service\}/);
   assert.match(adminScript, /付款证据：/);
   assert.match(adminScript, /下一步：/);
+  assert.match(adminScript, /处理记录：/);
   assert.match(adminScript, /测试订单不交付/);
   assert.match(adminScript, /!approvalInput\.checked/);
   assert.match(adminScript, /deliveryButton\.addEventListener\('click'/);
@@ -412,7 +414,7 @@ test('signed-in customers can pay an order from balance without duplicate deduct
   assert.match(route, /servicePrices\[order\.service\]/);
   assert.match(route, /This order does not belong to your account/);
   assert.match(route, /redis\.call\('GET', KEYS\[3\]\)/);
-  assert.match(route, /if test >= amount then/);
+  assert.match(route, /if mode == 'test' and test >= amount then/);
   assert.match(route, /elseif mode ~= 'test' and real >= amount then/);
   assert.doesNotMatch(route, /source = 'mixed'/);
   assert.match(route, /redis\.call\('DECRBY', KEYS\[2\], testUsed\)/);

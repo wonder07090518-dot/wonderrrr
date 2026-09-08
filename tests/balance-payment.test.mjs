@@ -12,7 +12,7 @@ test('catalogAmount accepts only a positive integer price at the start of a cata
 
 test('balance debit script checks idempotency and funds before changing the balance', () => {
   const duplicateCheck = balanceDebitScript.indexOf("redis.call('GET', KEYS[3])");
-  const fundsCheck = balanceDebitScript.indexOf('if test >= amount then');
+  const fundsCheck = balanceDebitScript.indexOf("if mode == 'test' and test >= amount then");
   const testDebit = balanceDebitScript.indexOf("redis.call('DECRBY', KEYS[2], testUsed)");
   const realChoice = balanceDebitScript.indexOf("elseif mode ~= 'test' and real >= amount then");
   const realDebit = balanceDebitScript.indexOf("redis.call('DECRBY', KEYS[1], realUsed)");
@@ -60,7 +60,7 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     ['wonder:order:WA-ENOUGH', JSON.stringify({ id: 'WA-ENOUGH', email, service: '社媒封面', payment: '微信支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test order', referenceFiles: [] })],
     ['wonder:order:WA-SHORT', JSON.stringify({ id: 'WA-SHORT', email, service: '电商商品图', payment: '微信支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test order', referenceFiles: [] })],
     ['wonder:order:WA-TEST', JSON.stringify({ id: 'WA-TEST', email, service: 'AI 快速配图', payment: '余额支付', status: '审核中', size: '1:1', style: '极简', idea: 'Isolated test order', referenceFiles: [], isTest: true })],
-    ['wonder:order:WA-TEST-CREDIT', JSON.stringify({ id: 'WA-TEST-CREDIT', email, service: 'AI 快速配图', payment: '余额支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test-credit order', referenceFiles: [] })]
+    ['wonder:order:WA-TEST-CREDIT', JSON.stringify({ id: 'WA-TEST-CREDIT', email, service: 'AI 快速配图', payment: '余额支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test-credit order', referenceFiles: [], isTest: true })]
   ]);
   let emailRequests = 0;
   globalThis.fetch = async url => {
@@ -77,7 +77,7 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
       const testCredit = Number(store.get(testKey) || 0);
       const amount = Number(rawAmount);
       if (store.has(markerKey)) result = [2, real, testCredit, store.get(markerKey)];
-      else if (testCredit >= amount) {
+      else if (mode === 'test' && testCredit >= amount) {
         const testUsed = amount;
         const realUsed = 0;
         const source = 'test';
@@ -147,12 +147,12 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     assert.equal(emailRequests, 2);
 
     store.set(`wonder:balance:${email}`, '50');
-    store.set(`wonder:test-balance:${email}`, '5');
+    store.set(`wonder:test-balance:${email}`, '50');
     store.set('wonder:order:WA-NO-MIX', JSON.stringify({ id: 'WA-NO-MIX', email, service: 'AI 快速配图', price: '¥12 / 张', payment: '余额支付', status: '审核中', size: '1:1', style: '极简', idea: 'Never mix balances', referenceFiles: [] }));
     const noMix = await call('WA-NO-MIX');
     assert.equal(noMix.statusCode, 200);
     assert.equal(noMix.body.realBalance, 38);
-    assert.equal(noMix.body.testBalance, 5);
+    assert.equal(noMix.body.testBalance, 50);
     assert.equal(noMix.body.order.isTest, false);
     assert.equal(JSON.parse(store.get('wonder:order:WA-NO-MIX')).fundingSource, 'real');
     assert.equal(emailRequests, 4);

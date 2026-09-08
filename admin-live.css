@@ -87,6 +87,13 @@
   font-weight: 700;
 }
 
+.order-guidance .audit-trail {
+  padding-top: 7px;
+  border-top: 1px solid #e2ebf4;
+  color: #6b7785;
+  font-size: 11px;
+}
+
 .approval-check {
   display: flex;
   align-items: flex-start;

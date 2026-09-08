@@ -36,6 +36,15 @@ function nextActionText(order, evidence) {
   if (['微信支付', '支付宝'].includes(order.payment) && order.status === '待确认支付') return '下一步：在收款账户中核对真实到账，再手动标记“已支付”';
   return '下一步：等待并核验付款，不要开始制作';
 }
+function auditTrailText(order) {
+  const entries = [];
+  if (order.createdAt || order.date) entries.push(`已提交 ${formatDate(order.createdAt || order.date.replace(' ', 'T'))}`);
+  if (order.paidAt) entries.push(`系统确认付款 ${formatDate(order.paidAt)}`);
+  else if (order.manualPaidAt) entries.push(`人工确认到账 ${formatDate(order.manualPaidAt)}`);
+  if (order.deliveryApprovedAt) entries.push(`Wonder 审核 OK ${formatDate(order.deliveryApprovedAt)}`);
+  if (order.deliveryEmailSentAt) entries.push(`已发交付邮件 ${formatDate(order.deliveryEmailSentAt)}`);
+  return entries.length ? `处理记录：${entries.join(' → ')}` : '处理记录：等待第一条记录';
+}
 function startDashboardRefresh() { stopDashboardRefresh(); dashboardRefreshTimer = window.setInterval(() => loadDashboard(true), 60 * 1000); }
 function stopDashboardRefresh() { if (dashboardRefreshTimer) window.clearInterval(dashboardRefreshTimer); dashboardRefreshTimer = null; }
 async function downloadReference(order, index) {
@@ -97,6 +106,7 @@ function renderOrders() {
     const evidence = paymentEvidence(order);
     node.querySelector('.payment-evidence').textContent = `付款证据：${evidence.label}`;
     node.querySelector('.next-action').textContent = nextActionText(order, evidence);
+    node.querySelector('.audit-trail').textContent = auditTrailText(order);
     const references = Array.isArray(order.referenceFiles) ? order.referenceFiles : [];
     const referenceLine = node.querySelector('.references');
     if (references.length) { referenceLine.hidden = false; referenceLine.innerHTML = `<strong>参考样板（私有存储）</strong>${references.map((file, index) => `<button class="reference-download" type="button" data-reference-index="${index}"><span>${escapeHtml(file.path || file.name)}</span><small>${formatBytes(file.size)} · 下载</small></button>`).join('')}`; referenceLine.querySelectorAll('[data-reference-index]').forEach(button => button.addEventListener('click', () => downloadReference(order, Number(button.dataset.referenceIndex)))); }

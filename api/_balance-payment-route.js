@@ -18,7 +18,7 @@ end
 local testUsed = 0
 local realUsed = 0
 local source = ''
-if test >= amount then
+if mode == 'test' and test >= amount then
   testUsed = amount
   source = 'test'
 elseif mode ~= 'test' and real >= amount then
