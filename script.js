@@ -1059,7 +1059,7 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
     const resolvedStyle = selectedStyle === '其他风格' ? form.querySelector('#customStyleInput').value.trim() : selectedStyle;
     if (!resolvedSize) throw new Error(language === 'en' ? 'Please enter a custom size before submitting.' : '请先填写自定义尺寸。');
     if (!resolvedStyle) throw new Error(language === 'en' ? 'Please enter a custom style before submitting.' : '请先填写自定义风格。');
-    const orderId = `WA${Date.now().toString().slice(-7)}`;
+    const orderId = `WA-${crypto.randomUUID()}`;
     const referenceFiles = await uploadOrderReferenceFiles(orderId, submit);
     const order = { id: orderId, service: service.value, price: servicePrices[service.value] || '待确认报价', email: signedInUser.email, wechat: form.querySelector('#customerWechat').value.trim(), idea: form.querySelector('textarea').value.trim(), size: resolvedSize, style: resolvedStyle, payment, turnaround, referenceFiles, status: '审核中', date: formatDate() };
     submit.textContent = language === 'en' ? 'Submitting order…' : '正在提交订单…';

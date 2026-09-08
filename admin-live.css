@@ -65,6 +65,28 @@
   color: #a54800;
 }
 
+.order-guidance {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 12px 13px;
+  border: 1px solid #dce8f5;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f6fbff, #fbfdff);
+}
+
+.order-guidance p {
+  margin: 0;
+  color: #3d5268;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.order-guidance .next-action {
+  color: #075da9;
+  font-weight: 700;
+}
+
 .approval-check {
   display: flex;
   align-items: flex-start;

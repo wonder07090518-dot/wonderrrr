@@ -4,6 +4,7 @@ import { getCurrentUser } from './_user.js';
 import { head, issueSignedToken, presignUrl } from '@vercel/blob';
 import { waitUntil } from '@vercel/functions';
 import notifyOrderHandler from './notify-order.js';
+import { orderAmount, validateStatusTransition } from './_order-policy.js';
 
 const TURNAROUNDS = new Set(['standard', 'rush-request']);
 function validChoice(value, forbidden) {
@@ -156,13 +157,15 @@ export default async function handler(req, res) {
     }
     const status = req.body?.status;
     if (!['审核中', '待确认支付', '已支付', '制作中', '修改申请', '修改中', '已交付'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const transitionError = validateStatusTransition(existing, status);
+    if (transitionError) return res.status(409).json({ error: transitionError });
     const revisions = Array.isArray(existing.revisions) ? [...existing.revisions] : [];
     const latestIndex = revisions.length - 1;
     if (latestIndex >= 0 && status === '修改中' && revisions[latestIndex].status === '待处理') revisions[latestIndex] = { ...revisions[latestIndex], status: '修改中', startedAt: new Date().toISOString() };
     if (latestIndex >= 0 && status === '已交付' && ['待处理', '修改中'].includes(revisions[latestIndex].status)) revisions[latestIndex] = { ...revisions[latestIndex], status: '已完成', completedAt: new Date().toISOString() };
     const now = new Date().toISOString();
     const manualPaymentAudit = status === '已支付' && existing.status !== '已支付' && !existing.paidAt
-      ? { manualPaidAt: now, manualPaidBy: 'admin-dashboard' }
+      ? { manualPaidAt: now, manualPaidBy: 'admin-dashboard', amountPaid: orderAmount(existing), paymentEvidenceType: 'admin-confirmed-manual' }
       : {};
     await kv('set', `wonder:order:${id}`, JSON.stringify({ ...existing, ...manualPaymentAudit, status, revisions, updatedAt: now }));
     return res.status(200).json({ ok: true });

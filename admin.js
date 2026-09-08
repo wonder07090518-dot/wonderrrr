@@ -18,6 +18,24 @@ function orderTimestamp(order) {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 function isNewOrder(order) { const timestamp = orderTimestamp(order); const age = Date.now() - timestamp; return timestamp > 0 && age >= 0 && age <= 24 * 60 * 60 * 1000; }
+function paymentEvidence(order) {
+  if (order.isTest === true || order.testCreditUsed === true) return { verified: false, label: '测试额度：仅用于联调，不是真实收款' };
+  if (order.payment === '安全付款' && order.paidAt && order.amountPaid && order.stripePaymentEventId) return { verified: true, label: 'Stripe 官方回调已核验' };
+  if (order.payment === '余额支付' && order.paidAt && order.amountPaid && order.fundingSource === 'real') return { verified: true, label: '真实账户余额已扣除' };
+  if (['微信支付', '支付宝'].includes(order.payment) && order.manualPaidAt && order.manualPaidBy === 'admin-dashboard') return { verified: true, label: '已由 Wonder 人工核对到账' };
+  return { verified: false, label: '尚无可验证的付款证据' };
+}
+function nextActionText(order, evidence) {
+  if (order.isTest === true || order.testCreditUsed === true) return '下一步：联调已经完成，无需制作或交付';
+  if (order.status === '已交付') return '下一步：等待客户反馈；如需调整，客户可提交修改申请';
+  if (order.status === '修改申请') return evidence.verified ? '下一步：查看修改要求，确认后进入“修改中”' : '下一步：先核对原订单付款记录';
+  if (order.status === '修改中') return '下一步：完成修改稿，先给 Wonder 审核，确认 OK 后再交付';
+  if (order.status === '制作中') return '下一步：完成首版，先给 Wonder 审核，确认 OK 后再交付';
+  if (order.status === '已支付' && evidence.verified) return '下一步：可以开始制作；常规订单通常 24 小时内给首版';
+  if (order.turnaround === 'rush-request') return '下一步：先确认档期、交付时间和加急总价，不要先制作';
+  if (['微信支付', '支付宝'].includes(order.payment) && order.status === '待确认支付') return '下一步：在收款账户中核对真实到账，再手动标记“已支付”';
+  return '下一步：等待并核验付款，不要开始制作';
+}
 function startDashboardRefresh() { stopDashboardRefresh(); dashboardRefreshTimer = window.setInterval(() => loadDashboard(true), 60 * 1000); }
 function stopDashboardRefresh() { if (dashboardRefreshTimer) window.clearInterval(dashboardRefreshTimer); dashboardRefreshTimer = null; }
 async function downloadReference(order, index) {
@@ -76,6 +94,9 @@ function renderOrders() {
     }
     node.querySelector('.idea').textContent = order.idea;
     node.querySelector('.meta').textContent = `${order.email} · ${order.payment} · ${order.price} · ${order.size} · ${order.style}`;
+    const evidence = paymentEvidence(order);
+    node.querySelector('.payment-evidence').textContent = `付款证据：${evidence.label}`;
+    node.querySelector('.next-action').textContent = nextActionText(order, evidence);
     const references = Array.isArray(order.referenceFiles) ? order.referenceFiles : [];
     const referenceLine = node.querySelector('.references');
     if (references.length) { referenceLine.hidden = false; referenceLine.innerHTML = `<strong>参考样板（私有存储）</strong>${references.map((file, index) => `<button class="reference-download" type="button" data-reference-index="${index}"><span>${escapeHtml(file.path || file.name)}</span><small>${formatBytes(file.size)} · 下载</small></button>`).join('')}`; referenceLine.querySelectorAll('[data-reference-index]').forEach(button => button.addEventListener('click', () => downloadReference(order, Number(button.dataset.referenceIndex)))); }
@@ -83,7 +104,7 @@ function renderOrders() {
     const revisions = Array.isArray(order.revisions) ? [...order.revisions].reverse() : [];
     const revisionList = node.querySelector('.revision-list');
     if (revisions.length) revisionList.innerHTML = `<h3>修改记录</h3>${revisions.map(item => `<article class="revision-card"><div><strong>第 ${item.round} 轮 · ${escapeHtml(item.type)}</strong><span>${escapeHtml(item.status)}</span></div><p>${escapeHtml(item.details)}</p>${item.referenceUrl ? `<a href="${escapeHtml(item.referenceUrl)}" target="_blank" rel="noopener">查看参考链接</a>` : ''}${item.referenceName ? `<small>参考文件：${escapeHtml(item.referenceName)}（已随申请邮件发送）</small>` : ''}</article>`).join('')}`;
-    const select = node.querySelector('.status-select'); select.value = order.status; select.disabled = order.status === '已交付' || order.isTest === true; select.addEventListener('change', event => updateOrder(order, event.target.value));
+    const select = node.querySelector('.status-select'); select.value = order.status; select.disabled = order.status === '已交付' || order.isTest === true; select.querySelectorAll('option').forEach(option => { const target = option.value; if (target === order.status) return; if (target === '制作中') option.disabled = order.status !== '已支付' || !evidence.verified; if (target === '修改中') option.disabled = order.status !== '修改申请' || !evidence.verified; if (target === '已支付') option.disabled = !['微信支付', '支付宝'].includes(order.payment) || !['审核中', '待确认支付'].includes(order.status); if (target === '已交付') option.disabled = true; }); select.title = evidence.verified ? '系统已确认付款证据' : '未核验付款前，系统不会允许进入制作或交付'; select.addEventListener('change', event => updateOrder(order, event.target.value));
     const rushApproval = node.querySelector('.rush-approval');
     if (order.turnaround === 'rush-request') {
       rushApproval.hidden = false;
@@ -93,7 +114,7 @@ function renderOrders() {
     const deliveryInput = node.querySelector('.file-input');
     const approvalInput = node.querySelector('.approval-input');
     const deliveryButton = node.querySelector('.deliver-button');
-    const deliveryLocked = order.isTest === true || order.status === '已交付';
+    const deliveryLocked = order.isTest === true || order.status === '已交付' || !evidence.verified || !['已支付', '制作中', '修改申请', '修改中'].includes(order.status);
     const syncDeliveryState = () => { deliveryButton.disabled = deliveryLocked || !approvalInput.checked || !deliveryInput.files[0]; };
     if (order.isTest === true) {
       deliveryInput.disabled = true;

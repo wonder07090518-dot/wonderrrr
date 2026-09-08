@@ -184,6 +184,9 @@ test('admin can see and process revision history', async () => {
   assert.match(delivery, /Wonder approval is required before delivery/);
   assert.match(delivery, /Test orders cannot be delivered/);
   assert.match(delivery, /Payment must be verified before delivery/);
+  assert.match(delivery, /deliveryApprovedAt/);
+  assert.match(delivery, /deliveryEmailSentAt/);
+  assert.match(delivery, /Idempotency-Key/);
   assert.match(css, /\.revision-card/);
 });
 
@@ -212,13 +215,18 @@ test('orders share a durable admin queue with clear 24-hour and rush handling', 
   assert.match(orders, /notificationAttempts/);
   assert.match(orders, /manualPaidAt/);
   assert.match(orders, /manualPaidBy: 'admin-dashboard'/);
+  assert.match(orders, /validateStatusTransition/);
   assert.doesNotMatch(script, /fetch\('\/api\/notify-order'/);
   assert.match(notify, /请先不要付款/);
   assert.match(adminHtml, /id="new24h"/);
   assert.match(adminHtml, /确认加急最终报价/);
   assert.match(adminHtml, /我确认 Wonder 已查看成品并明确回复“OK”/);
   assert.match(adminHtml, /审核后发送给客户/);
+  assert.match(adminHtml, /class="payment-evidence"/);
+  assert.match(adminHtml, /class="next-action"/);
   assert.match(adminScript, /测试 · \$\{order\.service\}/);
+  assert.match(adminScript, /付款证据：/);
+  assert.match(adminScript, /下一步：/);
   assert.match(adminScript, /测试订单不交付/);
   assert.match(adminScript, /!approvalInput\.checked/);
   assert.match(adminScript, /deliveryButton\.addEventListener\('click'/);

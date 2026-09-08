@@ -104,7 +104,7 @@ export default async function balancePaymentHandler(req, res) {
   if (![1, 2].includes(code)) return res.status(503).json({ error: 'Balance payment could not be completed' });
 
   const usesTestCredit = fundingSource === 'test';
-  const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, realBalanceAfter: realBalance, testBalanceAfter: testBalance, fundingSource, isTest: order.isTest === true || usesTestCredit, testCreditUsed: usesTestCredit, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, realBalanceAfter: realBalance, testBalanceAfter: testBalance, fundingSource, paymentEvidenceType: usesTestCredit ? 'test-credit-debit' : 'real-balance-debit', isTest: order.isTest === true || usesTestCredit, testCreditUsed: usesTestCredit, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
   await kv('set', orderKey, JSON.stringify(paidOrder));
   const emailSkipped = paidOrder.isTest === true;
   const emailSent = emailSkipped ? false : await sendBalanceReceiptWithRetry(paidOrder, amount, balanceAfter);

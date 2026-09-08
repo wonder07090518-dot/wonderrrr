@@ -276,6 +276,8 @@ async function stripeWebhook(req, res) {
     ...order,
     payment: '安全付款',
     status: '已支付',
+    amountPaid: Number(session.amount_total) / 100,
+    paymentEvidenceType: 'stripe-webhook',
     paidAt: order.paidAt || new Date().toISOString(),
     stripeCheckoutSessionId: session.id,
     stripePaymentIntentId: typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id || '',
@@ -307,6 +309,12 @@ async function manualConfirmation(req, res, body) {
   if (firstConfirmation) {
     try { emailSent = await notifyOwner(updatedOrder, 'manual-confirm'); } catch { emailSent = false; }
   }
+  await saveOrder({
+    ...updatedOrder,
+    manualConfirmationEmailSent: emailSent,
+    notificationFailedAt: emailSent ? null : new Date().toISOString(),
+    notificationUpdatedAt: new Date().toISOString()
+  });
   return res.status(200).json({ ok: true, status: updatedOrder.status, emailSent });
 }
 
