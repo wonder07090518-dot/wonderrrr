@@ -56,6 +56,13 @@ test('English mode covers previously untranslated key sections', async () => {
   assert.match(payment, /notice: 'Manual payments are marked/);
 });
 
+test('AI radar update date follows the selected language', async () => {
+  const script = await read('script.js');
+  assert.match(script, /let aiRadarUpdatedAt = ''/);
+  assert.match(script, /aiRadarUpdatedAt = content\.updatedAt \|\| ''/);
+  assert.match(script, /renderAIRadar\(aiRadarData, aiRadarUpdatedAt\)/);
+});
+
 test('language switching localizes accessible labels and image descriptions', async () => {
   const script = await read('script.js');
   for (const phrase of [

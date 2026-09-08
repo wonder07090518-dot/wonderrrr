@@ -219,6 +219,7 @@ let language = ['en', 'zh'].includes(requestedLanguage)
   ? requestedLanguage
   : (['en', 'zh'].includes(savedLanguage) ? savedLanguage : 'en');
 let aiRadarData = [];
+let aiRadarUpdatedAt = '';
 
 function renderAIRadar(items = aiRadarData, updatedAt = '') {
   const list = document.querySelector('#aiRadarList');
@@ -267,7 +268,8 @@ async function loadAIRadar() {
     const content = await response.json();
     if (!Array.isArray(content.industryNews) || content.industryNews.length === 0) return;
     aiRadarData = content.industryNews;
-    renderAIRadar(aiRadarData, content.updatedAt || '');
+    aiRadarUpdatedAt = content.updatedAt || '';
+    renderAIRadar(aiRadarData, aiRadarUpdatedAt);
   } catch { /* Keep the verified server-rendered fallback visible. */ }
 }
 function applyLanguage() {
@@ -355,7 +357,7 @@ function applyLanguage() {
   renderRechargeHistory(accountBalanceData.recharges);
   renderOrderReferenceList();
   updateOrderBalanceHint();
-  renderAIRadar(aiRadarData);
+  renderAIRadar(aiRadarData, aiRadarUpdatedAt);
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
