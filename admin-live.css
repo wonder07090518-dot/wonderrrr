@@ -7,6 +7,11 @@
   box-shadow: 0 10px 30px rgba(0, 113, 227, 0.09);
 }
 
+.order-card.is-test {
+  border-color: #e7bc52;
+  background: linear-gradient(135deg, #fffdf5, #ffffff 48%);
+}
+
 .order-chips {
   display: flex;
   flex-wrap: wrap;
@@ -33,6 +38,11 @@
   color: #167338;
 }
 
+.turnaround.is-test {
+  background: #fff4cf;
+  color: #815d00;
+}
+
 .order-sla,
 .notification-state {
   margin: 8px 0 0;
@@ -43,6 +53,11 @@
 
 .order-sla.is-rush {
   color: #a54800;
+  font-weight: 700;
+}
+
+.order-sla.is-test {
+  color: #815d00;
   font-weight: 700;
 }
 

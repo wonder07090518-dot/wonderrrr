@@ -46,11 +46,15 @@ function renderOrders() {
     const card = node.querySelector('.order-card');
     card.dataset.id = order.id;
     card.classList.toggle('is-new', isNewOrder(order));
-    node.querySelector('.service').textContent = order.service;
+    card.classList.toggle('is-test', order.isTest === true);
+    node.querySelector('.service').textContent = order.isTest === true ? `测试 · ${order.service}` : order.service;
     const status = node.querySelector('.status'); status.textContent = order.status; status.classList.add(statusClass(order.status));
     const turnaround = node.querySelector('.turnaround');
     const sla = node.querySelector('.order-sla');
-    if (order.turnaround === 'rush-request') {
+    if (order.isTest === true) {
+      turnaround.textContent = '联调订单'; turnaround.classList.add('is-test');
+      sla.textContent = '仅验证完整下单与测试额度扣减，不代表真实收款；无需制作或交付给客户。'; sla.classList.add('is-test');
+    } else if (order.turnaround === 'rush-request') {
       turnaround.textContent = '加急待确认'; turnaround.classList.add('is-rush');
       sla.textContent = '客户正在等待你确认能否接单、具体时间和包含加急费用的最终总价。'; sla.classList.add('is-rush');
     } else if (order.turnaround === 'rush-approved') {
@@ -62,7 +66,10 @@ function renderOrders() {
       sla.textContent = '需求、素材与付款确认后，通常 24 小时内完成首版；复杂项目另行确认。';
     }
     const notificationState = node.querySelector('.notification-state');
-    if (typeof order.ownerEmailSent !== 'boolean' && typeof order.customerEmailSent !== 'boolean') notificationState.textContent = '邮件状态：旧订单未记录';
+    if (order.isTest === true) notificationState.textContent = '通知状态：测试订单已主动跳过客户与工作室收款邮件';
+    else if (order.notificationFailedAt) { notificationState.textContent = '邮件状态：自动提醒失败，请检查邮件服务'; notificationState.classList.add('is-delayed'); }
+    else if (order.notificationQueuedAt && typeof order.ownerEmailSent !== 'boolean') notificationState.textContent = '邮件状态：服务端已自动触发，正在发送';
+    else if (typeof order.ownerEmailSent !== 'boolean' && typeof order.customerEmailSent !== 'boolean') notificationState.textContent = '邮件状态：旧订单未记录';
     else {
       notificationState.textContent = `邮件状态：工作室提醒${order.ownerEmailSent ? '已发送' : '延迟'}${typeof order.customerEmailSent === 'boolean' ? ` · 客户确认${order.customerEmailSent ? '已发送' : '延迟'}` : ''}`;
       notificationState.classList.toggle('is-delayed', order.ownerEmailSent === false || order.customerEmailSent === false);
@@ -76,14 +83,19 @@ function renderOrders() {
     const revisions = Array.isArray(order.revisions) ? [...order.revisions].reverse() : [];
     const revisionList = node.querySelector('.revision-list');
     if (revisions.length) revisionList.innerHTML = `<h3>修改记录</h3>${revisions.map(item => `<article class="revision-card"><div><strong>第 ${item.round} 轮 · ${escapeHtml(item.type)}</strong><span>${escapeHtml(item.status)}</span></div><p>${escapeHtml(item.details)}</p>${item.referenceUrl ? `<a href="${escapeHtml(item.referenceUrl)}" target="_blank" rel="noopener">查看参考链接</a>` : ''}${item.referenceName ? `<small>参考文件：${escapeHtml(item.referenceName)}（已随申请邮件发送）</small>` : ''}</article>`).join('')}`;
-    const select = node.querySelector('.status-select'); select.value = order.status; select.disabled = order.status === '已交付'; select.addEventListener('change', event => updateOrder(order, event.target.value));
+    const select = node.querySelector('.status-select'); select.value = order.status; select.disabled = order.status === '已交付' || order.isTest === true; select.addEventListener('change', event => updateOrder(order, event.target.value));
     const rushApproval = node.querySelector('.rush-approval');
     if (order.turnaround === 'rush-request') {
       rushApproval.hidden = false;
       rushApproval.querySelector('.approve-rush').addEventListener('click', () => approveRush(order, rushApproval));
     }
     if (revisions.length) node.querySelector('.delivery-label-text').textContent = '上传修改稿并邮件交付';
-    node.querySelector('.file-input').addEventListener('change', event => deliver(order, event.target.files[0])); list.appendChild(node);
+    const deliveryInput = node.querySelector('.file-input');
+    if (order.isTest === true) {
+      deliveryInput.disabled = true;
+      node.querySelector('.delivery-label-text').textContent = '测试订单不交付';
+    }
+    deliveryInput.addEventListener('change', event => deliver(order, event.target.files[0])); list.appendChild(node);
   });
 }
 function escapeHtml(value = '') { return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>'); }

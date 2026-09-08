@@ -202,9 +202,17 @@ test('orders share a durable admin queue with clear 24-hour and rush handling', 
   assert.match(orders, /turnaround: 'rush-approved'/);
   assert.match(notify, /ownerEmailSent/);
   assert.match(notify, /customerEmailSent/);
+  assert.match(orders, /waitUntil\(task\)/);
+  assert.match(orders, /notifyOrderHandler/);
+  assert.match(orders, /notificationQueued/);
+  assert.match(orders, /retryDelays = \[0, 750, 2250\]/);
+  assert.match(orders, /notificationAttempts/);
+  assert.doesNotMatch(script, /fetch\('\/api\/notify-order'/);
   assert.match(notify, /请先不要付款/);
   assert.match(adminHtml, /id="new24h"/);
   assert.match(adminHtml, /确认加急最终报价/);
+  assert.match(adminScript, /测试 · \$\{order\.service\}/);
+  assert.match(adminScript, /测试订单不交付/);
   assert.match(adminScript, /setInterval\(\(\) => loadDashboard\(true\), 60 \* 1000\)/);
   assert.match(adminScript, /approveRush/);
   assert.match(adminCss, /\.order-card\.is-new/);

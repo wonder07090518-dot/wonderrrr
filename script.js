@@ -587,14 +587,6 @@ function transitionServiceView() {
   }
   document.startViewTransition(() => updateServiceView());
 }
-async function notifyOwner(order) {
-  try {
-    const response = await fetch('/api/notify-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
 function formatFileSize(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
@@ -669,8 +661,9 @@ async function notifyDelivery(order, result) {
 async function saveSharedOrder(order) {
   try {
     const response = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
-    return response.ok;
-  } catch { return false; }
+    if (!response.ok) return null;
+    return await response.json();
+  } catch { return null; }
 }
 function statusClass(status) {
   return ({ '审核中': 'pending', '待支付': 'pending', '待确认支付': 'pending', '已支付': 'paid', '制作中': 'making', '修改申请': 'revision', '修改中': 'making', '已交付': 'done' })[status] || 'pending';
@@ -1090,7 +1083,7 @@ document.querySelector('#orderForm').addEventListener('submit', async event => {
       completedOrder = { ...order, ...balancePaymentResult.order };
     }
     const orders = getOrders(); orders.unshift(completedOrder); saveOrders(orders);
-    const emailSent = payment === '余额支付' && turnaround !== 'rush-request' ? balancePaymentResult.emailSent : await notifyOwner(order);
+    const emailSent = payment === '余额支付' && turnaround !== 'rush-request' ? balancePaymentResult.emailSent : Boolean(saved.notificationQueued);
     renderAccountStats();
     pendingSubmittedOrder = payment === '余额支付' || turnaround === 'rush-request' ? null : order;
     const submittedTitle = document.querySelector('#submittedTitle');

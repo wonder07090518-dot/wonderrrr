@@ -2,6 +2,8 @@ import { configured, isAdmin, kv, storageConfigured } from './_admin.js';
 import { availableServices, servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
 import { head, issueSignedToken, presignUrl } from '@vercel/blob';
+import { waitUntil } from '@vercel/functions';
+import notifyOrderHandler from './notify-order.js';
 
 const TURNAROUNDS = new Set(['standard', 'rush-request']);
 function validChoice(value, forbidden) {
@@ -19,6 +21,44 @@ function validOrder(order) {
     && (!order.turnaround || TURNAROUNDS.has(order.turnaround));
 }
 async function load(id) { const raw = await kv('get', `wonder:order:${id}`); return raw ? JSON.parse(raw) : null; }
+
+async function notifySavedOrder(req, orderId) {
+  let statusCode = 200;
+  let responseBody = null;
+  const response = {
+    status(code) { statusCode = code; return this; },
+    json(body) { responseBody = body; return this; }
+  };
+  await notifyOrderHandler({ method: 'POST', headers: req.headers, body: { id: orderId } }, response);
+  if (statusCode >= 400) throw new Error(responseBody?.error || 'Order notification failed');
+}
+
+async function runOrderNotification(req, orderId) {
+  const retryDelays = [0, 750, 2250];
+  let lastError;
+  for (let index = 0; index < retryDelays.length; index += 1) {
+    if (retryDelays[index]) await new Promise(resolve => setTimeout(resolve, retryDelays[index]));
+    try {
+      await notifySavedOrder(req, orderId);
+      const latest = await load(orderId);
+      if (latest) await kv('set', `wonder:order:${orderId}`, JSON.stringify({ ...latest, notificationAttempts: index + 1, notificationCompletedAt: new Date().toISOString(), notificationFailedAt: null }));
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  const latest = await load(orderId);
+  if (latest) await kv('set', `wonder:order:${orderId}`, JSON.stringify({ ...latest, notificationAttempts: retryDelays.length, notificationFailedAt: new Date().toISOString() }));
+  throw lastError;
+}
+
+function queueOrderNotification(req, order) {
+  if (order.payment === '余额支付') return false;
+  const task = runOrderNotification(req, order.id).catch(() => undefined);
+  try { waitUntil(task); }
+  catch { void task; }
+  return true;
+}
 const MAX_REFERENCE_FILES = 100;
 const MAX_REFERENCE_BYTES = 1024 * 1024 * 1024;
 async function referenceMetadata(items, orderId) {
@@ -70,18 +110,22 @@ export default async function handler(req, res) {
     const existing = await load(req.body.id);
     if (existing) {
       if (String(existing.email).toLowerCase() !== user.email) return res.status(409).json({ error: 'Order ID already exists' });
-      return res.status(200).json({ ok: true, duplicate: true });
+      const notificationQueued = existing.payment !== '余额支付'
+        && !existing.notificationCompletedAt
+        && queueOrderNotification(req, existing);
+      return res.status(200).json({ ok: true, duplicate: true, notificationQueued });
     }
     let references;
     try { references = await referenceMetadata(req.body.referenceFiles, req.body.id); }
     catch (error) { return res.status(error.status || 400).json({ error: error.message }); }
     const now = new Date().toISOString();
-    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: references, email: user.email, price: servicePrices[req.body.service], turnaround: TURNAROUNDS.has(req.body.turnaround) ? req.body.turnaround : 'standard', status: '审核中', createdAt: now, updatedAt: now };
+    const order = { ...req.body, referenceAttachments: undefined, referenceFiles: references, email: user.email, price: servicePrices[req.body.service], turnaround: TURNAROUNDS.has(req.body.turnaround) ? req.body.turnaround : 'standard', status: '审核中', notificationQueuedAt: req.body.payment === '余额支付' ? undefined : now, createdAt: now, updatedAt: now };
     delete order.referenceAttachments;
     delete order.isTest;
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
-    return res.status(201).json({ ok: true });
+    const notificationQueued = queueOrderNotification(req, order);
+    return res.status(201).json({ ok: true, notificationQueued });
   }
   if (req.method === 'GET') {
     if (!storageConfigured()) return res.status(503).json({ error: 'Order storage is not configured', setup: true });
