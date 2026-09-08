@@ -1,20 +1,26 @@
 import { kv, storageConfigured } from './_admin.js';
-import { balanceKey, balancePaymentKey } from './_balance.js';
+import { balanceKey, balancePaymentKey, testBalanceKey } from './_balance.js';
 import { servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
 
 export const balanceDebitScript = `
-local current = tonumber(redis.call('GET', KEYS[1]) or '0')
-if redis.call('EXISTS', KEYS[2]) == 1 then
-  return {2, current}
+local real = tonumber(redis.call('GET', KEYS[1]) or '0')
+local test = tonumber(redis.call('GET', KEYS[2]) or '0')
+local existing = redis.call('GET', KEYS[3])
+if existing then
+  return {2, real, test, existing}
 end
 local amount = tonumber(ARGV[1])
-if not amount or amount <= 0 or current < amount then
-  return {0, current}
+if not amount or amount <= 0 or (real + test) < amount then
+  return {0, real, test, ''}
 end
-local remaining = redis.call('DECRBY', KEYS[1], amount)
-redis.call('SET', KEYS[2], ARGV[2])
-return {1, remaining}
+local testUsed = math.min(test, amount)
+local realUsed = amount - testUsed
+if testUsed > 0 then redis.call('DECRBY', KEYS[2], testUsed) end
+if realUsed > 0 then redis.call('DECRBY', KEYS[1], realUsed) end
+local source = testUsed > 0 and (realUsed > 0 and 'mixed' or 'test') or 'real'
+redis.call('SET', KEYS[3], source .. ':' .. ARGV[2])
+return {1, real - realUsed, test - testUsed, source}
 `;
 
 export function catalogAmount(price) {
@@ -68,15 +74,19 @@ export default async function balancePaymentHandler(req, res) {
   }
   if (!['审核中', '待支付', '待确认支付'].includes(order.status)) return res.status(409).json({ error: 'This order cannot be paid again' });
 
-  const result = await kv('eval', balanceDebitScript, 2, balanceKey(user.email), balancePaymentKey(orderId), amount, orderId);
+  const result = await kv('eval', balanceDebitScript, 3, balanceKey(user.email), testBalanceKey(user.email), balancePaymentKey(orderId), amount, orderId);
   const code = Number(result?.[0]);
-  const balanceAfter = Math.max(0, Number(result?.[1]) || 0);
-  if (code === 0) return res.status(402).json({ error: 'Insufficient balance', balance: balanceAfter, required: amount });
+  const realBalance = Math.max(0, Number(result?.[1]) || 0);
+  const testBalance = Math.max(0, Number(result?.[2]) || 0);
+  const balanceAfter = realBalance + testBalance;
+  const fundingSource = String(result?.[3] || '').split(':')[0];
+  if (code === 0) return res.status(402).json({ error: 'Insufficient balance', balance: balanceAfter, realBalance, testBalance, required: amount });
   if (![1, 2].includes(code)) return res.status(503).json({ error: 'Balance payment could not be completed' });
 
-  const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const usesTestCredit = ['test', 'mixed'].includes(fundingSource);
+  const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, isTest: order.isTest === true || usesTestCredit, testCreditUsed: usesTestCredit, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
   await kv('set', orderKey, JSON.stringify(paidOrder));
   const emailSkipped = paidOrder.isTest === true;
   const emailSent = emailSkipped ? false : await sendBalanceReceipt(paidOrder, amount, balanceAfter);
-  return res.status(200).json({ ok: true, alreadyPaid: code === 2, amount, balance: balanceAfter, emailSent, emailSkipped, order: { id: paidOrder.id, service: paidOrder.service, price: paidOrder.price, payment: paidOrder.payment, status: paidOrder.status, amountPaid: paidOrder.amountPaid, balanceAfter: paidOrder.balanceAfter } });
+  return res.status(200).json({ ok: true, alreadyPaid: code === 2, amount, balance: balanceAfter, realBalance, testBalance, testMode: testBalance > 0, emailSent, emailSkipped, order: { id: paidOrder.id, service: paidOrder.service, price: paidOrder.price, payment: paidOrder.payment, status: paidOrder.status, amountPaid: paidOrder.amountPaid, balanceAfter: paidOrder.balanceAfter, isTest: paidOrder.isTest } });
 }

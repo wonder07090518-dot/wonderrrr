@@ -1,6 +1,7 @@
 import { kv, storageConfigured } from './_admin.js';
 import { getCurrentUser } from './_user.js';
 import { servicePrices } from './_catalog.js';
+import { readBalanceBreakdown, testBalanceKey } from './_balance.js';
 import {
   STRIPE_CURRENCY,
   checkoutIdempotencyKey,
@@ -15,6 +16,16 @@ export const config = { api: { bodyParser: false } };
 const OWNER_EMAIL = 'wonder07090518@gmail.com';
 const SITE_ORIGIN = 'https://www.wonderadlab.com';
 const manualPaymentMethods = new Set(['微信支付', '支付宝']);
+
+export const testBalanceGrantScript = `
+local current = tonumber(redis.call('GET', KEYS[1]) or '0')
+if redis.call('EXISTS', KEYS[2]) == 1 then
+  return {2, current}
+end
+local updated = redis.call('INCRBY', KEYS[1], ARGV[1])
+redis.call('SET', KEYS[2], ARGV[2])
+return {1, updated}
+`;
 
 async function loadOrder(id) {
   const raw = await kv('get', `wonder:order:${id}`);
@@ -82,6 +93,26 @@ async function cleanupTestFixture(req, res, body) {
   }
   await kv('del', `wonder:order:${order.id}`);
   return res.status(200).json({ ok: true, removed: true });
+}
+
+async function grantOneTimeTestBalance(req, res, body) {
+  const enabledOrderId = String(process.env.WONDER_TEST_BALANCE_ORDER_ID || '').trim();
+  const orderId = String(body?.orderId || '').trim().slice(0, 40);
+  if (!enabledOrderId || orderId !== enabledOrderId) return res.status(404).json({ error: 'Test credit is unavailable' });
+  const user = await getCurrentUser(req);
+  if (!user) return res.status(401).json({ error: 'Please sign in before using test credit' });
+  if (user.provider !== 'apple') return res.status(403).json({ error: 'This isolated test is restricted to the signed-in Apple account' });
+  const order = await loadOrder(orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (!userOwnsOrder(user, order)) return res.status(403).json({ error: 'This order does not belong to your account' });
+  const createdAt = Date.parse(order.createdAt || '');
+  if (!Number.isFinite(createdAt) || Date.now() - createdAt > 24 * 60 * 60 * 1000) return res.status(409).json({ error: 'The test order is no longer eligible' });
+  const markerKey = `wonder:test-balance-grant:${orderId}`;
+  const result = await kv('eval', testBalanceGrantScript, 2, testBalanceKey(user.email), markerKey, 100, orderId);
+  const code = Number(result?.[0]);
+  if (![1, 2].includes(code)) return res.status(503).json({ error: 'Test credit could not be added' });
+  const balances = await readBalanceBreakdown(user.email);
+  return res.status(200).json({ ok: true, alreadyGranted: code === 2, credited: 100, ...balances, testMode: true });
 }
 
 async function rawBody(req) {
@@ -290,6 +321,7 @@ export default async function handler(req, res) {
   catch (error) { return res.status(error.status || 400).json({ error: error.message }); }
   if (action === 'test-create') return createTestFixture(req, res);
   if (action === 'test-cleanup') return cleanupTestFixture(req, res, body);
+  if (action === 'test-balance-grant') return grantOneTimeTestBalance(req, res, body);
   if (action === 'create-checkout') return createCheckout(req, res, body);
   return manualConfirmation(req, res, body);
 }

@@ -17,6 +17,10 @@ export function balanceKey(email) {
   return `wonder:balance:${String(email || '').trim().toLowerCase()}`;
 }
 
+export function testBalanceKey(email) {
+  return `wonder:test-balance:${String(email || '').trim().toLowerCase()}`;
+}
+
 export function rechargeKey(id) {
   return `wonder:recharge:${String(id || '').trim()}`;
 }
@@ -31,5 +35,16 @@ export async function loadRecharge(id) {
 }
 
 export async function readBalance(email) {
-  return Math.max(0, Number(await kv('get', balanceKey(email))) || 0);
+  const { balance } = await readBalanceBreakdown(email);
+  return balance;
+}
+
+export async function readBalanceBreakdown(email) {
+  const [realRaw, testRaw] = await Promise.all([
+    kv('get', balanceKey(email)),
+    kv('get', testBalanceKey(email))
+  ]);
+  const realBalance = Math.max(0, Number(realRaw) || 0);
+  const testBalance = Math.max(0, Number(testRaw) || 0);
+  return { balance: realBalance + testBalance, realBalance, testBalance };
 }

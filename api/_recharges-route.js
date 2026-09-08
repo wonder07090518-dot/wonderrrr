@@ -83,8 +83,8 @@ export default async function rechargesHandler(req, res) {
     let balance = await readBalance(item.email);
     if (item.status !== '已到账') {
       const firstCredit = Number(await kv('setnx', `wonder:recharge-applied:${id}`, item.creditedAmount)) === 1;
-      if (firstCredit) balance = Number(await kv('incrby', balanceKey(item.email), item.creditedAmount));
-      else balance = await readBalance(item.email);
+      if (firstCredit) await kv('incrby', balanceKey(item.email), item.creditedAmount);
+      balance = await readBalance(item.email);
       const updated = { ...item, status: '已到账', approvedAt: new Date().toISOString(), balanceAfter: balance };
       await kv('set', rechargeKey(id), JSON.stringify(updated));
       let emailSent = false;

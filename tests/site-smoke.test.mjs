@@ -386,9 +386,10 @@ test('signed-in customers can pay an order from balance without duplicate deduct
   assert.match(orderApi, /delete order\.isTest/);
   assert.match(route, /servicePrices\[order\.service\]/);
   assert.match(route, /This order does not belong to your account/);
-  assert.match(route, /redis\.call\('EXISTS', KEYS\[2\]\)/);
-  assert.match(route, /current < amount/);
-  assert.match(route, /redis\.call\('DECRBY', KEYS\[1\], amount\)/);
+  assert.match(route, /redis\.call\('GET', KEYS\[3\]\)/);
+  assert.match(route, /\(real \+ test\) < amount/);
+  assert.match(route, /redis\.call\('DECRBY', KEYS\[2\], testUsed\)/);
+  assert.match(route, /redis\.call\('DECRBY', KEYS\[1\], realUsed\)/);
   assert.match(route, /status: '已支付'/);
   assert.match(route, /paidOrder\.isTest === true/);
   assert.match(router, /route === 'balance-payment'/);

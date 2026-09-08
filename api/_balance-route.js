@@ -1,6 +1,6 @@
 import { kv, storageConfigured } from './_admin.js';
 import { getCurrentUser } from './_user.js';
-import { loadRecharge, readBalance } from './_balance.js';
+import { loadRecharge, readBalanceBreakdown } from './_balance.js';
 
 export default async function balanceHandler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -12,5 +12,6 @@ export default async function balanceHandler(req, res) {
     .filter(item => item && String(item.email).toLowerCase() === user.email)
     .slice(0, 10)
     .map(item => ({ id: item.id, amount: item.amount, bonusAmount: item.bonusAmount || 0, creditedAmount: item.creditedAmount, payment: item.payment, status: item.status, requestedAt: item.requestedAt, approvedAt: item.approvedAt || '' }));
-  return res.status(200).json({ balance: await readBalance(user.email), recharges });
+  const balances = await readBalanceBreakdown(user.email);
+  return res.status(200).json({ ...balances, testMode: balances.testBalance > 0, recharges });
 }
