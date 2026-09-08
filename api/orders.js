@@ -78,6 +78,7 @@ export default async function handler(req, res) {
     const now = new Date().toISOString();
     const order = { ...req.body, referenceAttachments: undefined, referenceFiles: references, email: user.email, price: servicePrices[req.body.service], turnaround: TURNAROUNDS.has(req.body.turnaround) ? req.body.turnaround : 'standard', status: '审核中', createdAt: now, updatedAt: now };
     delete order.referenceAttachments;
+    delete order.isTest;
     await kv('set', `wonder:order:${order.id}`, JSON.stringify(order));
     await kv('zadd', 'wonder:orders', Date.now(), order.id);
     return res.status(201).json({ ok: true });

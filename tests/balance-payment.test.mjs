@@ -53,7 +53,8 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     [`wonder:user:${email}`, JSON.stringify({ email, name: 'Buyer' })],
     [`wonder:balance:${email}`, '50'],
     ['wonder:order:WA-ENOUGH', JSON.stringify({ id: 'WA-ENOUGH', email, service: '社媒封面', payment: '微信支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test order', referenceFiles: [] })],
-    ['wonder:order:WA-SHORT', JSON.stringify({ id: 'WA-SHORT', email, service: '电商商品图', payment: '微信支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test order', referenceFiles: [] })]
+    ['wonder:order:WA-SHORT', JSON.stringify({ id: 'WA-SHORT', email, service: '电商商品图', payment: '微信支付', status: '审核中', size: '1:1', style: '极简', idea: 'Test order', referenceFiles: [] })],
+    ['wonder:order:WA-TEST', JSON.stringify({ id: 'WA-TEST', email, service: 'AI 快速配图', payment: '余额支付', status: '审核中', size: '1:1', style: '极简', idea: 'Isolated test order', referenceFiles: [], isTest: true })]
   ]);
   let emailRequests = 0;
   globalThis.fetch = async url => {
@@ -102,6 +103,13 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     assert.equal(insufficient.body.required, 22);
     assert.equal(Number(store.get(`wonder:balance:${email}`)), 10);
     assert.equal(JSON.parse(store.get('wonder:order:WA-SHORT')).status, '审核中');
+
+    store.set(`wonder:balance:${email}`, '50');
+    const isolated = await call('WA-TEST');
+    assert.equal(isolated.statusCode, 200);
+    assert.equal(isolated.body.balance, 38);
+    assert.equal(isolated.body.emailSkipped, true);
+    assert.equal(emailRequests, 2);
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(originalEnvironment)) {

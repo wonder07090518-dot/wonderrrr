@@ -76,6 +76,7 @@ export default async function balancePaymentHandler(req, res) {
 
   const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
   await kv('set', orderKey, JSON.stringify(paidOrder));
-  const emailSent = await sendBalanceReceipt(paidOrder, amount, balanceAfter);
-  return res.status(200).json({ ok: true, alreadyPaid: code === 2, amount, balance: balanceAfter, emailSent, order: { id: paidOrder.id, service: paidOrder.service, price: paidOrder.price, payment: paidOrder.payment, status: paidOrder.status, amountPaid: paidOrder.amountPaid, balanceAfter: paidOrder.balanceAfter } });
+  const emailSkipped = paidOrder.isTest === true;
+  const emailSent = emailSkipped ? false : await sendBalanceReceipt(paidOrder, amount, balanceAfter);
+  return res.status(200).json({ ok: true, alreadyPaid: code === 2, amount, balance: balanceAfter, emailSent, emailSkipped, order: { id: paidOrder.id, service: paidOrder.service, price: paidOrder.price, payment: paidOrder.payment, status: paidOrder.status, amountPaid: paidOrder.amountPaid, balanceAfter: paidOrder.balanceAfter } });
 }

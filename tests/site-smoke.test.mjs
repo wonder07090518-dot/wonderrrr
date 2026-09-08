@@ -383,12 +383,14 @@ test('signed-in customers can pay an order from balance without duplicate deduct
   assert.match(script, /Remaining balance/);
   assert.match(html, /id="submittedTitle"/);
   assert.match(orderApi, /'余额支付'/);
+  assert.match(orderApi, /delete order\.isTest/);
   assert.match(route, /servicePrices\[order\.service\]/);
   assert.match(route, /This order does not belong to your account/);
   assert.match(route, /redis\.call\('EXISTS', KEYS\[2\]\)/);
   assert.match(route, /current < amount/);
   assert.match(route, /redis\.call\('DECRBY', KEYS\[1\], amount\)/);
   assert.match(route, /status: '已支付'/);
+  assert.match(route, /paidOrder\.isTest === true/);
   assert.match(router, /route === 'balance-payment'/);
   assert.match(vercel, /"source": "\/api\/balance-payment"/);
 });
