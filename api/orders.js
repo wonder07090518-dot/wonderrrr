@@ -160,7 +160,11 @@ export default async function handler(req, res) {
     const latestIndex = revisions.length - 1;
     if (latestIndex >= 0 && status === '修改中' && revisions[latestIndex].status === '待处理') revisions[latestIndex] = { ...revisions[latestIndex], status: '修改中', startedAt: new Date().toISOString() };
     if (latestIndex >= 0 && status === '已交付' && ['待处理', '修改中'].includes(revisions[latestIndex].status)) revisions[latestIndex] = { ...revisions[latestIndex], status: '已完成', completedAt: new Date().toISOString() };
-    await kv('set', `wonder:order:${id}`, JSON.stringify({ ...existing, status, revisions, updatedAt: new Date().toISOString() }));
+    const now = new Date().toISOString();
+    const manualPaymentAudit = status === '已支付' && existing.status !== '已支付' && !existing.paidAt
+      ? { manualPaidAt: now, manualPaidBy: 'admin-dashboard' }
+      : {};
+    await kv('set', `wonder:order:${id}`, JSON.stringify({ ...existing, ...manualPaymentAudit, status, revisions, updatedAt: now }));
     return res.status(200).json({ ok: true });
   }
   return res.status(405).json({ error: 'Method not allowed' });

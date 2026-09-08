@@ -65,6 +65,28 @@
   color: #a54800;
 }
 
+.approval-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid #dce6f2;
+  border-radius: 12px;
+  background: #f8fbff;
+  color: #394b61;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.approval-check input {
+  margin-top: 2px;
+}
+
+.deliver-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
 .rush-approval {
   display: grid;
   gap: 10px;

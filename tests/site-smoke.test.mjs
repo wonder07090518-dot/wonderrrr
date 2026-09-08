@@ -174,13 +174,16 @@ test('delivered orders support persisted revision requests and email notices', a
 });
 
 test('admin can see and process revision history', async () => {
-  const [html, script, css] = await Promise.all([read('admin.html'), read('admin.js'), read('admin-revisions.css')]);
+  const [html, script, css, delivery] = await Promise.all([read('admin.html'), read('admin.js'), read('admin-revisions.css'), read('api/notify-delivery.js')]);
   assert.match(html, /id="revisions"/);
   assert.match(html, /<option>修改申请<\/option><option>修改中<\/option>/);
   assert.match(html, /class="revision-list"/);
   assert.match(script, /counts\.revisions/);
   assert.match(script, /上传修改稿并邮件交付/);
   assert.match(script, /\['审核中', '制作中', '修改中'\]/);
+  assert.match(delivery, /Wonder approval is required before delivery/);
+  assert.match(delivery, /Test orders cannot be delivered/);
+  assert.match(delivery, /Payment must be verified before delivery/);
   assert.match(css, /\.revision-card/);
 });
 
@@ -207,12 +210,18 @@ test('orders share a durable admin queue with clear 24-hour and rush handling', 
   assert.match(orders, /notificationQueued/);
   assert.match(orders, /retryDelays = \[0, 750, 2250\]/);
   assert.match(orders, /notificationAttempts/);
+  assert.match(orders, /manualPaidAt/);
+  assert.match(orders, /manualPaidBy: 'admin-dashboard'/);
   assert.doesNotMatch(script, /fetch\('\/api\/notify-order'/);
   assert.match(notify, /请先不要付款/);
   assert.match(adminHtml, /id="new24h"/);
   assert.match(adminHtml, /确认加急最终报价/);
+  assert.match(adminHtml, /我确认 Wonder 已查看成品并明确回复“OK”/);
+  assert.match(adminHtml, /审核后发送给客户/);
   assert.match(adminScript, /测试 · \$\{order\.service\}/);
   assert.match(adminScript, /测试订单不交付/);
+  assert.match(adminScript, /!approvalInput\.checked/);
+  assert.match(adminScript, /deliveryButton\.addEventListener\('click'/);
   assert.match(adminScript, /setInterval\(\(\) => loadDashboard\(true\), 60 \* 1000\)/);
   assert.match(adminScript, /approveRush/);
   assert.match(adminCss, /\.order-card\.is-new/);
@@ -395,7 +404,9 @@ test('signed-in customers can pay an order from balance without duplicate deduct
   assert.match(route, /servicePrices\[order\.service\]/);
   assert.match(route, /This order does not belong to your account/);
   assert.match(route, /redis\.call\('GET', KEYS\[3\]\)/);
-  assert.match(route, /\(real \+ test\) < amount/);
+  assert.match(route, /if test >= amount then/);
+  assert.match(route, /elseif mode ~= 'test' and real >= amount then/);
+  assert.doesNotMatch(route, /source = 'mixed'/);
   assert.match(route, /redis\.call\('DECRBY', KEYS\[2\], testUsed\)/);
   assert.match(route, /redis\.call\('DECRBY', KEYS\[1\], realUsed\)/);
   assert.match(route, /status: '已支付'/);

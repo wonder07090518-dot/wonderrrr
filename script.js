@@ -652,12 +652,6 @@ async function uploadOrderReferenceFiles(orderId, submit) {
   }
   return uploaded;
 }
-async function notifyDelivery(order, result) {
-  try {
-    const response = await fetch('/api/notify-delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: order.email, orderId: order.id, service: order.service, price: order.price || servicePrices[order.service], fileName: result.name, fileData: result.data }) });
-    return response.ok;
-  } catch { return false; }
-}
 async function saveSharedOrder(order) {
   try {
     const response = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });

@@ -1,5 +1,5 @@
 import { kv, storageConfigured } from './_admin.js';
-import { balanceKey, balancePaymentKey, testBalanceKey } from './_balance.js';
+import { balanceKey, balancePaymentKey, readBalanceBreakdown, testBalanceKey } from './_balance.js';
 import { servicePrices } from './_catalog.js';
 import { getCurrentUser } from './_user.js';
 
@@ -11,14 +11,24 @@ if existing then
   return {2, real, test, existing}
 end
 local amount = tonumber(ARGV[1])
-if not amount or amount <= 0 or (real + test) < amount then
+local mode = ARGV[3] or 'auto'
+if not amount or amount <= 0 then
   return {0, real, test, ''}
 end
-local testUsed = math.min(test, amount)
-local realUsed = amount - testUsed
+local testUsed = 0
+local realUsed = 0
+local source = ''
+if test >= amount then
+  testUsed = amount
+  source = 'test'
+elseif mode ~= 'test' and real >= amount then
+  realUsed = amount
+  source = 'real'
+else
+  return {0, real, test, ''}
+end
 if testUsed > 0 then redis.call('DECRBY', KEYS[2], testUsed) end
 if realUsed > 0 then redis.call('DECRBY', KEYS[1], realUsed) end
-local source = testUsed > 0 and (realUsed > 0 and 'mixed' or 'test') or 'real'
 redis.call('SET', KEYS[3], source .. ':' .. ARGV[2])
 return {1, real - realUsed, test - testUsed, source}
 `;
@@ -53,6 +63,15 @@ async function sendBalanceReceipt(order, amount, balanceAfter) {
   }
 }
 
+async function sendBalanceReceiptWithRetry(order, amount, balanceAfter) {
+  const delays = [0, 500, 1500];
+  for (const delay of delays) {
+    if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+    if (await sendBalanceReceipt(order, amount, balanceAfter)) return true;
+  }
+  return false;
+}
+
 export default async function balancePaymentHandler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (!storageConfigured()) return res.status(503).json({ error: 'Balance storage is not configured', setup: true });
@@ -66,15 +85,16 @@ export default async function balancePaymentHandler(req, res) {
   const order = JSON.parse(storedRaw);
   if (String(order.email || '').trim().toLowerCase() !== user.email) return res.status(403).json({ error: 'This order does not belong to your account' });
 
-  const price = servicePrices[order.service];
+  const price = order.price || servicePrices[order.service];
   const amount = catalogAmount(price);
   if (!amount) return res.status(409).json({ error: 'This project needs a confirmed fixed quote before balance payment' });
   if (order.status === '已支付' && order.payment === '余额支付') {
-    return res.status(200).json({ ok: true, alreadyPaid: true, amount, balance: Number(order.balanceAfter) || 0, order: { id: order.id, service: order.service, price: order.price, payment: order.payment, status: order.status, amountPaid: order.amountPaid, balanceAfter: order.balanceAfter } });
+    const balances = await readBalanceBreakdown(user.email);
+    return res.status(200).json({ ok: true, alreadyPaid: true, amount, ...balances, testMode: balances.testBalance > 0, emailSent: Boolean(order.balanceReceiptEmailSent), emailSkipped: order.isTest === true, order: { id: order.id, service: order.service, price: order.price, payment: order.payment, status: order.status, amountPaid: order.amountPaid, balanceAfter: order.balanceAfter, isTest: order.isTest === true } });
   }
   if (!['审核中', '待支付', '待确认支付'].includes(order.status)) return res.status(409).json({ error: 'This order cannot be paid again' });
 
-  const result = await kv('eval', balanceDebitScript, 3, balanceKey(user.email), testBalanceKey(user.email), balancePaymentKey(orderId), amount, orderId);
+  const result = await kv('eval', balanceDebitScript, 3, balanceKey(user.email), testBalanceKey(user.email), balancePaymentKey(orderId), amount, orderId, order.isTest === true ? 'test' : 'auto');
   const code = Number(result?.[0]);
   const realBalance = Math.max(0, Number(result?.[1]) || 0);
   const testBalance = Math.max(0, Number(result?.[2]) || 0);
@@ -83,10 +103,11 @@ export default async function balancePaymentHandler(req, res) {
   if (code === 0) return res.status(402).json({ error: 'Insufficient balance', balance: balanceAfter, realBalance, testBalance, required: amount });
   if (![1, 2].includes(code)) return res.status(503).json({ error: 'Balance payment could not be completed' });
 
-  const usesTestCredit = ['test', 'mixed'].includes(fundingSource);
-  const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, isTest: order.isTest === true || usesTestCredit, testCreditUsed: usesTestCredit, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const usesTestCredit = fundingSource === 'test';
+  const paidOrder = { ...order, price, payment: '余额支付', status: '已支付', amountPaid: amount, balanceAfter, realBalanceAfter: realBalance, testBalanceAfter: testBalance, fundingSource, isTest: order.isTest === true || usesTestCredit, testCreditUsed: usesTestCredit, paidAt: order.paidAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
   await kv('set', orderKey, JSON.stringify(paidOrder));
   const emailSkipped = paidOrder.isTest === true;
-  const emailSent = emailSkipped ? false : await sendBalanceReceipt(paidOrder, amount, balanceAfter);
+  const emailSent = emailSkipped ? false : await sendBalanceReceiptWithRetry(paidOrder, amount, balanceAfter);
+  if (!emailSkipped) await kv('set', orderKey, JSON.stringify({ ...paidOrder, balanceReceiptEmailSent: emailSent, ownerEmailSent: emailSent, customerEmailSent: emailSent, notificationUpdatedAt: new Date().toISOString(), notificationFailedAt: emailSent ? null : new Date().toISOString() }));
   return res.status(200).json({ ok: true, alreadyPaid: code === 2, amount, balance: balanceAfter, realBalance, testBalance, testMode: testBalance > 0, emailSent, emailSkipped, order: { id: paidOrder.id, service: paidOrder.service, price: paidOrder.price, payment: paidOrder.payment, status: paidOrder.status, amountPaid: paidOrder.amountPaid, balanceAfter: paidOrder.balanceAfter, isTest: paidOrder.isTest } });
 }

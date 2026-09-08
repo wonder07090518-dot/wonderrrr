@@ -12,13 +12,15 @@ test('catalogAmount accepts only a positive integer price at the start of a cata
 
 test('balance debit script checks idempotency and funds before changing the balance', () => {
   const duplicateCheck = balanceDebitScript.indexOf("redis.call('GET', KEYS[3])");
-  const fundsCheck = balanceDebitScript.indexOf('(real + test) < amount');
+  const fundsCheck = balanceDebitScript.indexOf('if test >= amount then');
   const testDebit = balanceDebitScript.indexOf("redis.call('DECRBY', KEYS[2], testUsed)");
+  const realChoice = balanceDebitScript.indexOf("elseif mode ~= 'test' and real >= amount then");
   const realDebit = balanceDebitScript.indexOf("redis.call('DECRBY', KEYS[1], realUsed)");
   const marker = balanceDebitScript.indexOf("redis.call('SET', KEYS[3]");
   assert.ok(duplicateCheck >= 0);
   assert.ok(fundsCheck > duplicateCheck);
   assert.ok(testDebit > fundsCheck);
+  assert.ok(realChoice > fundsCheck);
   assert.ok(realDebit > fundsCheck);
   assert.ok(marker > realDebit);
 });
@@ -70,20 +72,26 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     if (command === 'get') result = store.get(args[0]) ?? null;
     else if (command === 'set') { store.set(args[0], args[1]); result = 'OK'; }
     else if (command === 'eval') {
-      const [, , realKey, testKey, markerKey, rawAmount, orderId] = args;
+      const [, , realKey, testKey, markerKey, rawAmount, orderId, mode = 'auto'] = args;
       const real = Number(store.get(realKey) || 0);
       const testCredit = Number(store.get(testKey) || 0);
       const amount = Number(rawAmount);
       if (store.has(markerKey)) result = [2, real, testCredit, store.get(markerKey)];
-      else if (real + testCredit < amount) result = [0, real, testCredit, ''];
-      else {
-        const testUsed = Math.min(testCredit, amount);
-        const realUsed = amount - testUsed;
-        const source = testUsed > 0 ? (realUsed > 0 ? 'mixed' : 'test') : 'real';
+      else if (testCredit >= amount) {
+        const testUsed = amount;
+        const realUsed = 0;
+        const source = 'test';
         store.set(realKey, String(real - realUsed));
         store.set(testKey, String(testCredit - testUsed));
         store.set(markerKey, `${source}:${orderId}`);
         result = [1, real - realUsed, testCredit - testUsed, source];
+      } else if (mode !== 'test' && real >= amount) {
+        const source = 'real';
+        store.set(realKey, String(real - amount));
+        store.set(markerKey, `${source}:${orderId}`);
+        result = [1, real - amount, testCredit, source];
+      } else {
+        result = [0, real, testCredit, ''];
       }
     }
     return new Response(JSON.stringify({ result }), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -118,9 +126,12 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     assert.equal(JSON.parse(store.get('wonder:order:WA-SHORT')).status, '审核中');
 
     store.set(`wonder:balance:${email}`, '50');
+    store.set(`wonder:test-balance:${email}`, '50');
     const isolated = await call('WA-TEST');
     assert.equal(isolated.statusCode, 200);
-    assert.equal(isolated.body.balance, 38);
+    assert.equal(isolated.body.balance, 88);
+    assert.equal(isolated.body.realBalance, 50);
+    assert.equal(isolated.body.testBalance, 38);
     assert.equal(isolated.body.emailSkipped, true);
     assert.equal(emailRequests, 2);
 
@@ -134,6 +145,17 @@ test('handler deducts once, rejects insufficient funds and never makes the balan
     assert.equal(testCreditPaid.body.emailSkipped, true);
     assert.equal(JSON.parse(store.get('wonder:order:WA-TEST-CREDIT')).isTest, true);
     assert.equal(emailRequests, 2);
+
+    store.set(`wonder:balance:${email}`, '50');
+    store.set(`wonder:test-balance:${email}`, '5');
+    store.set('wonder:order:WA-NO-MIX', JSON.stringify({ id: 'WA-NO-MIX', email, service: 'AI 快速配图', price: '¥12 / 张', payment: '余额支付', status: '审核中', size: '1:1', style: '极简', idea: 'Never mix balances', referenceFiles: [] }));
+    const noMix = await call('WA-NO-MIX');
+    assert.equal(noMix.statusCode, 200);
+    assert.equal(noMix.body.realBalance, 38);
+    assert.equal(noMix.body.testBalance, 5);
+    assert.equal(noMix.body.order.isTest, false);
+    assert.equal(JSON.parse(store.get('wonder:order:WA-NO-MIX')).fundingSource, 'real');
+    assert.equal(emailRequests, 4);
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(originalEnvironment)) {

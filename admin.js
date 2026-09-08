@@ -91,11 +91,24 @@ function renderOrders() {
     }
     if (revisions.length) node.querySelector('.delivery-label-text').textContent = '上传修改稿并邮件交付';
     const deliveryInput = node.querySelector('.file-input');
+    const approvalInput = node.querySelector('.approval-input');
+    const deliveryButton = node.querySelector('.deliver-button');
+    const deliveryLocked = order.isTest === true || order.status === '已交付';
+    const syncDeliveryState = () => { deliveryButton.disabled = deliveryLocked || !approvalInput.checked || !deliveryInput.files[0]; };
     if (order.isTest === true) {
       deliveryInput.disabled = true;
+      approvalInput.disabled = true;
       node.querySelector('.delivery-label-text').textContent = '测试订单不交付';
+    } else if (order.status === '已交付') {
+      deliveryInput.disabled = true;
+      approvalInput.disabled = true;
+      node.querySelector('.delivery-label-text').textContent = '本订单已交付';
     }
-    deliveryInput.addEventListener('change', event => deliver(order, event.target.files[0])); list.appendChild(node);
+    deliveryInput.addEventListener('change', syncDeliveryState);
+    approvalInput.addEventListener('change', syncDeliveryState);
+    deliveryButton.addEventListener('click', () => deliver(order, deliveryInput.files[0]));
+    syncDeliveryState();
+    list.appendChild(node);
   });
 }
 function escapeHtml(value = '') { return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>'); }
@@ -217,7 +230,7 @@ async function approveRush(order, container) {
   } catch (error) { setNotice(`加急确认失败：${error.message}`); button.disabled = false; button.textContent = '确认报价并邮件通知'; }
 }
 async function updateOrder(order, status) { if (status === '已交付') { alert('请先上传成品，系统会自动邮件交付并标记为已交付。'); return; } try { if (order.status !== status && ['审核中', '制作中', '修改中'].includes(status)) await api('/api/notify-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: order.email, orderId: order.id, service: order.service, price: order.price, status }) }); await api(`/api/orders?id=${encodeURIComponent(order.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); await loadOrders(); setNotice(['制作中', '修改中'].includes(status) ? `已更新为${status}，并已向客户发送进度邮件。` : '订单状态已更新。'); } catch (error) { alert(`更新失败：${error.message}`); await loadOrders(); } }
-async function deliver(order, file) { if (!file) return; if (file.size > 3 * 1024 * 1024) { setNotice('该文件超过 3 MB，邮件附件无法稳定交付。请先压缩文件；大型视频建议使用云端链接交付。'); return; } const reader = new FileReader(); reader.onload = async () => { try { setNotice('正在发送成品邮件…'); await api('/api/notify-delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: order.email, orderId: order.id, service: order.service, price: order.price, fileName: file.name, fileData: reader.result }) }); await api(`/api/orders?id=${encodeURIComponent(order.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: '已交付' }) }); await loadOrders(); setNotice('成品已发送到客户邮箱，并标记为已交付。'); } catch (error) { setNotice(`交付失败：${error.message}`); } }; reader.readAsDataURL(file); }
+async function deliver(order, file) { if (!file) return; if (file.size > 3 * 1024 * 1024) { setNotice('该文件超过 3 MB，邮件附件无法稳定交付。请先压缩文件；大型视频建议使用云端链接交付。'); return; } const reader = new FileReader(); reader.onload = async () => { try { setNotice('正在发送成品邮件…'); await api('/api/notify-delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, fileName: file.name, fileData: reader.result, approved: true }) }); await api(`/api/orders?id=${encodeURIComponent(order.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: '已交付' }) }); await loadOrders(); setNotice('成品已发送到客户邮箱，并标记为已交付。'); } catch (error) { setNotice(`交付失败：${error.message}`); } }; reader.readAsDataURL(file); }
 document.querySelector('#loginForm').addEventListener('submit', async event => { event.preventDefault(); const hint = document.querySelector('#loginHint'); try { await api('/api/admin-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.querySelector('#username').value.trim(), password: document.querySelector('#password').value }) }); setView(true); startDashboardRefresh(); loadDashboard(); } catch (error) { hint.textContent = error.setup ? '管理员账号与密码尚未配置。' : '管理员账号或密码不正确。'; } });
 document.querySelector('#logout').addEventListener('click', async () => { await fetch('/api/admin-auth', { method: 'DELETE', credentials: 'same-origin' }); setView(false); });
 document.querySelector('#refresh').addEventListener('click', loadDashboard);
