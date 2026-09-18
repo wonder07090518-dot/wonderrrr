@@ -8,6 +8,7 @@
     { "source": "/api/account-delete", "destination": "/api/account-actions?route=account-delete" },
     { "source": "/api/analytics", "destination": "/api/account-actions?route=analytics" },
     { "source": "/api/memberships", "destination": "/api/account-actions?route=memberships" },
-    { "source": "/api/apple-auth", "destination": "/api/account-actions?route=apple-auth" }
+    { "source": "/api/apple-auth", "destination": "/api/account-actions?route=apple-auth" },
+    { "source": "/api/apple-iap", "destination": "/api/account-actions?route=apple-iap" }
   ]
 }
