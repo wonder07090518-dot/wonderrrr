@@ -63,8 +63,8 @@ test('community AI news stays private until the admin approves it', async () => 
       body: {
         author: 'Reader',
         email: 'reader@example.com',
-        title: 'A useful community AI update',
-        summary: 'This description is long enough to explain why the submitted update matters to readers.',
+        titleEN: 'A useful community AI update',
+        bodyEN: 'This description is long enough to explain why the submitted update matters to readers.',
         sourceName: 'Example Lab',
         sourceURL: 'https://example.com/ai-update',
         date: '2026-09-18'
@@ -81,6 +81,8 @@ test('community AI news stays private until the admin approves it', async () => 
     await newsSubmissionsHandler({ method: 'GET', headers: { cookie } }, listing.response);
     assert.equal(listing.record.statusCode, 200);
     assert.equal(listing.record.body.submissions[0].status, 'pending');
+    assert.equal(listing.record.body.submissions[0].titleZH, 'A useful community AI update');
+    assert.equal(listing.record.body.submissions[0].bodyZH, listing.record.body.submissions[0].bodyEN);
 
     const approved = recorder();
     await newsSubmissionsHandler({ method: 'PUT', headers: { cookie }, body: { id: created.record.body.id, action: 'approve' } }, approved.response);
@@ -90,6 +92,7 @@ test('community AI news stays private until the admin approves it', async () => 
     assert.equal(publicItems[0].sourceKind, 'community');
     assert.equal(publicItems[0].verified, true);
     assert.equal(publicItems[0].categoryZH, '社区投稿');
+    assert.equal(publicItems[0].titleEN, publicItems[0].titleZH);
 
     const rejected = recorder();
     await newsSubmissionsHandler({ method: 'PUT', headers: { cookie }, body: { id: created.record.body.id, action: 'reject' } }, rejected.response);

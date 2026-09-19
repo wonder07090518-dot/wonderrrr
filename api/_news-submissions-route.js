@@ -55,8 +55,8 @@ async function notifyOwner(item) {
       from: process.env.MAIL_FROM,
       to: [OWNER_EMAIL],
       reply_to: item.email,
-      subject: `AI 今日待审核投稿 · ${item.title}`,
-      text: `投稿编号：${item.id}\n投稿人：${item.author}\n联系邮箱：${item.email}\n发布日期：${item.date}\n来源：${item.sourceName}\n${item.sourceURL}\n\n标题：${item.title}\n\n摘要：\n${item.summary}\n\n请登录 Wonder 管理后台审核。`
+      subject: `AI 今日待审核投稿 · ${item.titleZH || item.titleEN}`,
+      text: `投稿编号：${item.id}\n投稿人：${item.author}\n联系邮箱：${item.email}\n发布日期：${item.date}\n来源：${item.sourceName}\n${item.sourceURL}\n\n中文标题：${item.titleZH}\n英文标题：${item.titleEN}\n\n中文摘要：\n${item.bodyZH}\n\n英文摘要：\n${item.bodyEN}\n\n请登录 Wonder 管理后台审核。`
     })
   });
   return response.ok;
@@ -66,10 +66,10 @@ function publicNewsItem(item) {
   return {
     id: `community-${item.id.toLowerCase()}`,
     date: item.date,
-    titleEN: item.title,
-    titleZH: item.title,
-    bodyEN: item.summary,
-    bodyZH: item.summary,
+    titleEN: item.titleEN || item.titleZH || item.title || '',
+    titleZH: item.titleZH || item.titleEN || item.title || '',
+    bodyEN: item.bodyEN || item.bodyZH || item.summary || '',
+    bodyZH: item.bodyZH || item.bodyEN || item.summary || '',
     sourceName: item.sourceName,
     sourceURL: item.sourceURL,
     categoryEN: 'Community submission',
@@ -97,17 +97,25 @@ export default async function newsSubmissionsHandler(req, res) {
     if (clean(req.body?.website, 120)) return res.status(201).json({ ok: true });
     const author = clean(req.body?.author, 80);
     const email = clean(req.body?.email, 180).toLowerCase();
-    const title = clean(req.body?.title, 120);
-    const summary = clean(req.body?.summary, 1200);
+    const legacyTitle = clean(req.body?.title, 120);
+    const legacySummary = clean(req.body?.summary, 1200);
+    const titleZHInput = clean(req.body?.titleZH, 120);
+    const titleENInput = clean(req.body?.titleEN, 120);
+    const bodyZHInput = clean(req.body?.bodyZH, 1200);
+    const bodyENInput = clean(req.body?.bodyEN, 1200);
+    const titleZH = titleZHInput || legacyTitle || titleENInput;
+    const titleEN = titleENInput || legacyTitle || titleZHInput;
+    const bodyZH = bodyZHInput || legacySummary || bodyENInput;
+    const bodyEN = bodyENInput || legacySummary || bodyZHInput;
     const sourceName = clean(req.body?.sourceName, 80);
     const sourceURL = clean(req.body?.sourceURL, 500);
     const date = clean(req.body?.date, 10);
-    if (author.length < 2 || !validEmail(email) || title.length < 4 || summary.length < 20 || sourceName.length < 2 || !validSourceURL(sourceURL) || !validDate(date)) {
+    if (author.length < 2 || !validEmail(email) || titleZH.length < 4 || titleEN.length < 4 || bodyZH.length < 20 || bodyEN.length < 20 || sourceName.length < 2 || !validSourceURL(sourceURL) || !validDate(date)) {
       return res.status(400).json({ error: 'Please complete every field with a valid HTTPS source and publication date' });
     }
     if (!(await withinRateLimit(req))) return res.status(429).json({ error: 'Daily submission limit reached. Please try again tomorrow.' });
     const id = `AI${Date.now().toString().slice(-10)}${randomBytes(2).toString('hex')}`;
-    const item = { id, author, email, title, summary, sourceName, sourceURL, date, status: 'pending', createdAt: new Date().toISOString() };
+    const item = { id, author, email, titleZH, titleEN, bodyZH, bodyEN, sourceName, sourceURL, date, status: 'pending', createdAt: new Date().toISOString() };
     await kv('set', `wonder:news-submission:${id}`, JSON.stringify(item));
     await kv('zadd', submissionIndex, Date.now(), id);
     const emailSent = await notifyOwner(item).catch(() => false);

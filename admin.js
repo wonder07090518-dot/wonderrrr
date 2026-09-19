@@ -238,7 +238,13 @@ function renderNewsSubmissions() {
   list.innerHTML = currentNewsSubmissions.map(item => {
     const status = item.status || 'pending';
     const statusText = status === 'approved' ? '已发布' : status === 'rejected' ? '已拒绝' : '待审核';
-    return `<article class="news-review-card is-${escapeHtml(status)}" data-news-id="${escapeHtml(item.id)}"><div><span class="status ${status === 'approved' ? 'is-done' : ''}">${statusText}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.summary)}</p><span class="news-meta">${escapeHtml(item.sourceName)} · ${escapeHtml(item.date)} · 投稿人 ${escapeHtml(item.author)}（${escapeHtml(item.email)}）</span><a href="${escapeHtml(item.sourceURL)}" target="_blank" rel="noopener">打开来源核对 ↗</a><small>投稿时间：${escapeHtml(formatDate(item.createdAt))}${item.reviewedAt ? ` · 审核时间：${escapeHtml(formatDate(item.reviewedAt))}` : ''}</small></div><div class="moderation-actions"><button type="button" class="approve-news" ${status === 'approved' ? 'disabled' : ''}>${status === 'approved' ? '已批准发布' : '批准发布'}</button><button type="button" class="reject-news" ${status === 'rejected' ? 'disabled' : ''}>${status === 'rejected' ? '已拒绝' : '拒绝'}</button></div></article>`;
+    const titleZH = item.titleZH || item.titleEN || item.title || '';
+    const titleEN = item.titleEN || item.titleZH || item.title || '';
+    const bodyZH = item.bodyZH || item.bodyEN || item.summary || '';
+    const bodyEN = item.bodyEN || item.bodyZH || item.summary || '';
+    const bilingualTitle = titleZH === titleEN ? escapeHtml(titleZH) : `${escapeHtml(titleZH)}<small>EN · ${escapeHtml(titleEN)}</small>`;
+    const bilingualBody = bodyZH === bodyEN ? `<p>${escapeHtml(bodyZH)}</p>` : `<p>${escapeHtml(bodyZH)}</p><p><strong>English</strong> · ${escapeHtml(bodyEN)}</p>`;
+    return `<article class="news-review-card is-${escapeHtml(status)}" data-news-id="${escapeHtml(item.id)}"><div><span class="status ${status === 'approved' ? 'is-done' : ''}">${statusText}</span><h3>${bilingualTitle}</h3>${bilingualBody}<span class="news-meta">${escapeHtml(item.sourceName)} · ${escapeHtml(item.date)} · 投稿人 ${escapeHtml(item.author)}（${escapeHtml(item.email)}）</span><a href="${escapeHtml(item.sourceURL)}" target="_blank" rel="noopener">打开来源核对 ↗</a><small>投稿时间：${escapeHtml(formatDate(item.createdAt))}${item.reviewedAt ? ` · 审核时间：${escapeHtml(formatDate(item.reviewedAt))}` : ''}</small></div><div class="moderation-actions"><button type="button" class="approve-news" ${status === 'approved' ? 'disabled' : ''}>${status === 'approved' ? '已批准发布' : '批准发布'}</button><button type="button" class="reject-news" ${status === 'rejected' ? 'disabled' : ''}>${status === 'rejected' ? '已拒绝' : '拒绝'}</button></div></article>`;
   }).join('');
   list.querySelectorAll('[data-news-id]').forEach(card => {
     const item = currentNewsSubmissions.find(candidate => candidate.id === card.dataset.newsId);
