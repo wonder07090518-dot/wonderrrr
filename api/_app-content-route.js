@@ -218,6 +218,20 @@ const industryNews = [
     symbol: 'shield.checkered'
   },
   {
+    id: 'anthropic-frontier-lab-development-metrics',
+    date: '2026-09-17',
+    titleEN: 'Anthropic proposes metrics for tracking frontier AI development',
+    titleZH: 'Anthropic 提出追踪前沿 AI 研发进度的新指标',
+    bodyEN: 'Anthropic published three proposed measurements for frontier labs: how much AI performs AI R&D, how well agent actions are monitored, and how compute is allocated. Its August snapshot says Claude was not fully autonomous in any measured R&D subset, while it “led” 26% of the work; Anthropic says the metrics need shared methods and independent verification before cross-lab comparison.',
+    bodyZH: 'Anthropic 公布三类面向前沿实验室的拟议指标：AI 参与 AI 研发的程度、智能体行为的监督能力，以及算力分配方式。其 8 月快照显示，Claude 在任何已测研发子任务中都未达到完全自主，但在 26% 的工作中处于“主导”水平；Anthropic 同时指出，跨实验室比较前仍需统一方法并由独立第三方验证。',
+    sourceName: 'Anthropic',
+    sourceURL: 'https://www.anthropic.com/institute/measuring-pace-of-ai-development',
+    categoryEN: 'AI transparency',
+    categoryZH: 'AI 透明度',
+    verified: true,
+    symbol: 'gauge.with.dots.needle.67percent'
+  },
+  {
     id: 'anthropic-life-sciences-verification-program',
     date: '2026-09-17',
     titleEN: 'Anthropic opens a verified AI access program for life sciences',
