@@ -457,15 +457,39 @@ const industryNews = [
   }
 ];
 
+const editorialArtwork = [
+  {
+    imageAsset: 'NewsFrontier',
+    imageAltEN: 'Abstract luminous neural network representing frontier AI research',
+    imageAltZH: '象征前沿 AI 研究的抽象发光神经网络',
+    imageCredit: 'Wonder Ad Lab · AI-generated editorial artwork'
+  },
+  {
+    imageAsset: 'NewsCreative',
+    imageAltEN: 'Abstract prism of text, image and audio representing multimodal creativity',
+    imageAltZH: '象征文字、图像与音频多模态创作的抽象光学棱镜',
+    imageCredit: 'Wonder Ad Lab · AI-generated editorial artwork'
+  },
+  {
+    imageAsset: 'NewsSafety',
+    imageAltEN: 'Abstract shield and data lattice representing AI safety',
+    imageAltZH: '象征 AI 安全的抽象护盾与数据网格',
+    imageCredit: 'Wonder Ad Lab · AI-generated editorial artwork'
+  }
+];
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
   const approvedNews = await readApprovedNews();
   const mergedIndustryNews = [...industryNews, ...approvedNews]
     .filter((item, index, items) => items.findIndex(candidate => candidate.id === item.id) === index)
-    .sort((left, right) => right.date.localeCompare(left.date) || left.id.localeCompare(right.id));
+    .sort((left, right) => right.date.localeCompare(left.date) || left.id.localeCompare(right.id))
+    .map((item, index) => index < 6 && !item.imageAsset && !item.imageURL
+      ? { ...item, ...editorialArtwork[index % editorialArtwork.length] }
+      : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
-    updatedAt: '2026-09-18',
+    updatedAt: '2026-09-19',
     servicePrices,
     news,
     industryNews: mergedIndustryNews

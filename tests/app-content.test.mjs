@@ -28,7 +28,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
-  assert.equal(res.payload.updatedAt, '2026-09-18');
+  assert.equal(res.payload.updatedAt, '2026-09-19');
   assert.ok(res.payload.industryNews.length >= 15);
   assert.ok(res.payload.industryNews.every(item =>
     item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&
@@ -41,6 +41,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
     res.payload.industryNews.map(item => item.date).toSorted().reverse()
   );
   assert.equal(res.payload.industryNews.at(0).id, 'anthropic-accenture-embedded-evaluation');
+  assert.ok(res.payload.industryNews.slice(0, 6).every(item => item.imageAsset && item.imageAltEN && item.imageAltZH && item.imageCredit));
   assert.equal(res.payload.industryNews.at(-1).id, 'nvidia-cosmos');
   assert.deepEqual(
     new Set(res.payload.industryNews.map(item => item.sourceName)),
