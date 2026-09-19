@@ -1,4 +1,5 @@
 import { servicePrices } from './_catalog.js';
+import { readApprovedNews } from './_news-submissions-route.js';
 
 const news = [
   {
@@ -414,13 +415,17 @@ const industryNews = [
   }
 ];
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
+  const approvedNews = await readApprovedNews();
+  const mergedIndustryNews = [...industryNews, ...approvedNews]
+    .filter((item, index, items) => items.findIndex(candidate => candidate.id === item.id) === index)
+    .sort((left, right) => right.date.localeCompare(left.date) || left.id.localeCompare(right.id));
+  res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
     updatedAt: '2026-09-18',
     servicePrices,
     news,
-    industryNews
+    industryNews: mergedIndustryNews
   });
 }

@@ -14,9 +14,9 @@ function responseRecorder() {
   };
 }
 
-test('app content exposes the live catalog, studio updates and verified AI news', () => {
+test('app content exposes the live catalog, studio updates and verified AI news', async () => {
   const res = responseRecorder();
-  handler({ method: 'GET' }, res);
+  await handler({ method: 'GET' }, res);
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.payload.servicePrices, servicePrices);
   assert.equal(res.payload.news.length, 22);
@@ -49,11 +49,11 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   assert.match(res.payload.industryNews.at(0).bodyZH, /宣传片创意、脚本、分镜与制作流程/);
   assert.match(res.payload.industryNews.at(0).bodyZH, /成片仍需由专门的视频生成或剪辑工具完成/);
   assert.match(res.payload.industryNews.at(0).bodyEN, /finished footage still requires a dedicated video-generation or editing tool/);
-  assert.match(res.headers['Cache-Control'], /s-maxage=300/);
+  assert.match(res.headers['Cache-Control'], /s-maxage=60/);
 });
 
-test('app content is read-only', () => {
+test('app content is read-only', async () => {
   const res = responseRecorder();
-  handler({ method: 'POST' }, res);
+  await handler({ method: 'POST' }, res);
   assert.equal(res.statusCode, 405);
 });

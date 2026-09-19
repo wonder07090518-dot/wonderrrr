@@ -10,5 +10,6 @@
     { "source": "/api/memberships", "destination": "/api/account-actions?route=memberships" },
     { "source": "/api/apple-auth", "destination": "/api/account-actions?route=apple-auth" },
     { "source": "/api/apple-iap", "destination": "/api/account-actions?route=apple-iap" }
+    ,{ "source": "/api/news-submissions", "destination": "/api/account-actions?route=news-submissions" }
   ]
 }

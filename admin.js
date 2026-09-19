@@ -6,6 +6,7 @@ let currentRecharges = [];
 let currentMemberships = [];
 let dashboardRefreshTimer = null;
 let currentAnalytics = null;
+let currentNewsSubmissions = [];
 
 function statusClass(status) { return status === '已交付' ? 'is-done' : ['制作中', '修改中'].includes(status) ? 'is-making' : status === '修改申请' ? 'is-revision' : 'is-pending'; }
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; if (!loggedIn) stopDashboardRefresh(); }
@@ -223,6 +224,49 @@ async function loadAnalytics() {
   try { currentAnalytics = await api('/api/analytics'); renderAnalytics(); }
   catch (error) { document.querySelector('#analyticsCountries').innerHTML = `<tr><td colspan="5" class="analytics-empty">${escapeHtml(error.setup ? '真实统计存储尚未配置。' : `无法读取访问数据：${error.message}`)}</td></tr>`; }
 }
+function renderNewsSubmissions() {
+  const list = document.querySelector('#newsSubmissions');
+  const notice = document.querySelector('#newsReviewNotice');
+  const pending = currentNewsSubmissions.filter(item => item.status === 'pending');
+  document.querySelector('#newsPendingCount').textContent = `${pending.length} 条待审核`;
+  if (!currentNewsSubmissions.length) {
+    list.innerHTML = '';
+    notice.textContent = '暂时没有用户投稿。';
+    return;
+  }
+  notice.textContent = pending.length ? `共有 ${currentNewsSubmissions.length} 条投稿，其中 ${pending.length} 条等待你审核。` : `已读取 ${currentNewsSubmissions.length} 条投稿，目前没有待审核内容。`;
+  list.innerHTML = currentNewsSubmissions.map(item => {
+    const status = item.status || 'pending';
+    const statusText = status === 'approved' ? '已发布' : status === 'rejected' ? '已拒绝' : '待审核';
+    return `<article class="news-review-card is-${escapeHtml(status)}" data-news-id="${escapeHtml(item.id)}"><div><span class="status ${status === 'approved' ? 'is-done' : ''}">${statusText}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.summary)}</p><span class="news-meta">${escapeHtml(item.sourceName)} · ${escapeHtml(item.date)} · 投稿人 ${escapeHtml(item.author)}（${escapeHtml(item.email)}）</span><a href="${escapeHtml(item.sourceURL)}" target="_blank" rel="noopener">打开来源核对 ↗</a><small>投稿时间：${escapeHtml(formatDate(item.createdAt))}${item.reviewedAt ? ` · 审核时间：${escapeHtml(formatDate(item.reviewedAt))}` : ''}</small></div><div class="moderation-actions"><button type="button" class="approve-news" ${status === 'approved' ? 'disabled' : ''}>${status === 'approved' ? '已批准发布' : '批准发布'}</button><button type="button" class="reject-news" ${status === 'rejected' ? 'disabled' : ''}>${status === 'rejected' ? '已拒绝' : '拒绝'}</button></div></article>`;
+  }).join('');
+  list.querySelectorAll('[data-news-id]').forEach(card => {
+    const item = currentNewsSubmissions.find(candidate => candidate.id === card.dataset.newsId);
+    card.querySelector('.approve-news')?.addEventListener('click', () => moderateNews(item, 'approve'));
+    card.querySelector('.reject-news')?.addEventListener('click', () => moderateNews(item, 'reject'));
+  });
+}
+async function loadNewsSubmissions() {
+  try {
+    const data = await api('/api/news-submissions');
+    currentNewsSubmissions = data.submissions || [];
+    renderNewsSubmissions();
+  } catch (error) {
+    document.querySelector('#newsReviewNotice').textContent = error.setup ? '新闻投稿存储尚未配置。' : `无法读取新闻投稿：${error.message}`;
+  }
+}
+async function moderateNews(item, action) {
+  if (!item) return;
+  const verb = action === 'approve' ? '批准并公开这条投稿' : '拒绝这条投稿';
+  if (!confirm(`${verb}吗？\n\n${item.title}`)) return;
+  try {
+    await api('/api/news-submissions', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, action }) });
+    await loadNewsSubmissions();
+    document.querySelector('#newsReviewNotice').textContent = action === 'approve' ? '已批准发布。公开新闻接口会在一分钟内更新。' : '已拒绝，这条内容不会公开。';
+  } catch (error) {
+    document.querySelector('#newsReviewNotice').textContent = `审核失败：${error.message}`;
+  }
+}
 async function approveRecharge(item, button) {
   if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户储值卡将增加 ¥${item.creditedAmount}，其中赠送 ¥${Number(item.bonusAmount) || 0}。`)) return;
   button.disabled = true; button.textContent = '正在入账…';
@@ -241,7 +285,7 @@ async function approveMembership(item, button) {
     document.querySelector('#membershipNotice').textContent = `已确认 ${item.id}，${item.planName}有效期至 ${formatDate(result.expiresAt)}${result.emailSent ? '，通知邮件已发送。' : '；会员已生效，通知邮件暂时未发送。'}`;
   } catch (error) { button.disabled = false; button.textContent = '确认实际到账并生效'; document.querySelector('#membershipNotice').textContent = `会员生效失败：${error.message}`; }
 }
-async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadMemberships(), loadAnalytics()]); }
+async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadMemberships(), loadAnalytics(), loadNewsSubmissions()]); }
 async function approveRush(order, container) {
   const input = container.querySelector('.rush-final-amount');
   const button = container.querySelector('.approve-rush');
