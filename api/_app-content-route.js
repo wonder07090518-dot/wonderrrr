@@ -204,6 +204,48 @@ const news = [
 
 const industryNews = [
   {
+    id: 'anthropic-accenture-embedded-evaluation',
+    date: '2026-09-18',
+    titleEN: 'Anthropic and Accenture launch embedded frontier-model evaluation',
+    titleZH: 'Anthropic 与 Accenture 推进前沿模型嵌入式评估',
+    bodyEN: 'Anthropic is partnering with Accenture, led by its specialist AI business Faculty, to independently evaluate and red-team frontier models, assess alignment and test safeguards. Embedded evaluators will work inside the lab with access comparable to an employee; Anthropic says operating standards are still being developed.',
+    bodyZH: 'Anthropic 与 Accenture 建立合作，由后者旗下专业 AI 业务 Faculty 对前沿模型开展独立评估与红队测试，并评估对齐情况和安全措施。嵌入式评估人员将在实验室内部获得接近员工的访问权限；Anthropic 表示相关运作标准仍在制定中。',
+    sourceName: 'Anthropic',
+    sourceURL: 'https://www.anthropic.com/news/accenture-embedded-evaluation',
+    categoryEN: 'AI safety',
+    categoryZH: 'AI 安全',
+    verified: true,
+    symbol: 'shield.checkered'
+  },
+  {
+    id: 'anthropic-life-sciences-verification-program',
+    date: '2026-09-17',
+    titleEN: 'Anthropic opens a verified AI access program for life sciences',
+    titleZH: 'Anthropic 推出生命科学验证访问计划',
+    bodyEN: 'Anthropic launched the Life Sciences Verification Program in beta for teams and institutions. Verified organizations can use Mythos, Opus and Sonnet models with safeguards adapted for legitimate biology work across Claude, Claude Code and the API; access is reviewed and monitored by declared use case.',
+    bodyZH: 'Anthropic 面向团队与机构推出测试版生命科学验证计划。通过审核的组织可在 Claude、Claude Code 与 API 中使用 Mythos、Opus 和 Sonnet 模型，并获得更适合合法生物研究的安全限制；访问权限会按申报用途审核与监测。',
+    sourceName: 'Anthropic',
+    sourceURL: 'https://www.anthropic.com/news/life-sciences-verification-program',
+    categoryEN: 'Research access',
+    categoryZH: '研究访问',
+    verified: true,
+    symbol: 'brain'
+  },
+  {
+    id: 'openai-astra-for-law',
+    date: '2026-09-17',
+    titleEN: 'OpenAI introduces Astra for Law',
+    titleZH: 'OpenAI 发布 Astra for Law',
+    bodyEN: 'OpenAI introduced Astra for Law, combining GPT-6 Astra with a legal search index, tailored instructions and governance controls for professional legal work. It is initially available to selected firms through Trusted Access, with API availability planned; OpenAI also announced 26 partner-built legal plugins.',
+    bodyZH: 'OpenAI 发布 Astra for Law，将 GPT-6 Astra 与法律检索索引、专业指令和治理控制结合，用于专业法律工作。该服务首批通过 Trusted Access 向部分律所开放，API 将随后推出；OpenAI 同时公布了 26 个合作伙伴开发的法律插件。',
+    sourceName: 'OpenAI',
+    sourceURL: 'https://openai.com/index/astra-for-law/',
+    categoryEN: 'Product launch',
+    categoryZH: '产品发布',
+    verified: true,
+    symbol: 'sparkles'
+  },
+  {
     id: 'openai-gpt-6-astra',
     date: '2026-09-03',
     titleEN: 'How GPT-6 Astra can support promo films',
