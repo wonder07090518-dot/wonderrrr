@@ -28,7 +28,8 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
-  assert.ok(res.payload.industryNews.length >= 1);
+  assert.equal(res.payload.updatedAt, '2026-09-18');
+  assert.equal(res.payload.industryNews.length, 15);
   assert.ok(res.payload.industryNews.every(item =>
     item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&
     item.categoryEN && item.categoryZH && item.verified === true &&
@@ -40,6 +41,11 @@ test('app content exposes the live catalog, studio updates and verified AI news'
     res.payload.industryNews.map(item => item.date).toSorted().reverse()
   );
   assert.equal(res.payload.industryNews.at(0).id, 'openai-gpt-6-astra');
+  assert.equal(res.payload.industryNews.at(-1).id, 'nvidia-cosmos');
+  assert.deepEqual(
+    new Set(res.payload.industryNews.map(item => item.sourceName)),
+    new Set(['OpenAI', 'Google', 'Anthropic', 'Apple', 'Meta AI', 'Google DeepMind', 'NVIDIA'])
+  );
   assert.match(res.payload.industryNews.at(0).bodyZH, /宣传片创意、脚本、分镜与制作流程/);
   assert.match(res.payload.industryNews.at(0).bodyZH, /成片仍需由专门的视频生成或剪辑工具完成/);
   assert.match(res.payload.industryNews.at(0).bodyEN, /finished footage still requires a dedicated video-generation or editing tool/);
