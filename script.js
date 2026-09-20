@@ -226,8 +226,12 @@ function renderAIRadar(items = aiRadarData, updatedAt = '') {
   const updated = document.querySelector('#aiRadarUpdated');
   if (!list || !Array.isArray(items) || items.length === 0) return;
 
-  list.replaceChildren(...items.map(item => {
+  list.replaceChildren(...items.map((item, index) => {
     const article = document.createElement('article');
+    const visual = document.createElement('div');
+    const visualOrb = document.createElement('span');
+    const visualSource = document.createElement('strong');
+    const visualLabel = document.createElement('small');
     const meta = document.createElement('div');
     const date = document.createElement('time');
     const category = document.createElement('span');
@@ -236,6 +240,15 @@ function renderAIRadar(items = aiRadarData, updatedAt = '') {
     const source = document.createElement('a');
     const arrow = document.createElement('b');
 
+    article.className = index === 0 ? 'ai-radar-story is-featured' : 'ai-radar-story';
+    article.style.setProperty('--story-order', String(Math.min(index, 8)));
+    article.dataset.source = String(item.sourceName || 'AI').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    visual.className = 'ai-radar-visual';
+    visualOrb.className = 'ai-radar-orb';
+    visualSource.textContent = String(item.sourceName || 'AI').slice(0, 2).toUpperCase();
+    visualLabel.textContent = language === 'en' ? 'VERIFIED SIGNAL' : '已验证信号';
+    visual.append(visualOrb, visualSource, visualLabel);
+    visual.setAttribute('aria-hidden', 'true');
     meta.className = 'ai-radar-meta';
     date.dateTime = item.date || '';
     date.textContent = item.date || '';
@@ -252,7 +265,7 @@ function renderAIRadar(items = aiRadarData, updatedAt = '') {
     arrow.textContent = '↗';
     source.append(arrow);
     meta.append(date, category);
-    article.append(meta, title, body, source);
+    article.append(visual, meta, title, body, source);
     return article;
   }));
 
