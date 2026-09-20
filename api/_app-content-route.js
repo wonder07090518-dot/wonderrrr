@@ -260,6 +260,20 @@ const industryNews = [
     symbol: 'sparkles'
   },
   {
+    id: 'openai-chatgpt-ads-ai-tools',
+    date: '2026-09-16',
+    titleEN: 'OpenAI adds AI tools and sponsored agents to ChatGPT Ads',
+    titleZH: 'OpenAI 为 ChatGPT Ads 加入 AI 广告工具与赞助智能体',
+    bodyEN: 'OpenAI is testing Sponsored Agents with selected U.S. advertisers and adding AI tools for creating, updating and analyzing campaigns through prompts. Ads Manager can also suggest copy and imagery, while HubSpot and Shopify integrations bring campaign management into existing business tools; availability varies by market and product.',
+    bodyZH: 'OpenAI 正在面向部分美国广告主测试“赞助智能体”，并加入可通过提示词创建、更新和分析广告活动的 AI 工具。Ads Manager 还可建议文案与图像，HubSpot 和 Shopify 集成则把广告管理接入现有商业工具；具体开放范围因市场和产品而异。',
+    sourceName: 'OpenAI',
+    sourceURL: 'https://openai.com/index/reimagining-advertising-with-ai/',
+    categoryEN: 'Advertising tools',
+    categoryZH: '广告工具',
+    verified: true,
+    symbol: 'megaphone.fill'
+  },
+  {
     id: 'openai-gpt-6-astra',
     date: '2026-09-03',
     titleEN: 'How GPT-6 Astra can support promo films',
@@ -503,7 +517,7 @@ export default async function handler(req, res) {
       : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
-    updatedAt: '2026-09-19',
+    updatedAt: '2026-09-20',
     servicePrices,
     news,
     industryNews: mergedIndustryNews
