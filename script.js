@@ -346,7 +346,7 @@ function applyLanguage() {
     ['#closeRevisionButton', 'aria-label', 'Close revision request', '关闭修改申请'],
     ['#closeRechargeButton', 'aria-label', 'Close value card top-up', '关闭储值卡充值'],
     ['#closeFeedbackButton', 'aria-label', 'Close feedback', '关闭意见建议'],
-    ['[data-reel-frame="0"] img', 'alt', 'Wonder Ad Lab black-metal brand mark', 'Wonder Ad Lab 黑色金属品牌标志'],
+    ['[data-reel-frame="0"] video', 'aria-label', 'Wonder Ad Lab brand film loop', 'Wonder Ad Lab 品牌影像循环'],
     ['[data-reel-frame="1"] img', 'alt', 'Morning Coffee brand visual', '晨光咖啡品牌视觉案例'],
     ['[data-reel-frame="2"] img', 'alt', 'Light Skincare brand visual', '轻盈护肤品牌视觉案例'],
     ['[data-reel-frame="3"] img', 'alt', 'Coastal Holiday campaign visual', '海岸假日旅行视觉案例'],
@@ -1424,11 +1424,19 @@ function initShowreel() {
   const frames = [...document.querySelectorAll('[data-reel-frame]')];
   const controls = [...document.querySelectorAll('[data-reel-target]')];
   const counter = document.querySelector('#reelCounter');
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const heroVideo = hero?.querySelector('[data-reel-frame="0"] video');
+  const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let reduceMotion = reduceMotionQuery.matches;
   if (!hero || frames.length < 2) return;
   let activeIndex = 0;
   let reelTimer;
   let reelVisible = true;
+  const updateHeroVideo = () => {
+    if (!heroVideo) return;
+    const shouldPlay = activeIndex === 0 && reelVisible && document.visibilityState === 'visible' && !reduceMotion;
+    if (shouldPlay) heroVideo.play().catch(() => {});
+    else heroVideo.pause();
+  };
   const showFrame = index => {
     activeIndex = (index + frames.length) % frames.length;
     frames.forEach((frame, frameIndex) => frame.classList.toggle('is-active', frameIndex === activeIndex));
@@ -1438,6 +1446,7 @@ function initShowreel() {
       control.setAttribute('aria-pressed', String(active));
     });
     if (counter) counter.textContent = `${String(activeIndex + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`;
+    updateHeroVideo();
   };
   const stopReel = () => window.clearInterval(reelTimer);
   const startReel = () => stopReel();
@@ -1445,13 +1454,20 @@ function initShowreel() {
     showFrame(Number(control.dataset.reelTarget));
     startReel();
   }));
-  document.addEventListener('visibilitychange', startReel);
+  document.addEventListener('visibilitychange', () => { startReel(); updateHeroVideo(); });
   if ('IntersectionObserver' in window) {
     const reelObserver = new IntersectionObserver(entries => {
       reelVisible = entries[0]?.isIntersecting ?? true;
       startReel();
+      updateHeroVideo();
     }, { threshold: .08 });
     reelObserver.observe(hero);
+  }
+  if (heroVideo && reduceMotionQuery.addEventListener) {
+    reduceMotionQuery.addEventListener('change', event => {
+      reduceMotion = event.matches;
+      updateHeroVideo();
+    });
   }
   const caseCards = [...document.querySelectorAll('.work')];
   if (reduceMotion || !('IntersectionObserver' in window)) caseCards.forEach(card => card.classList.add('case-visible'));

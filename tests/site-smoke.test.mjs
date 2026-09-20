@@ -70,7 +70,7 @@ test('language switching localizes accessible labels and image descriptions', as
     "'Service categories', '服务分类'",
     "'Choose an AI capability', '选择 AI 能力'",
     "'Close revision request', '关闭修改申请'",
-    "'Wonder Ad Lab black-metal brand mark', 'Wonder Ad Lab 黑色金属品牌标志'"
+    "'Wonder Ad Lab brand film loop', 'Wonder Ad Lab 品牌影像循环'"
   ]) assert.ok(script.includes(phrase), `missing accessible translation: ${phrase}`);
   assert.match(script, /localizedAttributes\.forEach/);
   assert.match(script, /setAttribute\(attribute, language === 'en' \? en : zh\)/);
@@ -501,7 +501,7 @@ test('public indexing focuses on the main service page, not checkout', async () 
   assert.match(payment, /name="robots" content="noindex,nofollow,noarchive"/);
   assert.match(html, /twitter:card" content="summary_large_image"/);
   assert.match(html, /wonder-ad-lab-social\.jpg/);
-  assert.match(html, /hero-wonder-3d-960\.webp/);
+  assert.match(html, /wonder-hero-loop-poster\.jpg/);
   assert.match(html, /service-guide-grid/);
   assert.match(script, /pageParams\.get\('service'\)/);
   assert.doesNotMatch(html, /120\+ 项 AI 创意服务与搜索场景/);
@@ -513,8 +513,8 @@ test('homepage uses optimized visual assets and stable dimensions', async () => 
   assert.match(html, /site\.min\.css\?v=/);
   assert.match(html, /script\.min\.js\?v=/);
   assert.doesNotMatch(html, /href="ai-interface\.css|href="scroll-story\.css|href="service-matrix\.css/);
-  assert.match(html, /hero-wonder-3d-960\.webp 960w, hero-wonder-3d-1660\.webp 1660w/);
-  assert.match(html, /fetchpriority="high" decoding="async"/);
+  assert.match(html, /<link rel="preload" as="image" href="wonder-hero-loop-poster\.jpg" fetchpriority="high"/);
+  assert.match(html, /<video src="wonder-hero-loop\.mp4" poster="wonder-hero-loop-poster\.jpg" width="960" height="540" muted loop playsinline/);
   assert.match(html, /portfolio-coffee\.webp" width="1122" height="1402"/);
   assert.match(html, /href="wonder-wechat-qr\.png"/);
   assert.match(html, /wonder-wechat-qr\.png" width="888" height="1131"/);
