@@ -28,7 +28,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
-  assert.equal(res.payload.updatedAt, '2026-09-20');
+  assert.equal(res.payload.updatedAt, '2026-09-21');
   assert.ok(res.payload.industryNews.length >= 15);
   assert.ok(res.payload.industryNews.every(item =>
     item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&

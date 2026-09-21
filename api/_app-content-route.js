@@ -204,6 +204,20 @@ const news = [
 
 const industryNews = [
   {
+    id: 'google-gemini-3-8-live',
+    date: '2026-09-15',
+    titleEN: 'Google launches Gemini 3.8 Live models',
+    titleZH: 'Google 发布 Gemini 3.8 Live 模型',
+    bodyEN: 'Google introduced Gemini 3.8 Live for scalable, cost-efficient real-time conversation with visual grounding, and Gemini 3.8 Live Extended Thinking for high-complexity tasks and multi-step reasoning. Both are rolling out through the Gemini API and Google AI Studio; availability across Search Live, Gemini and Workspace differs by product, while enterprise access begins in private preview.',
+    bodyZH: 'Google 发布 Gemini 3.8 Live，以更具成本效率的方式支持大规模实时对话与视觉理解；同时推出面向高复杂度任务和多步骤推理的 Gemini 3.8 Live Extended Thinking。两款模型正通过 Gemini API 与 Google AI Studio 推出，在 Search Live、Gemini 与 Workspace 中的开放范围因产品而异，企业端则从私密预览开始。',
+    sourceName: 'Google',
+    sourceURL: 'https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/',
+    categoryEN: 'Live multimodal models',
+    categoryZH: '实时多模态模型',
+    verified: true,
+    symbol: 'waveform.badge.mic'
+  },
+  {
     id: 'anthropic-accenture-embedded-evaluation',
     date: '2026-09-18',
     titleEN: 'Anthropic and Accenture launch embedded frontier-model evaluation',
@@ -517,7 +531,7 @@ export default async function handler(req, res) {
       : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
-    updatedAt: '2026-09-20',
+    updatedAt: '2026-09-21',
     servicePrices,
     news,
     industryNews: mergedIndustryNews
