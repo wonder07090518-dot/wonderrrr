@@ -1,15 +1,26 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { isAdmin, kv, storageConfigured } from './_admin.js';
 
-const OWNER_EMAIL = 'wonder07090518@gmail.com';
 const moderationIndex = 'wonder:news-comments:moderation';
 
 function clean(value, length) {
   return String(value || '').trim().slice(0, length).replace(/[\0\u0001-\u0008\u000B\u000C\u000E-\u001F]/g, '');
 }
 
-function validEmail(value) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); }
 function validNewsId(value) { return /^[a-z0-9][a-z0-9-]{1,99}$/i.test(value); }
+
+const COMMENT_RISK_PATTERNS = [
+  { category: 'abuse', pattern: /\b(?:fuck|shit|bitch|asshole|cunt|nigger|faggot)\b/i },
+  { category: 'abuse', pattern: /(?:傻逼|煞笔|他妈的|操你|去死|狗娘养的)/i },
+  { category: 'threat', pattern: /(?:我(?:要|会)杀了你|我要弄死你|i(?:'ll| will) kill you|i(?:'ll| will) hurt you)/i },
+  { category: 'sexual', pattern: /(?:色情|裸聊|成人视频|pornography|sex chat)/i },
+  { category: 'personal-data', pattern: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i },
+  { category: 'personal-data', pattern: /(?:\+?\d(?:[\s().-]*\d){8,14})/ }
+];
+
+function moderationFlags(body) {
+  return COMMENT_RISK_PATTERNS.filter(item => item.pattern.test(body)).map(item => item.category);
+}
 
 function fingerprint(req, suffix = '') {
   const address = String(req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
@@ -32,22 +43,6 @@ async function readItems(index, limit = 199) {
 
 function publicComment(item) {
   return { id: item.id, newsId: item.newsId, displayName: item.displayName, body: item.body, createdAt: item.createdAt };
-}
-
-async function notifyOwner(item) {
-  if (!process.env.RESEND_API_KEY || !process.env.MAIL_FROM) return false;
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', 'Idempotency-Key': `news-comment-${item.id}` },
-    body: JSON.stringify({
-      from: process.env.MAIL_FROM,
-      to: [OWNER_EMAIL],
-      reply_to: item.email,
-      subject: `AI 今日评论待审核 · ${item.newsId}`,
-      text: `评论编号：${item.id}\n新闻：${item.newsId}\n昵称：${item.displayName}\n联系邮箱：${item.email}\n\n${item.body}\n\n请登录 Wonder 管理后台审核。`
-    })
-  });
-  return response.ok;
 }
 
 export default async function newsCommentsHandler(req, res) {
@@ -88,21 +83,23 @@ export default async function newsCommentsHandler(req, res) {
     if (clean(req.body?.website, 120)) return res.status(201).json({ ok: true });
     const newsId = clean(req.body?.newsId, 100);
     const displayName = clean(req.body?.displayName, 24);
-    const email = clean(req.body?.email, 180).toLowerCase();
     const body = clean(req.body?.body, 280);
-    if (!validNewsId(newsId) || displayName.length < 2 || !validEmail(email) || body.length < 2) {
-      return res.status(400).json({ error: 'Please complete every field' });
+    if (!validNewsId(newsId) || displayName.length < 2 || body.length < 2) {
+      return res.status(400).json({ error: 'Please enter a display name and comment' });
     }
     if (/https?:\/\/|www\./i.test(body)) return res.status(400).json({ error: 'Links are not allowed in comments' });
     if (!(await withinRateLimit(req, 'submit', 5))) return res.status(429).json({ error: 'Daily comment limit reached' });
 
+    const flags = moderationFlags(`${displayName}\n${body}`);
+    const status = flags.length ? 'pending' : 'approved';
     const id = `C${Date.now().toString().slice(-10)}${randomBytes(2).toString('hex')}`;
     const createdAt = new Date().toISOString();
-    const item = { id, newsId, displayName, email, body, status: 'pending', reports: 0, createdAt, fingerprint: fingerprint(req, email) };
+    const item = { id, newsId, displayName, body, status, reports: 0, createdAt };
+    if (flags.length) item.moderationFlags = [...new Set(flags)];
     await kv('set', `wonder:news-comment:${id}`, JSON.stringify(item));
     await kv('zadd', moderationIndex, Date.now(), id);
-    const emailSent = await notifyOwner(item).catch(() => false);
-    return res.status(201).json({ ok: true, id, status: 'pending', emailSent });
+    if (status === 'approved') await kv('zadd', `wonder:news-comments:${newsId}`, Date.now(), id);
+    return res.status(201).json({ ok: true, id, status });
   }
 
   if (req.method === 'PUT') {

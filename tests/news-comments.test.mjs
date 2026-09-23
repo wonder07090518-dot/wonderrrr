@@ -16,7 +16,7 @@ function recorder() {
   };
 }
 
-test('news comments remain private until approved and can be hidden after publication', async () => {
+test('clear comments publish without email, risky comments stay private, and published comments can be hidden', async () => {
   const originalFetch = globalThis.fetch;
   const keys = ['KV_REST_API_URL', 'KV_REST_API_TOKEN', 'ADMIN_USERNAME', 'ADMIN_PASSWORD', 'ADMIN_SESSION_SECRET', 'RESEND_API_KEY', 'MAIL_FROM'];
   const originalEnvironment = Object.fromEntries(keys.map(key => [key, process.env[key]]));
@@ -58,27 +58,46 @@ test('news comments remain private until approved and can be hidden after public
     await newsCommentsHandler({
       method: 'POST',
       headers: { 'x-forwarded-for': '203.0.113.9', 'user-agent': 'AI Today test' },
-      body: { newsId: 'anthropic-accenture-embedded-evaluation', displayName: 'Reader', email: 'reader@example.com', body: 'Clear and useful context.' }
+      body: { newsId: 'anthropic-accenture-embedded-evaluation', displayName: 'Reader', body: 'Clear and useful context.' }
     }, created.response);
     assert.equal(created.record.statusCode, 201);
-    assert.equal(created.record.body.status, 'pending');
-
-    const privateFeed = recorder();
-    await newsCommentsHandler({ method: 'GET', query: { newsId: 'anthropic-accenture-embedded-evaluation' }, headers: {} }, privateFeed.response);
-    assert.deepEqual(privateFeed.record.body.comments, []);
-
-    const adminSession = recorder();
-    issueSession(adminSession.response, 'admin');
-    const cookie = adminSession.record.headers['Set-Cookie'].split(';')[0];
-    const approved = recorder();
-    await newsCommentsHandler({ method: 'PUT', headers: { cookie }, body: { id: created.record.body.id, action: 'approve' } }, approved.response);
-    assert.equal(approved.record.statusCode, 200);
+    assert.equal(created.record.body.status, 'approved');
 
     const publicFeed = recorder();
     await newsCommentsHandler({ method: 'GET', query: { newsId: 'anthropic-accenture-embedded-evaluation' }, headers: {} }, publicFeed.response);
     assert.equal(publicFeed.record.body.comments.length, 1);
     assert.equal(publicFeed.record.body.comments[0].displayName, 'Reader');
     assert.equal('email' in publicFeed.record.body.comments[0], false);
+
+    const adminSession = recorder();
+    issueSession(adminSession.response, 'admin');
+    const cookie = adminSession.record.headers['Set-Cookie'].split(';')[0];
+    const held = recorder();
+    await newsCommentsHandler({
+      method: 'POST',
+      headers: { 'x-forwarded-for': '203.0.113.9', 'user-agent': 'AI Today test' },
+      body: { newsId: 'anthropic-accenture-embedded-evaluation', displayName: 'Reader', body: 'I will hurt you.' }
+    }, held.response);
+    assert.equal(held.record.statusCode, 201);
+    assert.equal(held.record.body.status, 'pending');
+
+    const personalData = recorder();
+    await newsCommentsHandler({
+      method: 'POST',
+      headers: { 'x-forwarded-for': '203.0.113.9', 'user-agent': 'AI Today test' },
+      body: { newsId: 'anthropic-accenture-embedded-evaluation', displayName: 'Reader', body: 'Contact me at reader@example.com' }
+    }, personalData.response);
+    assert.equal(personalData.record.body.status, 'pending');
+
+    const heldFeed = recorder();
+    await newsCommentsHandler({ method: 'GET', query: { newsId: 'anthropic-accenture-embedded-evaluation' }, headers: {} }, heldFeed.response);
+    assert.equal(heldFeed.record.body.comments.length, 1);
+
+    const adminFeed = recorder();
+    await newsCommentsHandler({ method: 'GET', headers: { cookie } }, adminFeed.response);
+    assert.equal(adminFeed.record.body.comments.length, 3);
+    assert.equal('email' in adminFeed.record.body.comments.find(item => item.id === held.record.body.id), false);
+    assert.equal('email' in adminFeed.record.body.comments.find(item => item.id === personalData.record.body.id), false);
 
     const hidden = recorder();
     await newsCommentsHandler({ method: 'PUT', headers: { cookie }, body: { id: created.record.body.id, action: 'hide' } }, hidden.response);
