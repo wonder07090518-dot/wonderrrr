@@ -204,6 +204,20 @@ const news = [
 
 const industryNews = [
   {
+    id: 'nvidia-isaac-ros-5-agentic-workflows',
+    date: '2026-09-22',
+    titleEN: 'NVIDIA Isaac ROS 5.0 adds agentic workflows for robotics',
+    titleZH: 'NVIDIA Isaac ROS 5.0 为机器人开发加入智能体工作流',
+    bodyEN: 'NVIDIA released Isaac ROS 5.0, a new release of its GPU-accelerated, open-source robotics packages built on ROS. It adds reusable Isaac skills for setup and manipulation, agent-ready documentation, and support for ROS Lyrical and Ubuntu 24.04, while supporting deployment from Jetson Orin Nano to Jetson Thor. NVIDIA says Isaac ROS 5.0 is available now, free and open source.',
+    bodyZH: 'NVIDIA 发布 Isaac ROS 5.0，更新其基于 ROS 构建、GPU 加速的开源机器人开发工具包。新版加入可复用的 Isaac 设置与机器人操控技能、面向智能体的文档，并支持 ROS Lyrical、Ubuntu 24.04，以及从 Jetson Orin Nano 到 Jetson Thor 的部署。NVIDIA 表示 Isaac ROS 5.0 现已免费开源。',
+    sourceName: 'NVIDIA',
+    sourceURL: 'https://blogs.nvidia.com/blog/isaac-ros-5-0-agentic-open-source-robotics/',
+    categoryEN: 'Developer tools',
+    categoryZH: '开发工具',
+    verified: true,
+    symbol: 'cpu'
+  },
+  {
     id: 'mistral-vibe-unified-experience',
     date: '2026-09-22',
     titleEN: 'Mistral unifies Chat and Work in Vibe',
@@ -559,7 +573,7 @@ export default async function handler(req, res) {
       : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
-    updatedAt: '2026-09-22',
+    updatedAt: '2026-09-23',
     servicePrices,
     news,
     industryNews: mergedIndustryNews

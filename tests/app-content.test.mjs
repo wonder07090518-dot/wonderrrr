@@ -28,7 +28,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
-  assert.equal(res.payload.updatedAt, '2026-09-22');
+  assert.equal(res.payload.updatedAt, '2026-09-23');
   assert.ok(res.payload.industryNews.length >= 15);
   assert.ok(res.payload.industryNews.every(item =>
     item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&
@@ -41,6 +41,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
     res.payload.industryNews.map(item => item.date).toSorted().reverse()
   );
   assert.equal(res.payload.industryNews.at(0).id, 'mistral-vibe-unified-experience');
+  assert.equal(res.payload.industryNews.find(item => item.id === 'nvidia-isaac-ros-5-agentic-workflows')?.date, '2026-09-22');
   assert.ok(res.payload.industryNews.slice(0, 6).every(item => item.imageAsset && item.imageAltEN && item.imageAltZH && item.imageCredit));
   assert.equal(res.payload.industryNews.at(-1).id, 'nvidia-cosmos');
   const advertisingUpdate = res.payload.industryNews.find(item => item.id === 'openai-chatgpt-ads-ai-tools');
