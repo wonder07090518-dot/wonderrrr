@@ -204,18 +204,32 @@ const news = [
 
 const industryNews = [
   {
-    id: 'google-gemini-3-8-live',
-    date: '2026-09-15',
-    titleEN: 'Google launches Gemini 3.8 Live models',
-    titleZH: 'Google 发布 Gemini 3.8 Live 模型',
-    bodyEN: 'Google introduced Gemini 3.8 Live for scalable, cost-efficient real-time conversation with visual grounding, and Gemini 3.8 Live Extended Thinking for high-complexity tasks and multi-step reasoning. Both are rolling out through the Gemini API and Google AI Studio; availability across Search Live, Gemini and Workspace differs by product, while enterprise access begins in private preview.',
-    bodyZH: 'Google 发布 Gemini 3.8 Live，以更具成本效率的方式支持大规模实时对话与视觉理解；同时推出面向高复杂度任务和多步骤推理的 Gemini 3.8 Live Extended Thinking。两款模型正通过 Gemini API 与 Google AI Studio 推出，在 Search Live、Gemini 与 Workspace 中的开放范围因产品而异，企业端则从私密预览开始。',
-    sourceName: 'Google',
-    sourceURL: 'https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/',
-    categoryEN: 'Live multimodal models',
-    categoryZH: '实时多模态模型',
+    id: 'mistral-vibe-unified-experience',
+    date: '2026-09-22',
+    titleEN: 'Mistral unifies Chat and Work in Vibe',
+    titleZH: 'Mistral 在 Vibe 中合并 Chat 与 Work',
+    bodyEN: 'Mistral is merging Chat and Work into one Vibe experience. After migration, users get a unified conversation list, Fast and Think modes, reusable Skills, a browsable Knowledge Base and temporary chats. The rollout is phased for Free, Pro and Teams accounts; enterprise migration begins October 1.',
+    bodyZH: 'Mistral 正把 Chat 与 Work 合并为统一的 Vibe 体验。迁移后，用户可使用统一会话列表、Fast 与 Think 模式、可复用 Skills、可浏览的知识库和临时聊天。Free、Pro 与 Teams 账户正在分阶段迁移，企业迁移将于 10 月 1 日开始。',
+    sourceName: 'Mistral',
+    sourceURL: 'https://docs.mistral.ai/resources/release-notes',
+    categoryEN: 'Product update',
+    categoryZH: '产品更新',
     verified: true,
-    symbol: 'waveform.badge.mic'
+    symbol: 'rectangle.3.group.bubble.left.fill'
+  },
+  {
+    id: 'microsoft-retrochimera-open-source',
+    date: '2026-09-21',
+    titleEN: 'Microsoft open-sources RetroChimera for retrosynthesis',
+    titleZH: 'Microsoft 开源逆合成模型 RetroChimera',
+    bodyEN: 'Microsoft Research published RetroChimera, a retrosynthesis model that combines complementary neural models and learned ranking to propose synthesis routes. According to Microsoft, expert chemists preferred its predictions in blind tests; the implementation and weights are available under an MIT license.',
+    bodyZH: 'Microsoft Research 发布 RetroChimera，这是一款把互补神经模型与学习排序结合起来、用于提出分子合成路线的逆合成模型。据微软介绍，专家化学家在盲测中更偏好其预测；实现代码和模型权重已按 MIT 许可证开放。',
+    sourceName: 'Microsoft Research',
+    sourceURL: 'https://www.microsoft.com/en-us/research/blog/improving-synthesis-prediction-of-small-molecules-at-scale-with-retrochimera/',
+    categoryEN: 'Research model',
+    categoryZH: '研究模型',
+    verified: true,
+    symbol: 'atom'
   },
   {
     id: 'anthropic-accenture-embedded-evaluation',
@@ -286,6 +300,20 @@ const industryNews = [
     categoryZH: '广告工具',
     verified: true,
     symbol: 'megaphone.fill'
+  },
+  {
+    id: 'google-gemini-3-8-live',
+    date: '2026-09-15',
+    titleEN: 'Google launches Gemini 3.8 Live models',
+    titleZH: 'Google 发布 Gemini 3.8 Live 模型',
+    bodyEN: 'Google introduced Gemini 3.8 Live for scalable, cost-efficient real-time conversation with visual grounding, and Gemini 3.8 Live Extended Thinking for high-complexity tasks and multi-step reasoning. Both are rolling out through the Gemini API and Google AI Studio; availability across Search Live, Gemini and Workspace differs by product, while enterprise access begins in private preview.',
+    bodyZH: 'Google 发布 Gemini 3.8 Live，以更具成本效率的方式支持大规模实时对话与视觉理解；同时推出面向高复杂度任务和多步骤推理的 Gemini 3.8 Live Extended Thinking。两款模型正通过 Gemini API 与 Google AI Studio 推出，在 Search Live、Gemini 与 Workspace 中的开放范围因产品而异，企业端则从私密预览开始。',
+    sourceName: 'Google',
+    sourceURL: 'https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-8-live-gemini-3-8-live-extended-thinking/',
+    categoryEN: 'Live multimodal models',
+    categoryZH: '实时多模态模型',
+    verified: true,
+    symbol: 'waveform.badge.mic'
   },
   {
     id: 'openai-gpt-6-astra',
@@ -531,7 +559,7 @@ export default async function handler(req, res) {
       : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
-    updatedAt: '2026-09-21',
+    updatedAt: '2026-09-22',
     servicePrices,
     news,
     industryNews: mergedIndustryNews

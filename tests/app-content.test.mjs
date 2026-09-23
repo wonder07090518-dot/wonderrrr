@@ -28,7 +28,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
-  assert.equal(res.payload.updatedAt, '2026-09-21');
+  assert.equal(res.payload.updatedAt, '2026-09-22');
   assert.ok(res.payload.industryNews.length >= 15);
   assert.ok(res.payload.industryNews.every(item =>
     item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&
@@ -40,7 +40,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
     res.payload.industryNews.map(item => item.date),
     res.payload.industryNews.map(item => item.date).toSorted().reverse()
   );
-  assert.equal(res.payload.industryNews.at(0).id, 'anthropic-accenture-embedded-evaluation');
+  assert.equal(res.payload.industryNews.at(0).id, 'mistral-vibe-unified-experience');
   assert.ok(res.payload.industryNews.slice(0, 6).every(item => item.imageAsset && item.imageAltEN && item.imageAltZH && item.imageCredit));
   assert.equal(res.payload.industryNews.at(-1).id, 'nvidia-cosmos');
   const advertisingUpdate = res.payload.industryNews.find(item => item.id === 'openai-chatgpt-ads-ai-tools');
@@ -50,7 +50,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   assert.match(advertisingUpdate.bodyEN, /selected U\.S\. advertisers/);
   assert.deepEqual(
     new Set(res.payload.industryNews.map(item => item.sourceName)),
-    new Set(['OpenAI', 'Google', 'Anthropic', 'Apple', 'Meta AI', 'Google DeepMind', 'NVIDIA'])
+    new Set(['OpenAI', 'Google', 'Anthropic', 'Apple', 'Meta AI', 'Google DeepMind', 'NVIDIA', 'Mistral', 'Microsoft Research'])
   );
   const promoFilmItem = res.payload.industryNews.find(item => item.id === 'openai-gpt-6-astra');
   assert.match(promoFilmItem.bodyZH, /宣传片创意、脚本、分镜与制作流程/);
