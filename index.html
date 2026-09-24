@@ -63,7 +63,7 @@
     <div class="wrap nav">
       <a class="brand" href="#top"><svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="15" fill="#2457FF"/><path d="M16.2 21.5c-2.6-5.1-2.1-9.2.4-9.8 2.4-.5 4.5 3 5.1 7.5m10.1 2.3c2.6-5.1 2.1-9.2-.4-9.8-2.4-.5-4.5 3-5.1 7.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M13.5 29.1c0-6.5 4.7-10.8 10.5-10.8s10.5 4.3 10.5 10.8c0 5.2-4.1 8.2-10.5 8.2s-10.5-3-10.5-8.2Z" fill="#fff"/><circle cx="20.2" cy="28" r="1.25" fill="#2457FF"/><circle cx="27.8" cy="28" r="1.25" fill="#2457FF"/><path d="M22.2 32c1.1.9 2.5.9 3.6 0" fill="none" stroke="#2457FF" stroke-width="1.5" stroke-linecap="round"/></svg><i aria-hidden="true"></i><span><small>WONDER AD LAB</small><strong>奇迹创意工作室</strong></span></a>
       <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="siteNav" aria-label="打开菜单"><i></i><i></i></button>
-      <nav id="siteNav" aria-label="主导航"><a href="#story">制作流程</a><a href="#work">案例</a><a href="#services">服务报价</a><a href="#membership">会员</a><a href="#wechat">联系</a><div class="mobile-nav-actions" aria-label="移动端快捷操作"><button class="mobile-language-toggle" id="mobileLanguageToggle">EN</button><button id="mobileOpenAuth">登录 / 注册</button><button class="mobile-order" data-scroll="#order">立即下单</button></div></nav>
+      <nav id="siteNav" aria-label="主导航"><a href="#story">下单流程</a><a href="#process">制作流程</a><a href="#work">案例</a><a href="#services">服务报价</a><a href="#membership">会员</a><a href="#wechat">联系</a><div class="mobile-nav-actions" aria-label="移动端快捷操作"><button class="mobile-language-toggle" id="mobileLanguageToggle">EN</button><button id="mobileOpenAuth">登录 / 注册</button><button class="mobile-order" data-scroll="#order">立即下单</button></div></nav>
       <div class="nav-actions"><button class="nav-utility language-toggle" id="languageToggle">EN</button><button class="nav-utility nav-account" id="openAuth">登录 / 注册</button><button class="nav-order" data-scroll="#order">立即下单</button></div>
     </div>
   </header>
@@ -85,6 +85,22 @@
     </section>
 
     <section class="signal-rail" aria-label="服务特点"><div class="wrap signal-track"><div class="signal-group"><span><small>01 / METHOD</small>需求先拆清楚<i class="signal-wave"><b></b><b></b><b></b><b></b><b></b></i></span><span><small>02 / PRICING</small>固定价格可见<i class="signal-code">¥ / FIXED</i></span><span><small>03 / DELIVERY</small>适配发布尺寸<i class="signal-format">1:1&nbsp;&nbsp;3:4&nbsp;&nbsp;16:9</i></span><span><small>04 / LANGUAGE</small>中英双语支持<i class="signal-lang">ZH ↔ EN</i></span></div></div></section>
+
+    <section class="quick-pricing" aria-labelledby="quickPricingTitle">
+      <div class="wrap">
+        <header class="quick-pricing-head">
+          <div><p class="eyebrow">CLEAR PRICES / EASY TO START</p><h2 id="quickPricingTitle">先看价格，<br><em>再决定怎么开始。</em></h2></div>
+          <p>常见视觉需求从 ¥12 起。价格先说清楚，需求不确定也可以先问。</p>
+        </header>
+        <div class="quick-price-grid">
+          <article><span>AI 快速配图</span><strong>¥12<small> / 张</small></strong><button data-scroll="#order" data-choose="AI 快速配图">从配图开始 <b>↗</b></button></article>
+          <article><span>社媒封面</span><strong>¥16<small> / 张</small></strong><button data-scroll="#order" data-choose="社媒封面">做一张封面 <b>↗</b></button></article>
+          <article><span>营销海报</span><strong>¥19<small> / 张</small></strong><button data-scroll="#order" data-choose="营销海报">制作海报 <b>↗</b></button></article>
+          <article><span>电商商品图</span><strong>¥22<small> / 张</small></strong><button data-scroll="#order" data-choose="电商商品图">优化商品图 <b>↗</b></button></article>
+        </div>
+        <a class="quick-price-all" href="#services">查看全部 16 项服务与价格 <span>↗</span></a>
+      </div>
+    </section>
 
     <section class="process-rail" id="story" aria-labelledby="storyTitle">
       <div class="rail-sticky">
@@ -227,15 +243,9 @@
         <p><span class="ai-copy-en">Official announcements, neutral summaries and direct source links. Quiet days stay quiet.</span><span class="ai-copy-zh">只收录官方公告，使用中性摘要并附原始来源；没有重要变化时不为更新而更新。</span></p>
       </header>
       <div class="ai-radar-console">
-        <div class="ai-radar-status"><span><i></i><span class="ai-copy-en">OFFICIAL SOURCES ONLY</span><span class="ai-copy-zh">仅限官方来源</span></span><small id="aiRadarUpdated"><span class="ai-copy-en">Updated 2026-09-05</span><span class="ai-copy-zh">更新于 2026-09-05</span></small></div>
+        <div class="ai-radar-status"><span><i></i><span class="ai-copy-en">OFFICIAL SOURCES ONLY</span><span class="ai-copy-zh">仅限官方来源</span></span><small id="aiRadarUpdated" aria-live="polite"><span class="ai-copy-en">Loading verified news…</span><span class="ai-copy-zh">正在获取已核实的新闻…</span></small></div>
         <div class="ai-radar-grid" id="aiRadarList" aria-live="polite">
-          <article class="ai-radar-story is-featured" data-source="openai">
-            <div class="ai-radar-visual" aria-hidden="true"><span class="ai-radar-orb"></span><strong>OP</strong><small><span class="ai-copy-en">VERIFIED SIGNAL</span><span class="ai-copy-zh">已验证信号</span></small></div>
-            <div class="ai-radar-meta"><time datetime="2026-09-03">2026-09-03</time><span><span class="ai-copy-en">MODEL CAPABILITIES</span><span class="ai-copy-zh">模型能力</span></span></div>
-            <h3><span class="ai-copy-en">How GPT-6 Astra can support promo films</span><span class="ai-copy-zh">GPT-6 Astra 能怎样协助宣传片</span></h3>
-            <p><span class="ai-copy-en">OpenAI says GPT-6 Astra is stronger at complex professional work, media production, visual judgment and multi-step workflows. Wonder’s practical take: it can help organize a promo-film concept, script, storyboard and production workflow, while finished footage still requires a dedicated video-generation or editing tool.</span><span class="ai-copy-zh">OpenAI 表示 GPT-6 Astra 在复杂专业工作、媒体制作、视觉判断与多步骤工作流方面更强。Wonder 应用解读：它可以协助梳理宣传片创意、脚本、分镜与制作流程；成片仍需由专门的视频生成或剪辑工具完成。</span></p>
-            <a href="https://openai.com/index/gpt-6-astra/" target="_blank" rel="noopener noreferrer"><span class="ai-copy-en">Official source · OpenAI</span><span class="ai-copy-zh">官方来源 · OpenAI</span><b>↗</b></a>
-          </article>
+          <p class="ai-radar-loading"><span class="ai-copy-en">Loading the latest official updates…</span><span class="ai-copy-zh">正在加载最新官方动态…</span></p>
         </div>
       </div>
     </section>

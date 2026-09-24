@@ -601,6 +601,8 @@ export default async function handler(req, res) {
       : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
+    // Keep the newest story date separate from the editorial feed's update date.
+    latestNewsDate: mergedIndustryNews[0]?.date || null,
     updatedAt: '2026-09-24',
     servicePrices,
     news,

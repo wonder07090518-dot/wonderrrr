@@ -56,11 +56,26 @@ test('English mode covers previously untranslated key sections', async () => {
   assert.match(payment, /notice: 'Manual payments are marked/);
 });
 
-test('AI radar update date follows the selected language', async () => {
-  const script = await read('script.js');
+test('AI radar date describes the newest story and never falls back to a stale fixed date', async () => {
+  const [html, script, route] = await Promise.all([read('index.html'), read('script.js'), read('api/_app-content-route.js')]);
   assert.match(script, /let aiRadarUpdatedAt = ''/);
-  assert.match(script, /aiRadarUpdatedAt = content\.updatedAt \|\| ''/);
+  assert.match(script, /aiRadarUpdatedAt = content\.latestNewsDate \|\| content\.industryNews\[0\]\?\.date \|\| ''/);
+  assert.match(script, /Latest story \$\{latestNewsDate\}/);
+  assert.match(script, /localStorage\.getItem\(aiRadarCacheKey/);
+  assert.match(script, /Latest-news date unavailable/);
+  assert.match(route, /latestNewsDate: mergedIndustryNews\[0\]\?\.date \|\| null/);
+  assert.doesNotMatch(html, /Updated 2026-09-05|更新于 2026-09-05/);
   assert.match(script, /renderAIRadar\(aiRadarData, aiRadarUpdatedAt\)/);
+});
+
+test('homepage exposes separate order and production flows plus real starting prices', async () => {
+  const html = await read('index.html');
+  assert.match(html, /<a href="#story">下单流程<\/a><a href="#process">制作流程<\/a>/);
+  assert.match(html, /class="quick-pricing"/);
+  assert.match(html, /AI 快速配图<\/span><strong>¥12<small> \/ 张<\/small>/);
+  assert.match(html, /社媒封面<\/span><strong>¥16<small> \/ 张<\/small>/);
+  assert.match(html, /data-scroll="#order" data-choose="AI 快速配图"/);
+  assert.match(html, /查看全部 16 项服务与价格/);
 });
 
 test('language switching localizes accessible labels and image descriptions', async () => {
@@ -470,9 +485,8 @@ test('homepage exposes a source-backed international AI radar', async () => {
   const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
   assert.match(html, /id="ai-radar"/);
   assert.match(html, /id="aiRadarList"/);
-  assert.match(html, /How GPT-6 Astra can support promo films/);
-  assert.match(html, /finished footage still requires a dedicated video-generation or editing tool/);
-  assert.match(html, /https:\/\/openai\.com\/index\/gpt-6-astra\//);
+  assert.match(html, /Loading the latest official updates/);
+  assert.doesNotMatch(html, /How GPT-6 Astra can support promo films/);
   assert.match(script, /fetch\('\/api\/app-content'/);
   assert.match(script, /Official source/);
 });

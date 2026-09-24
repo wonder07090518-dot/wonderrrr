@@ -211,6 +211,23 @@ Object.assign(zhToEn, {
   '点击二维码查看高清图':'Tap the QR code to view it in full resolution',
   '手机端可长按保存，再从微信“扫一扫”的相册中识别':'On mobile, press and hold to save it, then choose it from the WeChat scanner album'
 });
+Object.assign(zhToEn, {
+  '下单流程':'Order journey',
+  '制作流程':'Production process',
+  '先看价格，':'See pricing first,',
+  '再决定怎么开始。':'then choose how to begin.',
+  '常见视觉需求从 ¥12 起。价格先说清楚，需求不确定也可以先问。':'Popular visual services start at ¥12. See the price up front, or ask us if you are not sure what you need.',
+  'AI 快速配图':'AI quick image',
+  '社媒封面':'Social cover',
+  '营销海报':'Marketing poster',
+  '电商商品图':'E-commerce product image',
+  '从配图开始':'Start with an image',
+  '做一张封面':'Create a cover',
+  '制作海报':'Create a poster',
+  '优化商品图':'Improve a product image',
+  '查看全部 16 项服务与价格':'Explore all 16 services and prices'
+});
+
 const enToZh = Object.fromEntries(Object.entries(zhToEn).map(([zh, en]) => [en, zh]));
 const pageParams = new URLSearchParams(window.location.search);
 const requestedLanguage = pageParams.get('lang');
@@ -220,8 +237,10 @@ let language = ['en', 'zh'].includes(requestedLanguage)
   : (['en', 'zh'].includes(savedLanguage) ? savedLanguage : 'en');
 let aiRadarData = [];
 let aiRadarUpdatedAt = '';
+let aiRadarIsCached = false;
+const aiRadarCacheKey = 'wonder-ai-radar-cache-v1';
 
-function renderAIRadar(items = aiRadarData, updatedAt = '') {
+function renderAIRadar(items = aiRadarData, latestNewsDate = '', isCached = aiRadarIsCached) {
   const list = document.querySelector('#aiRadarList');
   const updated = document.querySelector('#aiRadarUpdated');
   if (!list || !Array.isArray(items) || items.length === 0) return;
@@ -269,21 +288,55 @@ function renderAIRadar(items = aiRadarData, updatedAt = '') {
     return article;
   }));
 
-  if (updated && updatedAt) {
-    updated.textContent = language === 'en' ? `Updated ${updatedAt}` : `更新于 ${updatedAt}`;
+  if (updated && latestNewsDate) {
+    updated.textContent = language === 'en'
+      ? `${isCached ? 'Cached · ' : ''}Latest story ${latestNewsDate}`
+      : `${isCached ? '缓存内容 · ' : ''}最新动态 ${latestNewsDate}`;
+  }
+}
+
+function readCachedAIRadar() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(aiRadarCacheKey) || 'null');
+    return Array.isArray(cached?.industryNews) && cached.industryNews.length && cached.latestNewsDate
+      ? cached
+      : null;
+  } catch { return null; }
+}
+
+function showAIRadarUnavailable() {
+  const updated = document.querySelector('#aiRadarUpdated');
+  const list = document.querySelector('#aiRadarList');
+  if (updated) updated.textContent = language === 'en' ? 'Latest-news date unavailable' : '暂时无法获取最新新闻日期';
+  if (list) {
+    const message = document.createElement('p');
+    message.className = 'ai-radar-loading';
+    message.textContent = language === 'en' ? 'The news service could not be reached. Please try again later.' : '暂时无法连接新闻服务，请稍后再试。';
+    list.replaceChildren(message);
   }
 }
 
 async function loadAIRadar() {
+  const cached = readCachedAIRadar();
+  if (cached) {
+    aiRadarData = cached.industryNews;
+    aiRadarUpdatedAt = cached.latestNewsDate;
+    aiRadarIsCached = true;
+    renderAIRadar(aiRadarData, aiRadarUpdatedAt, true);
+  }
   try {
     const response = await fetch('/api/app-content', { headers: { Accept: 'application/json' } });
-    if (!response.ok) return;
+    if (!response.ok) throw new Error('AI news request failed');
     const content = await response.json();
-    if (!Array.isArray(content.industryNews) || content.industryNews.length === 0) return;
+    if (!Array.isArray(content.industryNews) || content.industryNews.length === 0) throw new Error('AI news is empty');
     aiRadarData = content.industryNews;
-    aiRadarUpdatedAt = content.updatedAt || '';
+    aiRadarUpdatedAt = content.latestNewsDate || content.industryNews[0]?.date || '';
+    aiRadarIsCached = false;
     renderAIRadar(aiRadarData, aiRadarUpdatedAt);
-  } catch { /* Keep the verified server-rendered fallback visible. */ }
+    try { localStorage.setItem(aiRadarCacheKey, JSON.stringify({ industryNews: aiRadarData, latestNewsDate: aiRadarUpdatedAt })); } catch { /* Rendering does not depend on local storage. */ }
+  } catch {
+    if (!cached) showAIRadarUnavailable();
+  }
 }
 function applyLanguage() {
   const dictionary = language === 'en' ? zhToEn : enToZh;
@@ -370,7 +423,7 @@ function applyLanguage() {
   renderRechargeHistory(accountBalanceData.recharges);
   renderOrderReferenceList();
   updateOrderBalanceHint();
-  renderAIRadar(aiRadarData, aiRadarUpdatedAt);
+  renderAIRadar(aiRadarData, aiRadarUpdatedAt, aiRadarIsCached);
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
