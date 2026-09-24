@@ -40,7 +40,8 @@ test('app content exposes the live catalog, studio updates and verified AI news'
     res.payload.industryNews.map(item => item.date),
     res.payload.industryNews.map(item => item.date).toSorted().reverse()
   );
-  assert.equal(res.payload.industryNews.at(0).id, 'mistral-vibe-unified-experience');
+  assert.equal(res.payload.industryNews.at(0).id, 'anthropic-claude-crispr-like-dna-repeat-enzyme-system');
+  assert.equal(res.payload.industryNews.at(0).date, '2026-09-23');
   assert.equal(res.payload.industryNews.find(item => item.id === 'nvidia-isaac-ros-5-agentic-workflows')?.date, '2026-09-22');
   assert.ok(res.payload.industryNews.slice(0, 6).every(item => item.imageAsset && item.imageAltEN && item.imageAltZH && item.imageCredit));
   assert.equal(res.payload.industryNews.at(-1).id, 'nvidia-cosmos');

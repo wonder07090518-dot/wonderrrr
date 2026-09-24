@@ -204,6 +204,20 @@ const news = [
 
 const industryNews = [
   {
+    id: 'anthropic-claude-crispr-like-dna-repeat-enzyme-system',
+    date: '2026-09-23',
+    titleEN: 'Anthropic reports Claude-assisted discovery of an enzyme system linked to CRISPR-like DNA repeats',
+    titleZH: 'Anthropic 报告 Claude 协助发现一种与类似 CRISPR 的 DNA 重复序列相关的新酶系统',
+    bodyEN: 'Anthropic announced a new life-sciences research group and laboratory. In an early program, its researchers used Claude to analyze DNA datasets and develop hypotheses; lab experiments identified a previously undescribed enzyme system associated with DNA repeats reminiscent of CRISPR. This is an early result reported by Anthropic, not an independent validation or a general demonstration that AI can lead scientific discovery.',
+    bodyZH: 'Anthropic 宣布成立生命科学研究团队和实验室。在一项早期研究中，研究人员使用 Claude 分析 DNA 数据并提出假设；实验室实验随后发现一种此前未描述、与类似 CRISPR 的 DNA 重复序列相关的酶系统。这是 Anthropic 报告的早期结果，并非独立验证，也不代表 AI 普遍能够主导科学发现。',
+    sourceName: 'Anthropic',
+    sourceURL: 'https://www.anthropic.com/news/claude-discovers-novel-enzyme-system',
+    categoryEN: 'AI research',
+    categoryZH: 'AI 研究',
+    verified: true,
+    symbol: 'atom'
+  },
+  {
     id: 'nvidia-isaac-ros-5-agentic-workflows',
     date: '2026-09-22',
     titleEN: 'NVIDIA Isaac ROS 5.0 adds agentic workflows for robotics',
