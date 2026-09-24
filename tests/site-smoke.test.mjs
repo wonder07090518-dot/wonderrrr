@@ -64,6 +64,11 @@ test('AI radar date describes the newest story and never falls back to a stale f
   assert.match(script, /localStorage\.getItem\(aiRadarCacheKey/);
   assert.match(script, /Latest-news date unavailable/);
   assert.match(route, /latestNewsDate: mergedIndustryNews\[0\]\?\.date \|\| null/);
+  assert.match(html, /id="aiRadarToggle"[^>]*aria-controls="aiRadarList"[^>]*hidden/);
+  assert.match(script, /items\.slice\(0, 2\)/);
+  assert.match(script, /Show all \$\{items\.length\} stories/);
+  assert.match(script, /展开看看 · 全部 \$\{items\.length\} 条/);
+  assert.match(script, /aiRadarExpanded = !aiRadarExpanded/);
   assert.doesNotMatch(html, /Updated 2026-09-05|更新于 2026-09-05/);
   assert.match(script, /renderAIRadar\(aiRadarData, aiRadarUpdatedAt\)/);
 });

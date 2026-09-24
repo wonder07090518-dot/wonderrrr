@@ -238,6 +238,7 @@ let language = ['en', 'zh'].includes(requestedLanguage)
 let aiRadarData = [];
 let aiRadarUpdatedAt = '';
 let aiRadarIsCached = false;
+let aiRadarExpanded = false;
 const aiRadarCacheKey = 'wonder-ai-radar-cache-v1';
 
 function renderAIRadar(items = aiRadarData, latestNewsDate = '', isCached = aiRadarIsCached) {
@@ -245,7 +246,9 @@ function renderAIRadar(items = aiRadarData, latestNewsDate = '', isCached = aiRa
   const updated = document.querySelector('#aiRadarUpdated');
   if (!list || !Array.isArray(items) || items.length === 0) return;
 
-  list.replaceChildren(...items.map((item, index) => {
+  const toggle = document.querySelector('#aiRadarToggle');
+  const visibleItems = aiRadarExpanded ? items : items.slice(0, 2);
+  list.replaceChildren(...visibleItems.map((item, index) => {
     const article = document.createElement('article');
     const visual = document.createElement('div');
     const visualOrb = document.createElement('span');
@@ -292,6 +295,13 @@ function renderAIRadar(items = aiRadarData, latestNewsDate = '', isCached = aiRa
     updated.textContent = language === 'en'
       ? `${isCached ? 'Cached · ' : ''}Latest story ${latestNewsDate}`
       : `${isCached ? '缓存内容 · ' : ''}最新动态 ${latestNewsDate}`;
+  }
+  if (toggle) {
+    toggle.hidden = items.length <= 2;
+    toggle.setAttribute('aria-expanded', String(aiRadarExpanded));
+    toggle.textContent = aiRadarExpanded
+      ? (language === 'en' ? 'Show fewer stories' : '收起新闻')
+      : (language === 'en' ? `Show all ${items.length} stories` : `展开看看 · 全部 ${items.length} 条`);
   }
 }
 
@@ -898,6 +908,10 @@ document.querySelectorAll('[data-process-step]').forEach(button => button.addEve
 document.querySelector('#toggleAllServices')?.addEventListener('click', () => {
   showAllServices = !showAllServices;
   transitionServiceView();
+});
+document.querySelector('#aiRadarToggle')?.addEventListener('click', () => {
+  aiRadarExpanded = !aiRadarExpanded;
+  renderAIRadar(aiRadarData, aiRadarUpdatedAt, aiRadarIsCached);
 });
 const menuToggle = document.querySelector('#menuToggle');
 const siteNav = document.querySelector('#siteNav');
