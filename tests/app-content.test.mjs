@@ -28,7 +28,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.news.at(0).id, 'wonder-ilabs-social');
   assert.equal(res.payload.news.at(-1).id, 'website-launch');
-  assert.equal(res.payload.updatedAt, '2026-09-23');
+  assert.equal(res.payload.updatedAt, '2026-09-24');
   assert.ok(res.payload.industryNews.length >= 15);
   assert.ok(res.payload.industryNews.every(item =>
     item.titleEN && item.titleZH && item.bodyEN && item.bodyZH &&
@@ -42,6 +42,7 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.industryNews.at(0).id, 'anthropic-claude-crispr-like-dna-repeat-enzyme-system');
   assert.equal(res.payload.industryNews.at(0).date, '2026-09-23');
+  assert.equal(res.payload.industryNews.find(item => item.id === 'google-vids-gemini-omni-1-1-free-hd-video')?.date, '2026-09-23');
   assert.equal(res.payload.industryNews.find(item => item.id === 'nvidia-isaac-ros-5-agentic-workflows')?.date, '2026-09-22');
   assert.ok(res.payload.industryNews.slice(0, 6).every(item => item.imageAsset && item.imageAltEN && item.imageAltZH && item.imageCredit));
   assert.equal(res.payload.industryNews.at(-1).id, 'nvidia-cosmos');

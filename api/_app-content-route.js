@@ -204,6 +204,20 @@ const news = [
 
 const industryNews = [
   {
+    id: 'google-vids-gemini-omni-1-1-free-hd-video',
+    date: '2026-09-23',
+    titleEN: 'Google Vids adds no-cost 1080p AI video generation with Gemini Omni 1.1',
+    titleZH: 'Google Vids 接入 Gemini Omni 1.1，开放免费 1080p AI 视频生成',
+    bodyEN: 'Google says people with a Google or Google Workspace account can generate AI video in Google Vids at no cost. Personal-account users seeking more generation capacity can explore Google AI plans. The update adds controls for clip duration and scene transitions, supports 1080p generation and upscaling, and embeds a SynthID watermark in generated clips.',
+    bodyZH: 'Google 表示，Google 或 Google Workspace 账户可在 Google Vids 免费生成 AI 视频；个人账户如需更多生成额度，可了解 Google AI 方案。此次更新加入片段时长与场景转场控制，支持生成或升频至 1080p，并在生成片段中嵌入 SynthID 水印。',
+    sourceName: 'Google',
+    sourceURL: 'https://blog.google/products-and-platforms/products/workspace/gemini-omni-in-google-vids/',
+    categoryEN: 'Creative tools',
+    categoryZH: '创作工具',
+    verified: true,
+    symbol: 'video.fill'
+  },
+  {
     id: 'anthropic-claude-crispr-like-dna-repeat-enzyme-system',
     date: '2026-09-23',
     titleEN: 'Anthropic reports Claude-assisted discovery of an enzyme system linked to CRISPR-like DNA repeats',
@@ -587,7 +601,7 @@ export default async function handler(req, res) {
       : item);
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
   return res.status(200).json({
-    updatedAt: '2026-09-23',
+    updatedAt: '2026-09-24',
     servicePrices,
     news,
     industryNews: mergedIndustryNews
