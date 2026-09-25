@@ -49,7 +49,9 @@ test('English mode covers previously untranslated key sections', async () => {
     "'不只是生成一张图':'More than generating one image'",
     "'为持续创作，准备的更快通道':'A faster lane for ongoing creativity'",
     "'直接加我微信':'Add me on WeChat'",
-    "'你的隐私，值得被认真对待':'Your privacy deserves care'"
+    "'你的隐私，值得被认真对待':'Your privacy deserves care'",
+    "'我已阅读并同意':'I have read and agree to the'",
+    "'完整隐私政策':'full privacy policy'"
   ]) assert.ok(script.includes(phrase), `missing translation: ${phrase}`);
   assert.match(payment, /heading: 'Complete payment'/);
   assert.match(payment, /wechat: 'WeChat Pay'/);

@@ -204,6 +204,20 @@ const news = [
 
 const industryNews = [
   {
+    id: 'google-gemini-connected-apps-20260923',
+    date: '2026-09-23',
+    titleEN: 'Gemini begins rolling out more creative and productivity app connections',
+    titleZH: 'Gemini 开始接入更多创作与效率应用',
+    bodyEN: 'Google is beginning to roll out new app connections in Gemini, including Adobe, Picsart, Squarespace, Webflow, Airtable and Linear. Users can connect apps through settings, mention them with @ in a conversation, or ask directly. The rollout is gradual and does not imply availability for every account at once.',
+    bodyZH: 'Google 开始逐步向 Gemini 开放新一批应用连接，包括 Adobe、Picsart、Squarespace、Webflow，以及 Airtable、Linear 等工具。用户可在设置中连接应用，也可在对话中使用 @ 提及或直接提出请求。本次为逐步上线，不代表所有账户已同时可用。',
+    sourceName: 'Google',
+    sourceURL: 'https://blog.google/innovation-and-ai/products/gemini-app/new-connected-apps-gemini/',
+    categoryEN: 'Creative tools',
+    categoryZH: '创作工具',
+    verified: true,
+    symbol: 'square.stack.3d.up.fill'
+  },
+  {
     id: 'google-vids-gemini-omni-1-1-free-hd-video',
     date: '2026-09-23',
     titleEN: 'Google Vids adds no-cost 1080p AI video generation with Gemini Omni 1.1',

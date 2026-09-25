@@ -43,6 +43,11 @@ test('app content exposes the live catalog, studio updates and verified AI news'
   );
   assert.equal(res.payload.industryNews.at(0).id, 'anthropic-claude-crispr-like-dna-repeat-enzyme-system');
   assert.equal(res.payload.industryNews.at(0).date, '2026-09-23');
+  const connectedAppsUpdate = res.payload.industryNews.find(item => item.id === 'google-gemini-connected-apps-20260923');
+  assert.equal(connectedAppsUpdate?.date, '2026-09-23');
+  assert.equal(connectedAppsUpdate?.sourceURL, 'https://blog.google/innovation-and-ai/products/gemini-app/new-connected-apps-gemini/');
+  assert.match(connectedAppsUpdate?.bodyZH || '', /逐步上线/);
+  assert.match(connectedAppsUpdate?.bodyEN || '', /rollout is gradual/);
   assert.equal(res.payload.industryNews.find(item => item.id === 'google-vids-gemini-omni-1-1-free-hd-video')?.date, '2026-09-23');
   assert.equal(res.payload.industryNews.find(item => item.id === 'nvidia-isaac-ros-5-agentic-workflows')?.date, '2026-09-22');
   assert.ok(res.payload.industryNews.slice(0, 6).every(item => item.imageAsset && item.imageAltEN && item.imageAltZH && item.imageCredit));
