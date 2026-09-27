@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Wonder · 评论巡查</title>
+  <link rel="stylesheet" href="comment-review.css?v=20260926a" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="返回 Wonder Ad Lab">✦ <span>Wonder</span></a>
+      <span class="scope-badge">只读权限</span>
+      <button class="quiet-button" id="logout" type="button" hidden>退出</button>
+    </header>
+
+    <section class="login-card" id="loginView">
+      <p class="eyebrow">COMMENT WATCH</p>
+      <h1>评论巡查后台</h1>
+      <p>这个入口只能读取 AI News 评论，不能批准、隐藏、删除评论，也不能查看或修改订单、付款和账户资料。</p>
+      <form id="loginForm">
+        <label>巡查账号<input id="username" type="text" autocomplete="username" required /></label>
+        <label>巡查密码<input id="password" type="password" autocomplete="current-password" required /></label>
+        <button class="primary-button" type="submit">进入只读巡查 <span>→</span></button>
+        <p class="hint" id="loginHint">可以使用现有管理员账号登录，但这里只会获得评论读取权限。</p>
+      </form>
+    </section>
+
+    <section class="dashboard" id="dashboard" hidden>
+      <div class="dashboard-head">
+        <div>
+          <p class="eyebrow">AI NEWS COMMENTS</p>
+          <h1>新评论巡查</h1>
+          <p>这里只做核对和风险提示，任何评论状态都不会被更改。</p>
+        </div>
+        <button class="quiet-button" id="refresh" type="button">刷新评论</button>
+      </div>
+
+      <section class="summary" aria-label="评论概览">
+        <article><small>过去 24 小时</small><strong id="recentCount">0</strong><span>条新评论</span></article>
+        <article><small>需要留意</small><strong id="attentionCount">0</strong><span>待检查或被举报</span></article>
+        <article><small>全部记录</small><strong id="totalCount">0</strong><span>只读显示</span></article>
+      </section>
+
+      <nav class="filters" aria-label="评论筛选">
+        <button type="button" data-filter="recent" class="active">最新评论</button>
+        <button type="button" data-filter="attention">需要留意</button>
+        <button type="button" data-filter="all">全部</button>
+      </nav>
+
+      <div class="notice" id="notice" role="status">正在读取评论…</div>
+      <section class="comment-list" id="commentList" aria-live="polite"></section>
+      <p class="read-only-note">只读巡查模式 · 页面不会发送批准、隐藏、拒绝或删除请求</p>
+    </section>
+  </main>
+  <script src="comment-review.js?v=20260926a"></script>
+</body>
+</html>

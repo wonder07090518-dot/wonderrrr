@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { isAdmin, kv, storageConfigured } from './_admin.js';
+import { isCommentReviewer } from './_comment-reviewer.js';
 
 const moderationIndex = 'wonder:news-comments:moderation';
 
@@ -59,7 +60,9 @@ export default async function newsCommentsHandler(req, res) {
       res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
       return res.status(200).json({ comments });
     }
-    if (!isAdmin(req)) return res.status(401).json({ error: 'Admin authentication required' });
+    if (!isAdmin(req) && !isCommentReviewer(req)) {
+      return res.status(401).json({ error: 'Comment review authentication required' });
+    }
     res.setHeader('Cache-Control', 'private, no-store');
     return res.status(200).json({ comments: await readItems(moderationIndex) });
   }

@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import newsCommentsHandler from '../api/_news-comments-route.js';
 import { issueSession } from '../api/_admin.js';
+import { issueCommentReviewerSession } from '../api/_comment-reviewer.js';
 
 function recorder() {
   const record = { statusCode: 200, body: null, headers: {} };
@@ -98,6 +99,23 @@ test('clear comments publish without email, risky comments stay private, and pub
     assert.equal(adminFeed.record.body.comments.length, 3);
     assert.equal('email' in adminFeed.record.body.comments.find(item => item.id === held.record.body.id), false);
     assert.equal('email' in adminFeed.record.body.comments.find(item => item.id === personalData.record.body.id), false);
+
+    const reviewerSession = recorder();
+    issueCommentReviewerSession(reviewerSession.response, 'admin');
+    const reviewerCookie = reviewerSession.record.headers['Set-Cookie'].split(';')[0];
+    const reviewerFeed = recorder();
+    await newsCommentsHandler({ method: 'GET', headers: { cookie: reviewerCookie } }, reviewerFeed.response);
+    assert.equal(reviewerFeed.record.statusCode, 200);
+    assert.equal(reviewerFeed.record.body.comments.length, 3);
+
+    const reviewerCannotModerate = recorder();
+    await newsCommentsHandler({
+      method: 'PUT',
+      headers: { cookie: reviewerCookie },
+      body: { id: created.record.body.id, action: 'hide' }
+    }, reviewerCannotModerate.response);
+    assert.equal(reviewerCannotModerate.record.statusCode, 401);
+    assert.equal(reviewerCannotModerate.record.body.error, 'Admin authentication required');
 
     const hidden = recorder();
     await newsCommentsHandler({ method: 'PUT', headers: { cookie }, body: { id: created.record.body.id, action: 'hide' } }, hidden.response);
