@@ -366,6 +366,30 @@ test('feedback form saves suggestions and emails the studio with abuse controls'
   assert.match(vercel, /"source": "\/api\/feedback"/);
 });
 
+test('automatic support answers verified FAQs and escalates unknown questions safely', async () => {
+  const [html, script, css, api, router, vercel, adminHtml, adminScript, privacy] = await Promise.all([
+    read('index.html'), read('script.js'), read('apple-refresh.css'), read('api/_support-route.js'),
+    read('api/account-actions.js'), read('vercel.json'), read('admin.html'), read('admin.js'), read('privacy.html')
+  ]);
+  assert.match(html, /id="openSupport"/);
+  assert.match(html, /id="supportPanel"/);
+  assert.match(html, /id="supportForm"/);
+  assert.match(html, /id="supportEmailAnswer"/);
+  assert.match(script, /fetch\('\/api\/support'/);
+  assert.match(script, /function addSupportBubble/);
+  assert.match(css, /\.wonder-support-launcher/);
+  assert.match(css, /\.wonder-support\.open/);
+  assert.match(api, /export function answerSupportQuestion/);
+  assert.match(api, /Idempotency-Key/);
+  assert.match(api, /客服不会自动确认|does not confirm a quote/);
+  assert.match(api, /wonder:support-rate:/);
+  assert.match(router, /route === 'support'/);
+  assert.match(vercel, /"source": "\/api\/support"/);
+  assert.match(adminHtml, /id="supportTickets"/);
+  assert.match(adminScript, /loadSupportTickets/);
+  assert.match(privacy, /support questions|客服问题/);
+});
+
 test('value-card top-ups include a ten-percent bonus only after idempotent admin approval', async () => {
   const [html, script, payment, api, balanceApi, balanceHelpers, adminHtml, adminScript] = await Promise.all([
     read('index.html'), read('script.js'), read('payment.js'), read('api/_recharges-route.js'), read('api/_balance-route.js'), read('api/_balance.js'), read('admin.html'), read('admin.js')
@@ -479,12 +503,14 @@ test('privacy policy is public and signed-in users can permanently delete their 
   assert.match(vercel, /"source": "\/api\/account-delete"/);
 });
 
-test('website removes unavailable or scripted AI conversations', async () => {
+test('website removes the unavailable AI brief and does not pretend scripted support is AI', async () => {
   const [html, script, css] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css')]);
-  assert.doesNotMatch(html, /id="buildPrompt"|id="supportPanel"|id="openSupport"/);
-  assert.doesNotMatch(script, /fetch\('\/api\/ai-brief'|function answerSupport|#openSupport/);
+  assert.doesNotMatch(html, /id="buildPrompt"|Wonder AI|AI 在线客服/);
+  assert.doesNotMatch(script, /fetch\('\/api\/ai-brief'|function answerSupport\(/);
   assert.doesNotMatch(css, /\.ai-support|\.prompt-output/);
   assert.match(html, /不用写专业术语，我们收到后会帮你整理清楚/);
+  assert.match(html, /id="supportPanel"/);
+  assert.match(html, /常见问题即时回答 · 复杂问题转人工/);
   await assert.rejects(() => access(new URL('../api/ai-brief.js', import.meta.url)));
 });
 

@@ -9,6 +9,9 @@ const privacyModal = document.querySelector('#privacyModal');
 const rechargeModal = document.querySelector('#rechargeModal');
 const feedbackModal = document.querySelector('#feedbackModal');
 const submittedModal = document.querySelector('#submittedModal');
+const supportPanel = document.querySelector('#supportPanel');
+const supportMessages = document.querySelector('#supportMessages');
+const supportForm = document.querySelector('#supportForm');
 const ordersList = document.querySelector('#ordersList');
 const inboxKey = 'wonderad-orders';
 const sessionKey = 'wonderad-session';
@@ -434,6 +437,7 @@ function applyLanguage() {
   renderOrderReferenceList();
   updateOrderBalanceHint();
   renderAIRadar(aiRadarData, aiRadarUpdatedAt, aiRadarIsCached);
+  updateSupportLanguage();
   if (ordersModal.classList.contains('open')) renderCustomerOrders();
 }
 let toastTimer;
@@ -443,6 +447,109 @@ function showToast(message) {
   toast.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+let supportInitialized = false;
+function supportCopy() {
+  return language === 'en' ? {
+    title: 'Automatic support', status: 'Instant common answers · Human review when needed',
+    questionLabel: 'Your question', questionPlaceholder: 'Ask about pricing, delivery, payment, files or revisions',
+    emailLabel: 'Email (for a human reply or emailed answer)', emailAnswer: 'Also email the automatic answer',
+    send: 'Send', safety: 'Support never auto-confirms a custom quote, received payment or real order progress',
+    welcome: 'Hi, I’m Wonder support. I can answer verified questions about services, pricing, payment, files, delivery and revisions. For anything else, leave your email and I’ll create a human support ticket.',
+    sending: 'Checking…', error: 'Support is temporarily unavailable. Please try again or email wonder07090518@gmail.com.',
+    emailRequired: 'Enter a valid email if you want the answer emailed to you.',
+    emailSent: ' The same answer was also sent to your email.', emailDelayed: ' The email copy is temporarily delayed.'
+  } : {
+    title: '自动客服', status: '常见问题即时回答 · 复杂问题转人工',
+    questionLabel: '你的问题', questionPlaceholder: '可以问价格、交付、付款、文件或修改',
+    emailLabel: '邮箱（转人工或收邮件时填写）', emailAnswer: '同时把自动回答发到邮箱',
+    send: '发送', safety: '客服不会自动确认特殊报价、付款到账或真实订单进度',
+    welcome: '你好，我是 Wonder 自动客服。我可以回答已经核对过的服务、价格、付款、文件、交付和修改问题；其他问题填写邮箱后会自动创建人工工单。',
+    sending: '正在查询…', error: '客服暂时无法连接，请稍后重试，或发送邮件至 wonder07090518@gmail.com。',
+    emailRequired: '如果需要把回答发到邮箱，请先填写有效邮箱。',
+    emailSent: ' 同一份回答也已发送到你的邮箱。', emailDelayed: ' 邮件副本暂时延迟。'
+  };
+}
+function addSupportBubble(message, role = 'assistant', action = null) {
+  if (!supportMessages) return;
+  const bubble = document.createElement('div');
+  bubble.className = `support-bubble support-${role}`;
+  const copy = document.createElement('p');
+  copy.textContent = message;
+  bubble.append(copy);
+  if (role === 'assistant' && action?.href?.startsWith('#') && action.label) {
+    const target = document.querySelector(action.href);
+    if (target) {
+      const button = document.createElement('button');
+      button.className = 'support-action';
+      button.type = 'button';
+      button.textContent = `${action.label} ↗`;
+      button.addEventListener('click', () => {
+        closeSupport();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      bubble.append(button);
+    }
+  }
+  supportMessages.append(bubble);
+  supportMessages.scrollTop = supportMessages.scrollHeight;
+}
+function updateSupportLanguage() {
+  if (!supportPanel) return;
+  const copy = supportCopy();
+  document.querySelector('#supportTitle').textContent = copy.title;
+  document.querySelector('#supportStatus').textContent = copy.status;
+  document.querySelector('#supportQuestionLabel').textContent = copy.questionLabel;
+  document.querySelector('#supportQuestion').placeholder = copy.questionPlaceholder;
+  document.querySelector('#supportEmailLabel').textContent = copy.emailLabel;
+  document.querySelector('#supportEmailAnswerLabel').textContent = copy.emailAnswer;
+  document.querySelector('#submitSupport span').textContent = copy.send;
+  document.querySelector('#supportSafety').textContent = copy.safety;
+  document.querySelector('#closeSupport').setAttribute('aria-label', language === 'en' ? 'Close automatic support' : '关闭自动客服');
+  supportPanel.setAttribute('aria-label', language === 'en' ? 'Wonder automatic support' : 'Wonder 自动客服');
+  document.querySelectorAll('[data-support-question-zh]').forEach(button => { button.textContent = language === 'en' ? button.dataset.supportQuestionEn : button.dataset.supportQuestionZh; });
+}
+function openSupport() {
+  if (!supportPanel) return;
+  const user = getCurrentUser();
+  if (user && !document.querySelector('#supportEmail').value) document.querySelector('#supportEmail').value = user.email;
+  supportPanel.classList.add('open');
+  supportPanel.setAttribute('aria-hidden', 'false');
+  document.querySelector('#openSupport').setAttribute('aria-expanded', 'true');
+  if (!supportInitialized) { addSupportBubble(supportCopy().welcome); supportInitialized = true; }
+  document.querySelector('#supportQuestion').focus();
+}
+function closeSupport() {
+  if (!supportPanel) return;
+  supportPanel.classList.remove('open');
+  supportPanel.setAttribute('aria-hidden', 'true');
+  document.querySelector('#openSupport').setAttribute('aria-expanded', 'false');
+}
+async function askSupport(question) {
+  const emailInput = document.querySelector('#supportEmail');
+  const emailAnswer = document.querySelector('#supportEmailAnswer').checked;
+  const email = emailInput.value.trim();
+  const copy = supportCopy();
+  if (emailAnswer && (!email || !emailInput.checkValidity())) { addSupportBubble(copy.emailRequired); emailInput.focus(); return; }
+  addSupportBubble(question, 'user');
+  const submit = document.querySelector('#submitSupport');
+  submit.disabled = true;
+  submit.querySelector('span').textContent = copy.sending;
+  try {
+    const response = await fetch('/api/support', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, email, language, emailAnswer, website: document.querySelector('#supportWebsite').value }) });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || copy.error);
+    let answer = body.answer || copy.error;
+    if (body.handled && emailAnswer && email) answer += body.emailSent ? copy.emailSent : copy.emailDelayed;
+    addSupportBubble(answer, 'assistant', body.action);
+    if (body.needsEmail) emailInput.focus();
+    document.querySelector('#supportQuestion').value = '';
+  } catch (error) {
+    addSupportBubble(error.message || copy.error);
+  } finally {
+    submit.disabled = false;
+    submit.querySelector('span').textContent = copy.send;
+  }
 }
 function getOrders() {
   try { return JSON.parse(localStorage.getItem(inboxKey)) || []; } catch { return []; }
@@ -968,6 +1075,14 @@ document.querySelector('#closeRecharge').addEventListener('click', () => closeMo
 document.querySelector('#closeRechargeButton').addEventListener('click', () => closeModal(rechargeModal));
 document.querySelector('#closeFeedback').addEventListener('click', () => closeModal(feedbackModal));
 document.querySelector('#closeFeedbackButton').addEventListener('click', () => closeModal(feedbackModal));
+document.querySelectorAll('#openSupport, [data-open-support]').forEach(button => button.addEventListener('click', openSupport));
+document.querySelector('#closeSupport').addEventListener('click', closeSupport);
+document.querySelectorAll('[data-support-question-zh]').forEach(button => button.addEventListener('click', () => askSupport(language === 'en' ? button.dataset.supportQuestionEn : button.dataset.supportQuestionZh)));
+supportForm.addEventListener('submit', event => {
+  event.preventDefault();
+  const question = document.querySelector('#supportQuestion').value.trim();
+  if (question) askSupport(question);
+});
 document.querySelector('#accountOrders').addEventListener('click', () => { closeModal(accountModal); openModal(ordersModal); renderCustomerOrders(); });
 document.querySelector('#rechargeButton').addEventListener('click', async () => { closeModal(accountModal); await renderAccountStats(); openModal(rechargeModal); });
 document.querySelectorAll('input[name="rechargeAmount"]').forEach(input => input.addEventListener('change', updateRechargeRate));

@@ -8,6 +8,7 @@ let dashboardRefreshTimer = null;
 let currentAnalytics = null;
 let currentNewsSubmissions = [];
 let currentNewsComments = [];
+let currentSupportTickets = [];
 
 function statusClass(status) { return status === '已交付' ? 'is-done' : ['制作中', '修改中'].includes(status) ? 'is-making' : status === '修改申请' ? 'is-revision' : 'is-pending'; }
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; if (!loggedIn) stopDashboardRefresh(); }
@@ -319,6 +320,47 @@ async function moderateComment(item, action) {
     document.querySelector('#commentReviewNotice').textContent = `评论审核失败：${error.message}`;
   }
 }
+function renderSupportTickets() {
+  const list = document.querySelector('#supportTickets');
+  const count = document.querySelector('#supportOpenCount');
+  const notice = document.querySelector('#supportAdminNotice');
+  const open = currentSupportTickets.filter(item => item.status !== 'resolved');
+  count.textContent = `${open.length} 条待回复`;
+  if (!currentSupportTickets.length) {
+    list.innerHTML = '<p class="empty">暂时没有人工客服工单。常见问题已由自动客服即时回答。</p>';
+    notice.textContent = '没有待处理客服事项。';
+    return;
+  }
+  notice.textContent = `已读取 ${currentSupportTickets.length} 条工单，其中 ${open.length} 条待人工查看。`;
+  list.innerHTML = currentSupportTickets.map(item => {
+    const resolved = item.status === 'resolved';
+    const subject = encodeURIComponent(`Re: Wonder Ad Lab 客服工单 ${item.id}`);
+    const body = encodeURIComponent(`你好，\n\n关于你的问题：\n${item.question}\n\n`);
+    return `<article class="support-ticket ${resolved ? 'is-resolved' : ''}" data-support-id="${escapeHtml(item.id)}"><div><div class="support-ticket-head"><span>${resolved ? '已处理' : '待回复'}</span><strong>${escapeHtml(item.id)}</strong></div><h3>${escapeHtml(item.question)}</h3><p>${escapeHtml(item.email)} · ${item.language === 'en' ? 'English' : '中文'}</p><small>提交：${escapeHtml(formatDate(item.createdAt))} · 工作室提醒${item.ownerEmailSent ? '已发送' : '延迟'} · 客户回执${item.customerEmailSent ? '已发送' : '延迟'}</small></div><div class="support-ticket-actions"><a href="mailto:${encodeURIComponent(item.email)}?subject=${subject}&body=${body}">写邮件回复</a><button type="button" data-support-status="${resolved ? 'open' : 'resolved'}">${resolved ? '重新打开' : '标记已处理'}</button></div></article>`;
+  }).join('');
+  list.querySelectorAll('[data-support-id]').forEach(card => {
+    const button = card.querySelector('[data-support-status]');
+    button.addEventListener('click', () => updateSupportTicket(card.dataset.supportId, button.dataset.supportStatus));
+  });
+}
+async function loadSupportTickets() {
+  try {
+    const data = await api('/api/support');
+    currentSupportTickets = data.tickets || [];
+    renderSupportTickets();
+  } catch (error) {
+    document.querySelector('#supportAdminNotice').textContent = error.setup ? '客服工单存储尚未配置。' : `无法读取客服工单：${error.message}`;
+  }
+}
+async function updateSupportTicket(id, status) {
+  try {
+    await api('/api/support', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
+    await loadSupportTickets();
+    document.querySelector('#supportAdminNotice').textContent = status === 'resolved' ? `工单 ${id} 已标记为已处理。` : `工单 ${id} 已重新打开。`;
+  } catch (error) {
+    document.querySelector('#supportAdminNotice').textContent = `客服工单更新失败：${error.message}`;
+  }
+}
 async function approveRecharge(item, button) {
   if (!confirm(`请先在 ${item.payment} 中确认已收到 ¥${item.amount}。\n\n确认后，客户储值卡将增加 ¥${item.creditedAmount}，其中赠送 ¥${Number(item.bonusAmount) || 0}。`)) return;
   button.disabled = true; button.textContent = '正在入账…';
@@ -337,7 +379,7 @@ async function approveMembership(item, button) {
     document.querySelector('#membershipNotice').textContent = `已确认 ${item.id}，${item.planName}有效期至 ${formatDate(result.expiresAt)}${result.emailSent ? '，通知邮件已发送。' : '；会员已生效，通知邮件暂时未发送。'}`;
   } catch (error) { button.disabled = false; button.textContent = '确认实际到账并生效'; document.querySelector('#membershipNotice').textContent = `会员生效失败：${error.message}`; }
 }
-async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadMemberships(), loadAnalytics(), loadNewsSubmissions(), loadNewsComments()]); }
+async function loadDashboard(silent = false) { if (!silent) setNotice('正在同步后台数据…'); await Promise.all([loadOrders(), loadRecharges(), loadMemberships(), loadAnalytics(), loadNewsSubmissions(), loadNewsComments(), loadSupportTickets()]); }
 async function approveRush(order, container) {
   const input = container.querySelector('.rush-final-amount');
   const button = container.querySelector('.approve-rush');

@@ -10,6 +10,7 @@ import appleAuthHandler from './_apple-auth-route.js';
 import appleIAPHandler from './_apple-iap-route.js';
 import newsSubmissionsHandler from './_news-submissions-route.js';
 import newsCommentsHandler from './_news-comments-route.js';
+import supportHandler from './_support-route.js';
 
 export default async function handler(req, res) {
   const route = String(req.query?.route || new URL(req.url || '/', 'https://wonderadlab.com').searchParams.get('route') || '');
@@ -25,5 +26,6 @@ export default async function handler(req, res) {
   if (route === 'apple-iap') return appleIAPHandler(req, res);
   if (route === 'news-submissions') return newsSubmissionsHandler(req, res);
   if (route === 'news-comments') return newsCommentsHandler(req, res);
+  if (route === 'support') return supportHandler(req, res);
   return res.status(404).json({ error: 'Unknown account action' });
 }

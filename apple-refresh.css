@@ -330,3 +330,82 @@ body::after,
   .quick-price-grid button b { transition: none; }
   .quick-price-grid article:hover { transform: none; }
 }
+
+/* Automatic customer support */
+.wonder-support-launcher {
+  position: fixed;
+  z-index: 76;
+  right: 22px;
+  bottom: 22px;
+  min-height: 54px;
+  padding: 0 18px 0 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(255,255,255,.38);
+  border-radius: 999px;
+  background: #17191d;
+  color: #fff;
+  box-shadow: 0 18px 44px rgba(15,18,26,.24);
+  font: 700 13px/1 var(--font);
+  cursor: pointer;
+}
+.wonder-support-launcher svg { width: 28px; height: 28px; }
+.wonder-support-launcher:focus-visible { outline: 3px solid #57b7a4; outline-offset: 3px; }
+.wonder-support {
+  position: fixed;
+  z-index: 105;
+  right: 22px;
+  bottom: 88px;
+  width: min(410px, calc(100% - 32px));
+  max-height: min(720px, calc(100svh - 112px));
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(23,25,29,.14);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 30px 90px rgba(15,18,26,.24);
+}
+.wonder-support.open { display: flex; }
+.wonder-support > header { padding: 20px; display: flex; justify-content: space-between; gap: 18px; color: #fff; background: linear-gradient(145deg,#17191d,#252c3d); }
+.wonder-support > header small { color: #a8e3d8; font-size: 9px; font-weight: 800; letter-spacing: .13em; }
+.wonder-support > header h2 { margin: 5px 0 0; color: #fff; font-size: 21px; letter-spacing: -.035em; }
+.wonder-support > header p { margin: 7px 0 0; color: rgba(255,255,255,.68); font-size: 11px; }
+.wonder-support > header p i { width: 7px; height: 7px; margin-right: 6px; display: inline-block; border-radius: 50%; background: #a8e3d8; box-shadow: 0 0 0 4px rgba(168,227,216,.13); }
+.wonder-support > header button { width: 40px; height: 40px; padding: 0; flex: 0 0 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; font-size: 24px; cursor: pointer; }
+.support-messages { min-height: 180px; padding: 18px; display: grid; align-content: start; gap: 10px; overflow-y: auto; background: #f7f6f2; }
+.support-bubble { max-width: 90%; margin: 0; padding: 12px 14px; border: 1px solid #e3e3e5; border-radius: 15px 15px 15px 4px; background: #fff; color: #555b65; font-size: 12px; line-height: 1.65; box-shadow: 0 4px 16px rgba(21,22,26,.05); }
+.support-bubble p { margin: 0; }
+.support-bubble.support-user { justify-self: end; border-color: #2457e8; border-radius: 15px 15px 4px 15px; background: #2457e8; color: #fff; }
+.support-action { min-height: 38px; margin-top: 11px; padding: 0 13px; border: 0; border-radius: 999px; background: #eaf1ff; color: #1745c7; font: 700 11px/1 var(--font); cursor: pointer; }
+.support-action:hover { background: #dce8ff; }
+.support-action:focus-visible { outline: 2px solid #2457e8; outline-offset: 2px; }
+.support-suggestions { padding: 12px 14px 4px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.support-suggestions::-webkit-scrollbar { display: none; }
+.support-suggestions button { min-height: 36px; padding: 0 11px; flex: 0 0 auto; border: 1px solid #d9dce4; border-radius: 999px; background: #fff; color: #4f5560; font: 650 10px/1 var(--font); cursor: pointer; }
+.wonder-support form { padding: 12px 14px 8px; display: grid; grid-template-columns: 1fr 48px; gap: 9px; }
+.wonder-support form label { color: #676d77; font-size: 10px; font-weight: 650; }
+.wonder-support form label > span { display: block; margin: 0 0 6px; }
+.support-question { grid-column: 1; }
+.support-email { grid-column: 1 / -1; }
+.wonder-support textarea,
+.wonder-support input[type="email"] { width: 100%; min-height: 46px; padding: 11px 12px; resize: none; border: 1px solid #d6d9e0; border-radius: 12px; background: #fff; color: #17191d; font: 13px/1.45 var(--font); outline: 0; }
+.wonder-support textarea:focus,
+.wonder-support input[type="email"]:focus { border-color: #2457e8; box-shadow: 0 0 0 3px rgba(36,87,232,.11); }
+.support-send { grid-column: 2; grid-row: 1; align-self: end; width: 48px; height: 48px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 50%; background: #2457e8; color: #fff; cursor: pointer; }
+.support-send span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.support-send b { font-size: 20px; }
+.support-send:disabled { opacity: .55; cursor: wait; }
+.support-email-option { grid-column: 1 / -1; min-height: 32px; display: flex; align-items: center; gap: 8px; }
+.support-email-option input { width: 17px; height: 17px; margin: 0; accent-color: #2457e8; }
+.support-email-option span { margin: 0!important; }
+.support-honeypot { position: absolute!important; left: -9999px!important; width: 1px!important; height: 1px!important; overflow: hidden!important; }
+.support-safety { margin: 0; padding: 0 14px 14px; color: #858a93; font-size: 9px; line-height: 1.55; }
+
+@media (max-width: 760px) {
+  .wonder-support-launcher { right: 14px; bottom: 14px; width: 54px; padding: 0; justify-content: center; }
+  .wonder-support-launcher span { display: none; }
+  .wonder-support { right: 12px; bottom: 78px; width: calc(100% - 24px); max-height: calc(100svh - 94px); border-radius: 22px; }
+  .support-messages { min-height: 150px; }
+}
