@@ -1813,7 +1813,52 @@ function initCinematicMotion() {
 
 }
 const requestedService = pageParams.get('service');
-if (requestedService && [...service.options].some(option => option.value === requestedService)) service.value = requestedService;
+if (requestedService && [...service.options].some(option => option.value === requestedService)) {
+  service.value = requestedService;
+  renderCreativeOptions({ reset: true });
+  updateSelectedPrice();
+}
+function applyMiniProgramOrderDraft() {
+  const marker = '#mini-order=';
+  if (!window.location.hash.startsWith(marker)) return false;
+  let draft;
+  try {
+    draft = JSON.parse(decodeURIComponent(window.location.hash.slice(marker.length)));
+  } catch {
+    history.replaceState(null, '', `${window.location.pathname}${window.location.search}#order`);
+    showToast(language === 'en' ? 'The mini-program order draft could not be read.' : '小程序订单草稿无法读取，请重新填写。');
+    return false;
+  }
+  if (!draft || draft.source !== 'wechat-mini-program') return false;
+  const availableService = [...service.options].some(option => option.value === draft.service);
+  if (availableService) service.value = draft.service;
+  renderCreativeOptions({ reset: true });
+  updateSelectedPrice();
+  const contact = String(draft.contact || '').trim().slice(0, 120);
+  const brief = String(draft.brief || '').trim().slice(0, 2000);
+  const requestedSize = String(draft.size || '').trim().slice(0, 80);
+  const emailInput = document.querySelector('#customerEmail');
+  const wechatInput = document.querySelector('#customerWechat');
+  const briefInput = document.querySelector('#orderForm textarea');
+  if (contact.includes('@') && emailInput && !emailInput.value) emailInput.value = contact;
+  else if (wechatInput) wechatInput.value = contact;
+  if (briefInput) briefInput.value = brief;
+  if (requestedSize) {
+    const exactSize = [...document.querySelectorAll('input[name="size"]')].find(input => input.value === requestedSize);
+    if (exactSize) exactSize.checked = true;
+    else {
+      const customSize = document.querySelector('input[name="size"][value="其他尺寸"]');
+      if (customSize) customSize.checked = true;
+      const customSizeInput = document.querySelector('#customSizeInput');
+      if (customSizeInput) customSizeInput.value = requestedSize;
+    }
+    syncCustomCreativeInputs();
+  }
+  history.replaceState(null, '', `${window.location.pathname}${window.location.search}#order`);
+  document.querySelector('#order')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  showToast(language === 'en' ? 'Your mini-program brief is ready. Sign in, review and submit.' : '小程序需求已带入，请登录后确认并提交。');
+  return true;
+}
 updateServiceView();
 initStudioCutMotion();
 initShowreel();
@@ -1821,5 +1866,6 @@ initCinematicMotion();
 initScrollStory();
 initAiLab();
 applyLanguage();
+applyMiniProgramOrderDraft();
 loadAIRadar();
 refreshSession().then(async () => { await recoverLegacyMembershipRequests(); renderAccountStats(); });
