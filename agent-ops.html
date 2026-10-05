@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Wonder · AI 运营台</title>
+  <link rel="stylesheet" href="agent-ops.css?v=20261004a" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/"><span>W</span> Wonder</a>
+      <span class="scope">AI 只读运营权限</span>
+      <button class="secondary" id="logout" type="button" hidden>退出</button>
+    </header>
+
+    <section class="login" id="loginView">
+      <p class="eyebrow">RESTRICTED AI OPERATIONS</p>
+      <h1>不是完整后台<br />只看该处理的事</h1>
+      <p>一次登录可保持 30 天。这里只显示脱敏后的任务摘要，不能修改价格、账户、银行卡、付款结果或客户资料。</p>
+      <form id="loginForm">
+        <label>运营账号<input id="username" autocomplete="username" required /></label>
+        <label>运营密码<input id="password" type="password" autocomplete="current-password" required /></label>
+        <button class="primary" type="submit">进入 AI 运营台 <span>→</span></button>
+        <span class="hint" id="loginHint">使用现有只读巡查账号即可</span>
+      </form>
+    </section>
+
+    <section class="dashboard" id="dashboard" hidden>
+      <div class="dashboard-head">
+        <div><p class="eyebrow">ONE QUEUE · MINIMUM ACCESS</p><h1>今天该处理什么</h1><p>自动回复能解决的已经完成，这里只留下需要制作或人工判断的任务。</p></div>
+        <button class="secondary" id="refresh" type="button">刷新队列</button>
+      </div>
+
+      <section class="health" aria-label="自动化状态">
+        <article><span class="status-dot" id="stripeDot"></span><div><small>付款确认</small><strong id="stripeStatus">检查中</strong></div></article>
+        <article><span class="status-dot" id="wechatDot"></span><div><small>公众号自动回复</small><strong id="wechatStatus">检查中</strong></div></article>
+        <article><span class="status-dot on"></span><div><small>常见问题</small><strong>自动处理</strong></div></article>
+      </section>
+
+      <section class="metrics">
+        <article><small>可开始制作</small><strong id="readyCount">0</strong></article>
+        <article><small>需要人工判断</small><strong id="humanCount">0</strong></article>
+        <article><small>等待付款结果</small><strong id="waitingCount">0</strong></article>
+      </section>
+
+      <div class="queue-head"><h2>统一任务队列</h2><span id="updated">正在读取…</span></div>
+      <section class="task-list" id="taskList" aria-live="polite"></section>
+      <p class="privacy-note">隐私保护模式 · 不显示客户邮箱、微信身份、需求原文、文件或付款资料 · 不提供写入按钮</p>
+    </section>
+  </main>
+  <script src="agent-ops.js?v=20261004a"></script>
+</body>
+</html>

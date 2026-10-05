@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Wonder · 微信自动客服测试</title>
+  <link rel="stylesheet" href="wechat-preview.css?v=20261004a" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="返回 Wonder Ad Lab"><span class="mark">W</span><span>Wonder</span></a>
+      <span class="test-badge"><i></i> 安全测试版</span>
+      <a class="ops-link" href="/agent-ops.html">打开 AI 运营台 <span>↗</span></a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">WECHAT SERVICE · UNIFIED OPS</p>
+        <h1>消息有人回<br />订单不会漏</h1>
+        <p class="intro">常见问题由自动客服即时回答，付款订单和需要人工判断的问题进入同一套后台队列。</p>
+        <div class="principles" aria-label="系统原则">
+          <span>不猜付款</span><span>不乱报价格</span><span>不暴露隐私</span>
+        </div>
+      </div>
+
+      <div class="phone" aria-label="微信自动客服测试窗口">
+        <div class="phone-top"><span>‹</span><strong>Wonder 创意助手</strong><span>•••</span></div>
+        <div class="chat" id="chat" aria-live="polite">
+          <div class="time">今天 10:24</div>
+          <div class="message received">
+            <span class="avatar">W</span>
+            <p>你好 👋 回复价格、下单、交付时间或人工，我会先帮你处理。</p>
+          </div>
+        </div>
+        <form class="composer" id="previewForm">
+          <label class="sr-only" for="question">输入测试问题</label>
+          <input id="question" maxlength="600" placeholder="输入测试问题…" autocomplete="off" />
+          <button type="submit" aria-label="发送测试问题">↑</button>
+        </form>
+        <p class="simulation">仅模拟回复 · 不发送微信 · 不保存内容</p>
+      </div>
+    </section>
+
+    <section class="quick-section">
+      <p>快速测试</p>
+      <div class="quick" id="quickQuestions">
+        <button type="button">海报怎么收费？</button>
+        <button type="button">怎么下单？</button>
+        <button type="button">付款后多久交付？</button>
+        <button type="button">我的订单做到哪了？</button>
+        <button type="button">我要找人工</button>
+      </div>
+    </section>
+
+    <section class="flow" aria-label="自动处理流程">
+      <article><span>01</span><div><small>微信消息</small><h2>识别客户意图</h2><p>价格、服务、交付与下单问题直接进入可靠答案库。</p></div></article>
+      <article><span>02</span><div><small>安全判断</small><h2>能答才自动答</h2><p>不会猜测实际付款、特殊报价或真实订单进度。</p></div></article>
+      <article><span>03</span><div><small>统一队列</small><h2>复杂问题自动升级</h2><p>需要人工处理的咨询与已核验订单汇总到 AI 运营台。</p></div></article>
+    </section>
+  </main>
+  <script src="wechat-preview.js?v=20261004a"></script>
+</body>
+</html>
