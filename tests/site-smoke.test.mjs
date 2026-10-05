@@ -284,6 +284,10 @@ test('ordinary orders use Stripe secure checkout with manual QR fallback', async
   assert.match(paymentScript, /credentials: 'same-origin'/);
   assert.match(api, /bodyParser: false/);
   assert.match(api, /constructEvent/);
+  assert.match(api, /configure-live-webhook/);
+  assert.match(api, /webhookEndpoints\.create/);
+  assert.match(api, /LIVE_WEBHOOK_SECRET_KEY/);
+  assert.match(api, /isAdmin\(req\)/);
   assert.match(api, /paidSessionMatchesOrder/);
   assert.match(api, /STRIPE_ENABLE_LIVE/);
   assert.match(api, /checkout\.sessions\.retrieve\(order\.stripeCheckoutSessionId\)/);
@@ -294,6 +298,18 @@ test('ordinary orders use Stripe secure checkout with manual QR fallback', async
   assert.match(api, /status: '待确认支付'/);
   assert.match(api, /客户已确认付款/);
   assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
+});
+
+test('admin can initiate the live Stripe webhook connection without exposing its secret', async () => {
+  const [adminHtml, adminScript, api] = await Promise.all([
+    read('admin.html'), read('admin.js'), read('api/payment-confirm.js')
+  ]);
+  assert.match(adminHtml, /id="configureStripeWebhook"/);
+  assert.match(adminScript, /configureStripeWebhook/);
+  assert.match(adminScript, /action=configure-live-webhook/);
+  assert.match(adminScript, /addEventListener\('click', configureStripeWebhook\)/);
+  assert.doesNotMatch(adminScript, /endpoint\.secret/);
+  assert.doesNotMatch(api, /json\([^)]*endpoint\.secret/);
 });
 
 test('Stripe sandbox verification uses an owner-only isolated test order', async () => {

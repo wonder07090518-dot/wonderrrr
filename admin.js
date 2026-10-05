@@ -14,6 +14,22 @@ function statusClass(status) { return status === '已交付' ? 'is-done' : ['制
 function setView(loggedIn) { loginView.hidden = loggedIn; dashboard.hidden = !loggedIn; document.querySelector('#logout').hidden = !loggedIn; if (!loggedIn) stopDashboardRefresh(); }
 function setNotice(message) { notice.textContent = message; }
 async function api(path, options = {}) { const response = await fetch(path, { credentials: 'same-origin', ...options }); const body = await response.json().catch(() => ({})); if (!response.ok) throw Object.assign(new Error(body.error || '请求失败'), { code: response.status, setup: body.setup }); return body; }
+async function configureStripeWebhook() {
+  const button = document.querySelector('#configureStripeWebhook');
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = '正在连接…';
+  try {
+    const result = await api('/api/payment-confirm?action=configure-live-webhook', { method: 'POST' });
+    button.textContent = 'Stripe 自动确认已连接';
+    setNotice(result.created ? 'Stripe 正式付款回调已创建。付款成功后，订单会自动标记为“已支付”并通知工作室。' : 'Stripe 正式付款回调已核对并更新。');
+  } catch (error) {
+    button.textContent = original;
+    setNotice(`Stripe 自动确认连接失败：${error.message}`);
+  } finally {
+    button.disabled = false;
+  }
+}
 function formatBytes(bytes) { if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`; if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`; if (bytes >= 1024) return `${Math.ceil(bytes / 1024)} KB`; return `${bytes || 0} B`; }
 function orderTimestamp(order) {
   const value = order.createdAt || (order.date ? order.date.replace(' ', 'T') : '');
@@ -402,5 +418,6 @@ async function updateOrder(order, status) { if (status === '已交付') { alert(
 async function deliver(order, file) { if (!file) return; if (file.size > 3 * 1024 * 1024) { setNotice('该文件超过 3 MB，邮件附件无法稳定交付。请先压缩文件；大型视频建议使用云端链接交付。'); return; } const reader = new FileReader(); reader.onload = async () => { try { setNotice('正在发送成品邮件…'); await api('/api/notify-delivery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ orderId: order.id, fileName: file.name, fileData: reader.result, approved: true }) }); await api(`/api/orders?id=${encodeURIComponent(order.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: '已交付' }) }); await loadOrders(); setNotice('成品已发送到客户邮箱，并标记为已交付。'); } catch (error) { setNotice(`交付失败：${error.message}`); } }; reader.readAsDataURL(file); }
 document.querySelector('#loginForm').addEventListener('submit', async event => { event.preventDefault(); const hint = document.querySelector('#loginHint'); try { await api('/api/admin-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: document.querySelector('#username').value.trim(), password: document.querySelector('#password').value }) }); setView(true); startDashboardRefresh(); loadDashboard(); } catch (error) { hint.textContent = error.setup ? '管理员账号与密码尚未配置。' : '管理员账号或密码不正确。'; } });
 document.querySelector('#logout').addEventListener('click', async () => { await fetch('/api/admin-auth', { method: 'DELETE', credentials: 'same-origin' }); setView(false); });
+document.querySelector('#configureStripeWebhook').addEventListener('click', configureStripeWebhook);
 document.querySelector('#refresh').addEventListener('click', loadDashboard);
 (async () => { try { const session = await api('/api/admin-auth'); if (session.authenticated) { setView(true); startDashboardRefresh(); loadDashboard(); } } catch { /* keep login screen */ } })();

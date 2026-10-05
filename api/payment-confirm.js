@@ -1,4 +1,4 @@
-import { kv, storageConfigured } from './_admin.js';
+import { isAdmin, kv, storageConfigured } from './_admin.js';
 import { getCurrentUser } from './_user.js';
 import { servicePrices } from './_catalog.js';
 import { readBalanceBreakdown, testBalanceKey } from './_balance.js';
@@ -15,6 +15,9 @@ export const config = { api: { bodyParser: false } };
 
 const OWNER_EMAIL = 'wonder07090518@gmail.com';
 const SITE_ORIGIN = 'https://www.wonderadlab.com';
+const LIVE_WEBHOOK_URL = `${SITE_ORIGIN}/api/payment-confirm?action=webhook`;
+const LIVE_WEBHOOK_SECRET_KEY = 'wonder:stripe:webhook-secret:live';
+const LIVE_WEBHOOK_EVENTS = ['checkout.session.completed', 'checkout.session.async_payment_succeeded'];
 const manualPaymentMethods = new Set(['微信支付', '支付宝']);
 
 export const testBalanceGrantScript = `
@@ -254,9 +257,11 @@ async function stripeWebhook(req, res) {
   if (!stripeConfigured()) return res.status(503).json({ error: 'Stripe webhook is not configured' });
   const signature = req.headers?.['stripe-signature'];
   if (!signature) return res.status(400).json({ error: 'Missing Stripe signature' });
+  const storedLiveSecret = stripeTestMode() ? '' : await kv('get', LIVE_WEBHOOK_SECRET_KEY);
+  const signingSecret = storedLiveSecret || process.env.STRIPE_WEBHOOK_SECRET;
   let event;
   try {
-    event = stripeClient().webhooks.constructEvent(await rawBody(req), signature, process.env.STRIPE_WEBHOOK_SECRET);
+    event = stripeClient().webhooks.constructEvent(await rawBody(req), signature, signingSecret);
   } catch {
     return res.status(400).json({ error: 'Invalid Stripe signature' });
   }
@@ -292,6 +297,28 @@ async function stripeWebhook(req, res) {
   return res.status(200).json({ received: true, paid: true, emailSent });
 }
 
+async function configureLiveWebhook(req, res) {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'Admin authentication required' });
+  if (stripeTestMode()) return res.status(409).json({ error: 'The production Stripe key is not active on the website' });
+  const stripe = stripeClient();
+  const endpoints = await stripe.webhookEndpoints.list({ limit: 100 });
+  const existing = endpoints.data.find(endpoint => endpoint.url === LIVE_WEBHOOK_URL && endpoint.status === 'enabled');
+  const storedSecret = await kv('get', LIVE_WEBHOOK_SECRET_KEY);
+  if (existing) {
+    await stripe.webhookEndpoints.update(existing.id, { enabled_events: LIVE_WEBHOOK_EVENTS });
+    if (!storedSecret) return res.status(409).json({ error: 'The live endpoint exists, but its signing secret must be rotated once in Stripe' });
+    return res.status(200).json({ ok: true, created: false, events: LIVE_WEBHOOK_EVENTS });
+  }
+  const endpoint = await stripe.webhookEndpoints.create({
+    url: LIVE_WEBHOOK_URL,
+    enabled_events: LIVE_WEBHOOK_EVENTS,
+    description: 'Wonder Ad Lab signed live checkout confirmation'
+  });
+  if (!endpoint.secret) return res.status(502).json({ error: 'Stripe did not return a signing secret' });
+  await kv('set', LIVE_WEBHOOK_SECRET_KEY, endpoint.secret);
+  return res.status(201).json({ ok: true, created: true, events: LIVE_WEBHOOK_EVENTS });
+}
+
 async function manualConfirmation(req, res, body) {
   const user = await getCurrentUser(req);
   if (!user) return res.status(401).json({ error: 'Please sign in before confirming payment' });
@@ -324,6 +351,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET' && action === 'status') return paymentStatus(req, res);
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   if (action === 'webhook') return stripeWebhook(req, res);
+  if (action === 'configure-live-webhook') return configureLiveWebhook(req, res);
   let body;
   try { body = await jsonBody(req); }
   catch (error) { return res.status(error.status || 400).json({ error: error.message }); }
