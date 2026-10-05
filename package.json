@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "npm run build:assets && node scripts/ensure-live-stripe-webhook.mjs",
     "build:upload-client": "esbuild reference-upload-client.entry.js --bundle --format=esm --platform=browser --minify --outfile=reference-upload-client.js",
     "build:site-css": "esbuild site.entry.css --bundle --minify --external:*.webp --outfile=site.min.css",
     "build:site-js": "esbuild script.js --minify --target=es2020 --outfile=script.min.js",
