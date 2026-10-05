@@ -42,7 +42,7 @@ async function loadTasks() {
   try {
     const data = await api('/api/agent-ops');
     setHealth('stripe', data.automation.stripe, '正式回调运行中', '尚未启用正式确认');
-    setHealth('wechat', data.automation.wechatOfficial, '公众号回调已连接', '等待公众号后台连接');
+    setHealth('wechat', data.automation.wecomCustomerService, '企业微信客服已连接', '等待企业微信 API 连接');
     document.querySelector('#readyCount').textContent = data.counts.ready;
     document.querySelector('#humanCount').textContent = data.counts.human;
     document.querySelector('#waitingCount').textContent = data.counts.waiting;

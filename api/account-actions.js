@@ -11,7 +11,7 @@ import appleIAPHandler from './_apple-iap-route.js';
 import newsSubmissionsHandler from './_news-submissions-route.js';
 import newsCommentsHandler from './_news-comments-route.js';
 import supportHandler from './_support-route.js';
-import wechatOfficialHandler from './_wechat-official-route.js';
+import wechatSupportHandler from './_wechat-support-route.js';
 import agentOpsHandler from './_agent-ops-route.js';
 
 export default async function handler(req, res) {
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   if (route === 'news-submissions') return newsSubmissionsHandler(req, res);
   if (route === 'news-comments') return newsCommentsHandler(req, res);
   if (route === 'support') return supportHandler(req, res);
-  if (route === 'wechat-official') return wechatOfficialHandler(req, res);
+  if (route === 'wechat-support') return wechatSupportHandler(req, res);
   if (route === 'agent-ops') return agentOpsHandler(req, res);
   return res.status(404).json({ error: 'Unknown account action' });
 }

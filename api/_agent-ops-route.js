@@ -59,7 +59,12 @@ export default async function agentOpsHandler(req, res) {
     privacy: 'sanitized',
     automation: {
       stripe: process.env.STRIPE_ENABLE_LIVE === 'true' && process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_'),
-      wechatOfficial: Boolean(process.env.WECHAT_OFFICIAL_TOKEN),
+      wecomCustomerService: Boolean(
+        process.env.WECOM_CORP_ID
+        && process.env.WECOM_KF_SECRET
+        && process.env.WECOM_KF_TOKEN
+        && process.env.WECOM_KF_ENCODING_AES_KEY
+      ),
       knownQuestions: true
     },
     counts: {

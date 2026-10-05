@@ -31,12 +31,13 @@ test('AI operations queue requires authentication', async () => {
 });
 
 test('30-day read-only login sees only sanitized order and support tasks', async () => {
-  const keys = ['ADMIN_USERNAME', 'ADMIN_PASSWORD', 'ADMIN_SESSION_SECRET', 'COMMENT_REVIEW_USERNAME', 'COMMENT_REVIEW_PASSWORD', 'COMMENT_REVIEW_SESSION_SECRET', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'STRIPE_ENABLE_LIVE', 'STRIPE_SECRET_KEY', 'WECHAT_OFFICIAL_TOKEN'];
+  const keys = ['ADMIN_USERNAME', 'ADMIN_PASSWORD', 'ADMIN_SESSION_SECRET', 'COMMENT_REVIEW_USERNAME', 'COMMENT_REVIEW_PASSWORD', 'COMMENT_REVIEW_SESSION_SECRET', 'KV_REST_API_URL', 'KV_REST_API_TOKEN', 'STRIPE_ENABLE_LIVE', 'STRIPE_SECRET_KEY', 'WECOM_CORP_ID', 'WECOM_KF_SECRET', 'WECOM_KF_TOKEN', 'WECOM_KF_ENCODING_AES_KEY'];
   const original = Object.fromEntries(keys.map(key => [key, process.env[key]]));
   const originalFetch = global.fetch;
   Object.assign(process.env, {
     COMMENT_REVIEW_USERNAME: 'ai-operator', COMMENT_REVIEW_PASSWORD: 'read-only-password', COMMENT_REVIEW_SESSION_SECRET: 'read-only-secret',
-    KV_REST_API_URL: 'https://kv.test', KV_REST_API_TOKEN: 'kv-token', STRIPE_ENABLE_LIVE: 'true', STRIPE_SECRET_KEY: 'sk_live_placeholder', WECHAT_OFFICIAL_TOKEN: 'configured'
+    KV_REST_API_URL: 'https://kv.test', KV_REST_API_TOKEN: 'kv-token', STRIPE_ENABLE_LIVE: 'true', STRIPE_SECRET_KEY: 'sk_live_placeholder',
+    WECOM_CORP_ID: 'corp', WECOM_KF_SECRET: 'secret', WECOM_KF_TOKEN: 'token', WECOM_KF_ENCODING_AES_KEY: 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG'
   });
   global.fetch = kvFetch({
     'wonder:order:ORDER-1': JSON.stringify({ id: 'ORDER-1', service: '营销海报', email: 'private@example.com', idea: 'private brief', referenceFiles: ['private.png'], status: '已支付', payment: 'Stripe', turnaround: 'standard', createdAt: '2026-10-04T10:00:00.000Z' }),
@@ -52,7 +53,7 @@ test('30-day read-only login sees only sanitized order and support tasks', async
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.privacy, 'sanitized');
     assert.equal(res.body.automation.stripe, true);
-    assert.equal(res.body.automation.wechatOfficial, true);
+    assert.equal(res.body.automation.wecomCustomerService, true);
     assert.equal(res.body.counts.ready, 1);
     assert.equal(res.body.counts.human, 1);
     const serialized = JSON.stringify(res.body);

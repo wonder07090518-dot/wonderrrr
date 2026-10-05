@@ -14,7 +14,7 @@
     ,{ "source": "/api/news-submissions", "destination": "/api/account-actions?route=news-submissions" }
     ,{ "source": "/api/news-comments", "destination": "/api/account-actions?route=news-comments" }
     ,{ "source": "/api/support", "destination": "/api/account-actions?route=support" }
-    ,{ "source": "/api/wechat-official", "destination": "/api/account-actions?route=wechat-official" }
+    ,{ "source": "/api/wechat-support", "destination": "/api/account-actions?route=wechat-support" }
     ,{ "source": "/api/agent-ops", "destination": "/api/account-actions?route=agent-ops" }
   ]
 }
