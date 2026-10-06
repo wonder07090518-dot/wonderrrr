@@ -116,10 +116,51 @@ function xmlValue(xml, name) {
   return clean(match?.[1] ?? match?.[2], 5000);
 }
 
-function rawBody(req) {
-  if (Buffer.isBuffer(req.body)) return req.body.toString('utf8');
-  if (typeof req.body === 'string') return req.body;
-  return '';
+function scalarBodyValue(value) {
+  if (Array.isArray(value)) return scalarBodyValue(value[0]);
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (!value || typeof value !== 'object') return '';
+  return scalarBodyValue(value._ ?? value['#text'] ?? value.$text ?? value.value);
+}
+
+function encryptedBody(req) {
+  const body = req.body;
+  if (Buffer.isBuffer(body) || body instanceof Uint8Array) {
+    return xmlValue(Buffer.from(body).toString('utf8'), 'Encrypt');
+  }
+  if (typeof body === 'string') {
+    const fromXml = xmlValue(body, 'Encrypt');
+    if (fromXml) return fromXml;
+    try {
+      const parsed = JSON.parse(body);
+      return encryptedBody({ body: parsed });
+    } catch {
+      return '';
+    }
+  }
+  if (!body || typeof body !== 'object') return '';
+  const wrapped = body.xml && typeof body.xml === 'object' ? body.xml : body;
+  return clean(scalarBodyValue(wrapped.Encrypt ?? wrapped.encrypt), 5000);
+}
+
+function callbackDiagnostics(req, stage, encrypted, error = null) {
+  const body = req.body;
+  const bodyLength = Buffer.isBuffer(body) || body instanceof Uint8Array
+    ? body.length
+    : typeof body === 'string'
+      ? Buffer.byteLength(body)
+      : 0;
+  console.warn('WeCom callback rejected', {
+    stage,
+    contentType: clean(req.headers?.['content-type'], 100),
+    bodyType: Buffer.isBuffer(body) ? 'buffer' : ArrayBuffer.isView(body) ? 'typed-array' : typeof body,
+    bodyLength,
+    encryptedLength: String(encrypted || '').length,
+    hasTimestamp: Boolean(queryValue(req, 'timestamp')),
+    hasNonce: Boolean(queryValue(req, 'nonce')),
+    hasSignature: Boolean(queryValue(req, 'msg_signature')),
+    reason: error ? clean(error.message, 120) : undefined
+  });
 }
 
 function sendTextResponse(res, status, body) {
@@ -306,21 +347,27 @@ export default async function wechatSupportHandler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const outerXml = rawBody(req);
-    const encrypted = xmlValue(outerXml, 'Encrypt');
+    const encrypted = encryptedBody(req);
     const timestamp = queryValue(req, 'timestamp');
     const nonce = queryValue(req, 'nonce');
     const signature = queryValue(req, 'msg_signature');
-    if (!verifyWechatSignature({ token: process.env.WECOM_KF_TOKEN, timestamp, nonce, encrypted, signature })) return sendTextResponse(res, 401, 'invalid signature');
+    if (!verifyWechatSignature({ token: process.env.WECOM_KF_TOKEN, timestamp, nonce, encrypted, signature })) {
+      callbackDiagnostics(req, 'signature', encrypted);
+      return sendTextResponse(res, 401, 'invalid signature');
+    }
     try {
       const clear = decryptWechatPayload(encrypted, process.env.WECOM_KF_ENCODING_AES_KEY);
-      if (clear.receiverId !== process.env.WECOM_CORP_ID) return sendTextResponse(res, 401, 'invalid receiver');
+      if (clear.receiverId !== process.env.WECOM_CORP_ID) {
+        callbackDiagnostics(req, 'receiver', encrypted);
+        return sendTextResponse(res, 401, 'invalid receiver');
+      }
       const task = processCallback(clear.message).catch(async error => {
         await kv('set', 'wonder:wecom:last-sync', JSON.stringify({ at: new Date().toISOString(), error: clean(error.message, 180) })).catch(() => undefined);
       });
       try { waitUntil(task); } catch { void task; }
       return sendTextResponse(res, 200, 'success');
-    } catch {
+    } catch (error) {
+      callbackDiagnostics(req, 'decrypt', encrypted, error);
       return sendTextResponse(res, 400, 'invalid payload');
     }
   }

@@ -72,6 +72,36 @@ test('WeCom callback signatures and encrypted payloads verify correctly', () => 
   assert.deepEqual(decryptWechatPayload(encrypted, encodingAESKey), { message: '<xml>hello</xml>', receiverId: 'corp-id' });
 });
 
+test('enterprise WeChat callback accepts parsed XML request bodies', async () => {
+  const keys = ['WECOM_CORP_ID', 'WECOM_KF_SECRET', 'WECOM_KF_TOKEN', 'WECOM_KF_ENCODING_AES_KEY', 'KV_REST_API_URL', 'KV_REST_API_TOKEN'];
+  const original = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  const encodingAESKey = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG';
+  const encrypted = encryptWechatPayload('<xml><Event><![CDATA[noop]]></Event></xml>', 'corp-id', encodingAESKey);
+  const timestamp = '1710000000';
+  const nonce = 'abc123';
+  const signature = wechatSignature('callback-token', timestamp, nonce, encrypted);
+  Object.assign(process.env, {
+    WECOM_CORP_ID: 'corp-id', WECOM_KF_SECRET: 'kf-secret', WECOM_KF_TOKEN: 'callback-token',
+    WECOM_KF_ENCODING_AES_KEY: encodingAESKey, KV_REST_API_URL: 'https://kv.test', KV_REST_API_TOKEN: 'kv-token'
+  });
+  try {
+    const res = response();
+    await wechatSupportHandler({
+      method: 'POST',
+      url: `/api/wechat-support?msg_signature=${signature}&timestamp=${timestamp}&nonce=${nonce}`,
+      query: { msg_signature: signature, timestamp, nonce },
+      headers: { 'content-type': 'application/xml' },
+      body: { xml: { Encrypt: [encrypted] } }
+    }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body, 'success');
+  } finally {
+    for (const [key, value] of Object.entries(original)) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  }
+});
+
 test('enterprise WeChat preview answers known questions and simulates escalation without saving', async () => {
   const known = response();
   await wechatSupportHandler({ method: 'POST', url: '/api/wechat-support?action=preview', query: { action: 'preview' }, body: { question: '海报怎么收费？' } }, known);
