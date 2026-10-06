@@ -87,7 +87,7 @@ test('enterprise WeChat preview answers known questions and simulates escalation
 });
 
 test('enterprise WeChat sync auto-answers known questions and queues unknown questions once', async () => {
-  const keys = ['WECOM_CORP_ID', 'WECOM_KF_SECRET', 'WECOM_KF_TOKEN', 'WECOM_KF_ENCODING_AES_KEY', 'KV_REST_API_URL', 'KV_REST_API_TOKEN'];
+  const keys = ['WECOM_CORP_ID', 'WECOM_KF_SECRET', 'WECOM_KF_TOKEN', 'WECOM_KF_ENCODING_AES_KEY', 'WECOM_API_ORIGIN', 'WECOM_API_PROXY_TOKEN', 'KV_REST_API_URL', 'KV_REST_API_TOKEN'];
   const original = Object.fromEntries(keys.map(key => [key, process.env[key]]));
   const originalFetch = global.fetch;
   Object.assign(process.env, {
@@ -106,6 +106,39 @@ test('enterprise WeChat sync auto-answers known questions and queues unknown que
     const ticket = JSON.parse(network.store.get(`wonder:support-ticket:${network.sorted[0]}`));
     assert.equal(ticket.channel, 'wechat');
     assert.equal(ticket.status, 'open');
+  } finally {
+    global.fetch = originalFetch;
+    for (const [key, value] of Object.entries(original)) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  }
+});
+
+test('enterprise WeChat API can use an authenticated fixed-IP proxy', async () => {
+  const keys = ['WECOM_CORP_ID', 'WECOM_KF_SECRET', 'WECOM_KF_TOKEN', 'WECOM_KF_ENCODING_AES_KEY', 'WECOM_API_ORIGIN', 'WECOM_API_PROXY_TOKEN', 'KV_REST_API_URL', 'KV_REST_API_TOKEN'];
+  const original = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  const originalFetch = global.fetch;
+  const seen = [];
+  Object.assign(process.env, {
+    WECOM_CORP_ID: 'corp-id', WECOM_KF_SECRET: 'kf-secret', WECOM_KF_TOKEN: 'callback-token',
+    WECOM_KF_ENCODING_AES_KEY: 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG',
+    WECOM_API_ORIGIN: 'https://wecom-proxy.example.com', WECOM_API_PROXY_TOKEN: 'proxy-token',
+    KV_REST_API_URL: 'https://kv.test', KV_REST_API_TOKEN: 'kv-token'
+  });
+  const network = networkMock();
+  global.fetch = async (input, options = {}) => {
+    const url = new URL(input);
+    if (url.hostname === 'wecom-proxy.example.com') {
+      seen.push({ url, options });
+      if (url.pathname === '/cgi-bin/gettoken') return { ok: true, async json() { return { errcode: 0, access_token: 'proxy-access-token', expires_in: 7200 }; } };
+      if (url.pathname === '/cgi-bin/kf/sync_msg') return { ok: true, async json() { return { errcode: 0, has_more: 0, next_cursor: '', msg_list: [] }; } };
+    }
+    return network.fetch(input, options);
+  };
+  try {
+    await syncWechatMessages({ token: 'sync-token', openKfId: 'kf-proxy' });
+    assert.ok(seen.length >= 1);
+    assert.ok(seen.every(item => item.options.headers.Authorization === 'Bearer proxy-token'));
   } finally {
     global.fetch = originalFetch;
     for (const [key, value] of Object.entries(original)) {

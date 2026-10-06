@@ -1,0 +1,21 @@
+[Unit]
+Description=Wonder WeCom fixed-IP egress proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=wonder-wecom
+Group=wonder-wecom
+EnvironmentFile=/etc/wonder-wecom/proxy.env
+ExecStart=/usr/bin/node /opt/wonder-wecom/server.mjs
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/wonder-wecom
+
+[Install]
+WantedBy=multi-user.target

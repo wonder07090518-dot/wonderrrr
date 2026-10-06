@@ -3,11 +3,29 @@ import { waitUntil } from '@vercel/functions';
 import { isAdmin, kv, storageConfigured } from './_admin.js';
 import { answerSupportQuestion } from './_support-route.js';
 
-const API_ORIGIN = 'https://qyapi.weixin.qq.com';
+const DEFAULT_API_ORIGIN = 'https://qyapi.weixin.qq.com';
 const SITE_ORIGIN = 'https://www.wonderadlab.com';
 const ticketIndex = 'wonder:support-tickets';
 let cachedAccessToken = '';
 let cachedAccessTokenExpiresAt = 0;
+
+function wecomApiOrigin() {
+  const configured = String(process.env.WECOM_API_ORIGIN || '').trim();
+  if (!configured) return DEFAULT_API_ORIGIN;
+  const url = new URL(configured);
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+    throw new Error('WECOM_API_ORIGIN must be a clean HTTPS origin');
+  }
+  return url.origin;
+}
+
+function wecomApiHeaders(headers = {}) {
+  const origin = wecomApiOrigin();
+  if (origin === DEFAULT_API_ORIGIN) return headers;
+  const proxyToken = String(process.env.WECOM_API_PROXY_TOKEN || '').trim();
+  if (!proxyToken) throw new Error('WECOM_API_PROXY_TOKEN is required for the fixed-IP proxy');
+  return { ...headers, Authorization: `Bearer ${proxyToken}` };
+}
 
 function clean(value, length = 600) {
   return String(value || '').trim().slice(0, length).replace(/[\0\u0001-\u0008\u000B\u000C\u000E-\u001F]/g, '');
@@ -112,10 +130,10 @@ function sendTextResponse(res, status, body) {
 
 async function getAccessToken(forceRefresh = false) {
   if (!forceRefresh && cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt) return cachedAccessToken;
-  const url = new URL('/cgi-bin/gettoken', API_ORIGIN);
+  const url = new URL('/cgi-bin/gettoken', wecomApiOrigin());
   url.searchParams.set('corpid', process.env.WECOM_CORP_ID);
   url.searchParams.set('corpsecret', process.env.WECOM_KF_SECRET);
-  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  const response = await fetch(url, { headers: wecomApiHeaders({ Accept: 'application/json' }) });
   const result = await response.json().catch(() => ({}));
   if (!response.ok || Number(result.errcode) !== 0 || !result.access_token) throw new Error(`WeCom token request failed (${result.errcode || response.status})`);
   cachedAccessToken = result.access_token;
@@ -125,11 +143,11 @@ async function getAccessToken(forceRefresh = false) {
 
 async function wecomRequest(path, body, retry = true) {
   const accessToken = await getAccessToken(!retry);
-  const url = new URL(path, API_ORIGIN);
+  const url = new URL(path, wecomApiOrigin());
   url.searchParams.set('access_token', accessToken);
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: wecomApiHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body)
   });
   const result = await response.json().catch(() => ({}));
