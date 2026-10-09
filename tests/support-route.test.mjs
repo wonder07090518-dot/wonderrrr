@@ -35,6 +35,16 @@ test('customer acquisition questions lead to the correct conversion path', () =>
   assert.equal(project.handled, true);
   assert.equal(project.category, 'start-project');
   assert.deepEqual(project.action, { href: '#order', label: 'Start your project' });
+
+  const servicesZH = answerSupportQuestion('你们提供什么服务？', 'zh');
+  assert.equal(servicesZH.handled, true);
+  assert.equal(servicesZH.category, 'services');
+  assert.match(servicesZH.answer, /海报/);
+
+  const servicesEN = answerSupportQuestion('What services do you offer?', 'en');
+  assert.equal(servicesEN.handled, true);
+  assert.equal(servicesEN.category, 'services');
+  assert.match(servicesEN.answer, /posters/);
 });
 
 test('support never guesses payment confirmation or real order status', () => {
