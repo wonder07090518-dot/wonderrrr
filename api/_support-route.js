@@ -54,7 +54,7 @@ export const supportTopics = [
   },
   {
     id: 'services',
-    keywords: ['能做什么', '有哪些服务', '服务类型', '海报', '封面', '电商', 'ppt', 'logo', 'banner', '菜单', '壁纸', 'service', 'poster', 'cover', 'ecommerce', 'slide', 'menu', 'wallpaper'],
+    keywords: ['能做什么', '你们做什么', '做什么业务', '有哪些服务', '提供什么服务', '你们提供什么服务', '服务类型', '海报', '封面', '电商', 'ppt', 'logo', 'banner', '菜单', '壁纸', 'service', 'services', 'whatdoyoudo', 'whatservices', 'poster', 'cover', 'ecommerce', 'slide', 'menu', 'wallpaper'],
     answerZH: 'Wonder Ad Lab 可制作海报、社媒封面、电商主图与详情页、PPT 美化、AI 配图、Logo 概念、Banner、菜单价目表、活动物料、印刷物料、创意字贴和壁纸。选不准时可以在下单区选择“其他需求”，用一句话说明用途。',
     answerEN: 'Wonder Ad Lab creates posters, social covers, e-commerce hero and detail visuals, refined slides, AI images, logo concepts, banners, menus, campaign and print materials, creative type and wallpapers. If you are unsure, choose “Custom request” in the order form and describe the use in one sentence.'
   },
