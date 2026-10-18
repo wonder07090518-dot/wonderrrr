@@ -115,6 +115,11 @@ test('search engines can discover focused service guides and their images', asyn
     'ppt-design.html', 'logo-design.html', 'banner-design.html',
     'menu-price-list-design.html', 'ai-image-design.html', 'creative-design-services.html'
   ];
+  const englishSearchPages = [
+    'ecommerce-product-image-design.html', 'social-media-design.html',
+    'minimalist-brand-design.html', 'bilingual-graphic-design.html',
+    'presentation-design.html'
+  ];
   const [home, sitemap, robots] = await Promise.all([read('index.html'), read('sitemap.xml'), read('robots.txt')]);
   assert.match(sitemap, /xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/);
   assert.match(sitemap, /<image:image>/);
@@ -130,6 +135,21 @@ test('search engines can discover focused service guides and their images', asyn
     assert.ok(page.includes(`<link rel="canonical" href="https://www.wonderadlab.com${route}">`), `canonical missing: ${route}`);
     assert.match(page, /<script type="application\/ld\+json">/);
     assert.match(page, /<h1>/);
+  }
+
+  const englishHub = await read('services/creative-design-services.html');
+  for (const file of englishSearchPages) {
+    const route = `/services/${file}`;
+    const page = await read(route.slice(1));
+    assert.ok(englishHub.includes(`href="${route}"`), `English hub link missing: ${route}`);
+    assert.ok(sitemap.includes(`https://www.wonderadlab.com${route}`), `sitemap URL missing: ${route}`);
+    assert.match(page, /<html lang="en">/);
+    assert.match(page, /<meta name="description" content="[^"]+">/);
+    assert.match(page, /<meta name="robots" content="index,follow,max-image-preview:large">/);
+    assert.ok(page.includes(`<link rel="canonical" href="https://www.wonderadlab.com${route}">`), `canonical missing: ${route}`);
+    assert.match(page, /<script type="application\/ld\+json">/);
+    assert.match(page, /<h1>/);
+    assert.match(page, /\?lang=en&amp;service=/);
   }
 
   const indexNowKey = (await read('0209f9bb53f5d942677b5c09c5db2c91.txt')).trim();
