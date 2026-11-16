@@ -98,9 +98,9 @@ test('language switching localizes accessible labels and image descriptions', as
   assert.match(script, /setAttribute\(attribute, language === 'en' \? en : zh\)/);
 });
 
-test('new visitors start in English while explicit and saved language choices are preserved', async () => {
+test('Chinese homepage markup preserves English metadata and runtime language choices', async () => {
   const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
-  assert.match(html, /<html lang="en">/);
+  assert.match(html, /<html lang="zh-CN">/);
   assert.match(html, /<meta property="og:locale" content="en_CA"/);
   assert.match(html, /<title>AI Posters, E-commerce &amp; PPT Design \| Wonder Ad Lab<\/title>/);
   assert.match(script, /const requestedLanguage = pageParams\.get\('lang'\)/);
@@ -571,7 +571,7 @@ test('latest studio news is visible on the website and translated for English vi
 test('public indexing focuses on the main service page, not checkout', async () => {
   const [html, script, sitemap, payment, manifest] = await Promise.all([read('index.html'), read('script.js'), read('sitemap.xml'), read('payment.html'), read('site.webmanifest')]);
   assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>/);
-  assert.match(sitemap, /<lastmod>2026-08-31<\/lastmod>/);
+  assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>\s*<lastmod>2026-11-15<\/lastmod>/);
   for (const page of ['ai-poster-design', 'social-cover-design', 'ecommerce-visual-design', 'ppt-design']) {
     assert.match(sitemap, new RegExp(`<loc>https:\\/\\/www\\.wonderadlab\\.com\\/services\\/${page}\\.html<\\/loc>`));
     const servicePage = await read(`services/${page}.html`);
