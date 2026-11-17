@@ -3,7 +3,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
 const read = file => readFile(new URL(`../${file}`, import.meta.url), 'utf8');
 const apps = ['wordisland','suishuiji','civic-snapshot','framemap','hoursproof','roadkind'];
-const guides = ['guides/index.html','guides/amazon-main-image-requirements.html','guides/etsy-listing-photo-size.html','guides/etsy-shop-banner-sizes.html','guides/shopify-product-image-sizes.html','guides/prepare-product-photos.html'];
+const guides = ['guides/index.html','guides/amazon-main-image-requirements.html','guides/etsy-listing-photo-size.html','guides/etsy-shop-banner-sizes.html','guides/shopify-product-image-sizes.html','guides/prepare-product-photos.html','guides/white-background-product-photos.html','guides/amazon-infographic-images.html','guides/etsy-thumbnail-crop.html','guides/lifestyle-product-photos.html'];
 const publicPages = () => [...marketing, 'privacy.html', ...guides];
 const marketing = ['index.html','amazon-listing-images.html','etsy-listing-images.html','shopify-product-images.html','faq.html'];
 test('Wonder Lab homepage has fixed packages, samples and an accessible inquiry form', async () => {
