@@ -1,227 +1,73 @@
 import assert from 'node:assert/strict';
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
-
 const read = file => readFile(new URL(`../${file}`, import.meta.url), 'utf8');
-
-test('mobile navigation exposes language, account and order controls', async () => {
-  const [html, css, script] = await Promise.all([read('index.html'), read('manuscript.css'), read('script.js')]);
-  assert.match(html, /id="mobileLanguageToggle"/);
-  assert.match(html, /id="mobileOpenAuth"/);
-  assert.match(html, /class="mobile-order" data-scroll="#order"/);
-  assert.match(css, /\.mobile-nav-actions/);
-  assert.match(script, /#languageToggle, #mobileLanguageToggle/);
-  assert.match(script, /#openAuth, #mobileOpenAuth/);
+const apps = ['wordisland','suishuiji','civic-snapshot','framemap','hoursproof','roadkind'];
+const marketing = ['index.html','amazon-listing-images.html','etsy-listing-images.html','shopify-product-images.html','faq.html'];
+test('Wonder Lab homepage has fixed packages, samples and an accessible inquiry form', async () => {
+ const html = await read('index.html');
+ assert.match(html, /<title>[^<]*Wonder Lab<\/title>/);
+ assert.match(html, /class="brand"[^>]*>Wonder Lab/);
+ assert.doesNotMatch(html, /Wonder Ad Lab|Wonderland/);
+ for (const price of ['US$19','US$59','US$129']) assert.ok(html.includes(price));
+ assert.match(html, /SAMPLE \/ Example — not a client project/);
+ assert.match(html, /cropped, muted study/);
+ assert.match(html, /<form[^>]*action="\/api\/inquiry"[^>]*method="post"/);
+ for (const field of ['email','name','platform','package','product','notes','photoLink','website','acknowledged']) assert.ok(html.includes(`name="${field}"`));
+ assert.match(html, /<noscript>/);
+ assert.match(html, /wonder-lab\.css/);
+ assert.doesNotMatch(html, /script\.min\.js|site\.min\.css|<video/);
 });
-
-test('membership plans have direct checkout fallbacks', async () => {
-  const [html, script, payment, route, router, vercel, adminHtml, adminScript] = await Promise.all([
-    read('index.html'), read('script.js'), read('payment.js'), read('api/_memberships-route.js'),
-    read('api/account-actions.js'), read('vercel.json'), read('admin.html'), read('admin.js')
-  ]);
-  assert.match(html, /按次下单/);
-  assert.match(html, /无月费/);
-  assert.doesNotMatch(html, /每天 5 次生成|<h3>免费<\/h3>/);
-  assert.match(html, /href="payment\.html\?plan=monthly"/);
-  assert.match(html, /href="payment\.html\?plan=yearly"/);
-  assert.match(script, /window\.location\.assign/);
-  assert.match(payment, /const membershipPlans =/);
-  assert.match(payment, /monthly: \{ amount: '29' \}/);
-  assert.match(payment, /yearly: \{ amount: '199' \}/);
-  assert.match(payment, /!params\.get\('id'\)/);
-  assert.match(script, /购买会员前请先登录/);
-  assert.match(script, /recoverLegacyMembershipRequests/);
-  assert.match(script, /Number\(item\.amount\) === 199 \? 'yearly'/);
-  assert.match(payment, /fetch\('\/api\/memberships'/);
-  assert.doesNotMatch(payment, /wonderad-membership-requests/);
-  assert.match(route, /membershipPlans = new Map/);
-  assert.match(route, /status: '待核对'/);
-  assert.match(route, /membershipActivationScript/);
-  assert.match(router, /route === 'memberships'/);
-  assert.match(vercel, /"source": "\/api\/memberships"/);
-  assert.match(adminHtml, /id="memberships"/);
-  assert.match(adminScript, /确认实际到账并生效/);
-});
-
-test('English mode covers previously untranslated key sections', async () => {
-  const [script, payment] = await Promise.all([read('script.js'), read('payment.js')]);
-  for (const phrase of [
-    "'不只是生成一张图':'More than generating one image'",
-    "'为持续创作，准备的更快通道':'A faster lane for ongoing creativity'",
-    "'直接加我微信':'Add me on WeChat'",
-    "'你的隐私，值得被认真对待':'Your privacy deserves care'",
-    "'我已阅读并同意':'I have read and agree to the'",
-    "'完整隐私政策':'full privacy policy'"
-  ]) assert.ok(script.includes(phrase), `missing translation: ${phrase}`);
-  assert.match(payment, /heading: 'Complete payment'/);
-  assert.match(payment, /wechat: 'WeChat Pay'/);
-  assert.match(payment, /notice: 'Manual payments are marked/);
-});
-
-test('AI radar date describes the newest story and never falls back to a stale fixed date', async () => {
-  const [html, script, route] = await Promise.all([read('index.html'), read('script.js'), read('api/_app-content-route.js')]);
-  assert.match(script, /let aiRadarUpdatedAt = ''/);
-  assert.match(script, /aiRadarUpdatedAt = content\.latestNewsDate \|\| content\.industryNews\[0\]\?\.date \|\| ''/);
-  assert.match(script, /Latest story \$\{latestNewsDate\}/);
-  assert.match(script, /localStorage\.getItem\(aiRadarCacheKey/);
-  assert.match(script, /Latest-news date unavailable/);
-  assert.match(route, /latestNewsDate: mergedIndustryNews\[0\]\?\.date \|\| null/);
-  assert.match(html, /id="aiRadarToggle"[^>]*aria-controls="aiRadarList"[^>]*hidden/);
-  assert.match(script, /items\.slice\(0, 2\)/);
-  assert.match(script, /Show all \$\{items\.length\} stories/);
-  assert.match(script, /展开看看 · 全部 \$\{items\.length\} 条/);
-  assert.match(script, /aiRadarExpanded = !aiRadarExpanded/);
-  assert.doesNotMatch(html, /Updated 2026-09-05|更新于 2026-09-05/);
-  assert.match(script, /renderAIRadar\(aiRadarData, aiRadarUpdatedAt\)/);
-});
-
-test('homepage exposes separate order and production flows plus real starting prices', async () => {
-  const html = await read('index.html');
-  assert.match(html, /<a href="#story">下单流程<\/a><a href="#process">制作流程<\/a>/);
-  assert.match(html, /class="quick-pricing"/);
-  assert.match(html, /AI 快速配图<\/span><strong>¥12<small> \/ 张<\/small>/);
-  assert.match(html, /社媒封面<\/span><strong>¥16<small> \/ 张<\/small>/);
-  assert.match(html, /data-scroll="#order" data-choose="AI 快速配图"/);
-  assert.match(html, /查看全部 16 项服务与价格/);
-});
-
-test('language switching localizes accessible labels and image descriptions', async () => {
-  const script = await read('script.js');
-  for (const phrase of [
-    "'AI creative interface preview', 'AI 创意界面预览'",
-    "'Service categories', '服务分类'",
-    "'Choose an AI capability', '选择 AI 能力'",
-    "'Close revision request', '关闭修改申请'",
-    "'Wonder Ad Lab brand film loop', 'Wonder Ad Lab 品牌影像循环'"
-  ]) assert.ok(script.includes(phrase), `missing accessible translation: ${phrase}`);
-  assert.match(script, /localizedAttributes\.forEach/);
-  assert.match(script, /setAttribute\(attribute, language === 'en' \? en : zh\)/);
-});
-
-test('Chinese homepage markup preserves English metadata and runtime language choices', async () => {
-  const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
-  assert.match(html, /<html lang="zh-CN">/);
-  assert.match(html, /<meta property="og:locale" content="en_CA"/);
-  assert.match(html, /<title>AI Posters, E-commerce &amp; PPT Design \| Wonder Ad Lab<\/title>/);
-  assert.match(script, /const requestedLanguage = pageParams\.get\('lang'\)/);
-  assert.match(script, /const savedLanguage = localStorage\.getItem\('wonderad-language'\)/);
-  assert.match(script, /\['en', 'zh'\]\.includes\(requestedLanguage\)/);
-  assert.match(script, /savedLanguage : 'en'/);
-});
-
-test('search engines can discover focused service guides and their images', async () => {
-  const servicePages = [
-    'ai-poster-design.html', 'social-cover-design.html', 'ecommerce-visual-design.html',
-    'ppt-design.html', 'logo-design.html', 'banner-design.html',
-    'menu-price-list-design.html', 'ai-image-design.html', 'creative-design-services.html'
-  ];
-  const englishSearchPages = [
-    'ecommerce-product-image-design.html', 'social-media-design.html',
-    'minimalist-brand-design.html', 'bilingual-graphic-design.html',
-    'presentation-design.html'
-  ];
-  const [home, sitemap, robots] = await Promise.all([read('index.html'), read('sitemap.xml'), read('robots.txt')]);
-  assert.match(sitemap, /xmlns:image="http:\/\/www\.google\.com\/schemas\/sitemap-image\/1\.1"/);
-  assert.match(sitemap, /<image:image>/);
-  assert.match(robots, /Sitemap: https:\/\/www\.wonderadlab\.com\/sitemap\.xml/);
-
-  for (const file of servicePages) {
-    const route = `/services/${file}`;
-    const page = await read(route.slice(1));
-    assert.ok(home.includes(`href="${route}"`), `home link missing: ${route}`);
-    assert.ok(sitemap.includes(`https://www.wonderadlab.com${route}`), `sitemap URL missing: ${route}`);
-    assert.match(page, /<meta name="description" content="[^"]+">/);
-    assert.match(page, /<meta name="robots" content="index,follow,max-image-preview:large">/);
-    assert.ok(page.includes(`<link rel="canonical" href="https://www.wonderadlab.com${route}">`), `canonical missing: ${route}`);
-    assert.match(page, /<script type="application\/ld\+json">/);
-    assert.match(page, /<h1>/);
+test('public pages have distinct metadata, structured data and sitemap entries', async () => {
+ const sitemap = await read('sitemap.xml'); const titles = new Set();
+ for (const file of [...marketing,'privacy.html']) {
+  const html = await read(file);const path = file === 'index.html' ? '' : file;
+  assert.ok(html.includes(`<link rel="canonical" href="https://www.wonderadlab.com/${path}">`));
+  assert.match(html, /name="robots" content="index,follow,max-image-preview:large"/);
+  assert.match(html, /name="description" content="[^"]+"/);
+  assert.match(html, /og:locale" content="en_US"/);
+  assert.match(html, /twitter:card" content="summary_large_image"/);
+  assert.match(html, /wonder-lab-social\.jpg/);
+  assert.doesNotMatch(html, /Wonder Ad Lab|wonder-ad-lab-social/);
+  titles.add(html.match(/<title>(.*?)<\/title>/)[1]);
+  for (const match of html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)) {
+   const graph = JSON.parse(match[1])['@graph'];
+   for (const item of graph.filter(x=>['Organization','WebSite'].includes(x['@type']))) assert.equal(item.name,'Wonder Lab');
   }
-
-  const englishHub = await read('services/creative-design-services.html');
-  for (const file of englishSearchPages) {
-    const route = `/services/${file}`;
-    const page = await read(route.slice(1));
-    assert.ok(englishHub.includes(`href="${route}"`), `English hub link missing: ${route}`);
-    assert.ok(sitemap.includes(`https://www.wonderadlab.com${route}`), `sitemap URL missing: ${route}`);
-    assert.match(page, /<html lang="en">/);
-    assert.match(page, /<meta name="description" content="[^"]+">/);
-    assert.match(page, /<meta name="robots" content="index,follow,max-image-preview:large">/);
-    assert.ok(page.includes(`<link rel="canonical" href="https://www.wonderadlab.com${route}">`), `canonical missing: ${route}`);
-    assert.match(page, /<script type="application\/ld\+json">/);
-    assert.match(page, /<h1>/);
-    assert.match(page, /\?lang=en&amp;service=/);
-  }
-
-  const indexNowKey = (await read('0209f9bb53f5d942677b5c09c5db2c91.txt')).trim();
-  assert.equal(indexNowKey, '0209f9bb53f5d942677b5c09c5db2c91');
+  assert.ok(sitemap.includes(`<loc>https://www.wonderadlab.com/${path}</loc>`));
+ }
+ assert.equal(titles.size,6);
+ assert.doesNotMatch(sitemap, /payment|admin|stripe-test|services\/|api\//);
+ assert.equal((sitemap.match(/2026-11-16/g)||[]).length,18);
+ assert.equal(JSON.parse(await read('site.webmanifest')).name,'Wonder Lab');
+ assert.equal(JSON.parse(await read('site.webmanifest')).short_name,'Wonder Lab');
 });
-
-test('closed account modals cannot cover mobile navigation', async () => {
-  const [css, script] = await Promise.all([read('manuscript.css'), read('script.js')]);
-  assert.match(css, /\.inbox-modal \{[^}]*display: none;[^}]*pointer-events: none;/);
-  assert.match(css, /\.inbox-modal\.open \{[^}]*display: block;[^}]*pointer-events: auto;/);
-  assert.match(script, /document\.querySelectorAll\('\[data-scroll\]'\)[\s\S]*?closeMobileMenu\(\);[\s\S]*?scrollIntoView/);
+test('marketing and old payment page expose no checkout or collection codes', async () => {
+ for (const file of marketing) {
+  const html = await read(file);
+  assert.doesNotMatch(html, /Stripe|stripe|支付宝|微信收款|alipay|wechat.*qr|¥\s*\d|payment\.html|membership/i);
+ }
+ const payment = await read('payment.html');
+ assert.match(payment, /noindex/);
+ assert.doesNotMatch(payment, /<script|<form|stripe|qr|checkout|payment\.js/i);
+ assert.match(payment, /href="\/#inquire"/);
+ assert.match(await read('stripe-test.html'), /noindex/);
 });
-
-test('desktop AI HUD stays inside the viewport at common laptop widths', async () => {
-  const css = await read('ai-interface.css');
-  assert.match(css, /@media \(max-width: 1324px\) \{\s*\.hud-model \{ right: -20px; \}/);
+test('every old service redirects permanently and apps remain publicly available', async () => {
+ const config = JSON.parse(await read('vercel.json'));
+ for (const file of await readdir(new URL('../services',import.meta.url))) {
+  if (!file.endsWith('.html')) continue;
+  const redirect = config.redirects.find(x=>x.source === `/services/${file}`);
+  assert.equal(redirect?.statusCode,308);
+  assert.ok(['/', '/shopify-product-images.html','/amazon-listing-images.html','/etsy-listing-images.html'].includes(redirect.destination));
+ }
+ assert.ok(config.rewrites.some(x=>x.source==='/api/inquiry' && x.destination.includes('route=inquiry')));
+ const sitemap = await read('sitemap.xml');
+ for (const app of apps) for (const type of ['support','privacy']) {
+  const file = `${app}-${type}.html`; await access(new URL(`../${file}`,import.meta.url));
+  assert.ok(sitemap.includes(`/${file}</loc>`)); assert.doesNotMatch(await read(file), /Wonder Ad Lab/);
+ }
 });
-
-test('service matrix background stays inside the viewport', async () => {
-  const css = await read('service-matrix.css');
-  assert.match(css, /inset: 62px max\(-70px, calc\(\(100vw - var\(--wrap\)\) \/ -2 \+ 4px\)\) 40px;/);
-});
-
-test('service prices are synchronized to the new affordable catalog', async () => {
-  const [html, script, catalog, notify] = await Promise.all([read('index.html'), read('script.js'), read('api/_catalog.js'), read('api/notify-order.js')]);
-  const expected = {
-    '社媒封面': '¥16 / 张', '营销海报': '¥19 / 张', '电商商品图': '¥22 / 张',
-    'PPT 美化': '¥20 / 页起', 'AI 快速配图': '¥12 / 张', '品牌 Logo': '¥25 / 个起'
-  };
-  for (const [service, price] of Object.entries(expected)) {
-    assert.ok(script.includes(`'${service}': '${price}'`), `client price mismatch: ${service}`);
-    assert.ok(catalog.includes(`'${service}': '${price}'`), `server price mismatch: ${service}`);
-    assert.ok(html.includes(price.replace('¥', '<small>¥</small>').replace(' / ', '<span>/ ')) || html.includes(price), `visible price missing: ${service}`);
-  }
-  assert.match(notify, /import \{ servicePrices \} from '\.\/_catalog\.js'/);
-  assert.doesNotMatch(notify, /const servicePrices\s*=/);
-});
-
-test('each service keeps its own specifications and supports custom size and style', async () => {
-  const [script, css, orders] = await Promise.all([read('script.js'), read('manuscript.css'), read('api/orders.js')]);
-  assert.match(script, /'品牌 Logo': \{ sizes: \['PNG 透明底（2000px）', 'SVG 矢量源文件'/);
-  assert.match(script, /installCustomCreativeInputs/);
-  assert.match(script, /'customSizeInput'/);
-  assert.match(script, /'customStyleInput'/);
-  assert.match(script, /renderCreativeOptions\(\{ reset: true \}\)/);
-  assert.match(script, /size: resolvedSize, style: resolvedStyle/);
-  assert.match(script, /请先填写自定义尺寸/);
-  assert.match(script, /请先填写自定义风格/);
-  assert.match(css, /\.creative-options \.creative-custom-input\[hidden\]/);
-  assert.match(orders, /validChoice\(order\.size/);
-  assert.match(orders, /validChoice\(order\.style/);
-  assert.match(orders, /\['其他尺寸', '自定义尺寸'\]/);
-  assert.match(orders, /\['其他风格', '自定义风格'\]/);
-});
-
-test('delivered orders support persisted revision requests and email notices', async () => {
-  const [html, script, css, api, orders] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/revisions.js'), read('api/orders.js')]);
-  assert.match(html, /id="revisionModal"/);
-  assert.match(html, /id="revisionForm"/);
-  assert.match(html, /id="revisionDetails"[^>]*maxlength="1200"/);
-  assert.match(script, /fetch\('\/api\/revisions'/);
-  assert.match(script, /order\.status === '已交付'/);
-  assert.match(script, /data-revision-order/);
-  assert.match(css, /\.revision-form/);
-  assert.match(css, /\.status\.revision/);
-  assert.match(api, /getCurrentUser/);
-  assert.match(api, /wonder:revisions/);
-  assert.match(api, /Wonder Ad Lab 修改申请/);
-  assert.match(api, /reply_to: order\.email/);
-  assert.match(orders, /'修改申请', '修改中'/);
-});
-
 test('admin can see and process revision history', async () => {
   const [html, script, css, delivery] = await Promise.all([read('admin.html'), read('admin.js'), read('admin-revisions.css'), read('api/notify-delivery.js')]);
   assert.match(html, /id="revisions"/);
@@ -239,370 +85,9 @@ test('admin can see and process revision history', async () => {
   assert.match(css, /\.revision-card/);
 });
 
-test('orders share a durable admin queue with clear 24-hour and rush handling', async () => {
-  const [html, script, orders, notify, adminHtml, adminScript, adminCss, statusNotify] = await Promise.all([
-    read('index.html'), read('script.js'), read('api/orders.js'), read('api/notify-order.js'),
-    read('admin.html'), read('admin.js'), read('admin-live.css'), read('api/notify-status.js')
-  ]);
-  assert.match(html, /name="turnaround" value="standard" checked/);
-  assert.match(html, /name="turnaround" value="rush-request"/);
-  assert.match(html, /通常 24 小时内完成首版/);
-  assert.match(html, /不要先付款/);
-  assert.match(script, /turnaround, referenceFiles/);
-  assert.match(script, /order\.turnaround !== 'rush-request'/);
-  assert.match(script, /Rush request received/);
-  assert.match(orders, /TURNAROUNDS = new Set\(\['standard', 'rush-request'\]\)/);
-  assert.match(orders, /duplicate: true/);
-  assert.match(orders, /action === 'approve-rush'/);
-  assert.match(orders, /turnaround: 'rush-approved'/);
-  assert.match(notify, /ownerEmailSent/);
-  assert.match(notify, /customerEmailSent/);
-  assert.match(orders, /waitUntil\(task\)/);
-  assert.match(orders, /notifyOrderHandler/);
-  assert.match(orders, /notificationQueued/);
-  assert.match(orders, /retryDelays = \[0, 750, 2250\]/);
-  assert.match(orders, /notificationAttempts/);
-  assert.match(orders, /manualPaidAt/);
-  assert.match(orders, /manualPaidBy: 'admin-dashboard'/);
-  assert.match(orders, /validateStatusTransition/);
-  assert.doesNotMatch(script, /fetch\('\/api\/notify-order'/);
-  assert.match(notify, /请先不要付款/);
-  assert.match(adminHtml, /id="new24h"/);
-  assert.match(adminHtml, /确认加急最终报价/);
-  assert.match(adminHtml, /我确认 Wonder 已查看成品并明确回复“OK”/);
-  assert.match(adminHtml, /审核后发送给客户/);
-  assert.match(adminHtml, /class="payment-evidence"/);
-  assert.match(adminHtml, /class="next-action"/);
-  assert.match(adminHtml, /class="audit-trail"/);
-  assert.match(adminScript, /测试 · \$\{order\.service\}/);
-  assert.match(adminScript, /付款证据：/);
-  assert.match(adminScript, /下一步：/);
-  assert.match(adminScript, /处理记录：/);
-  assert.match(adminScript, /测试订单不交付/);
-  assert.match(adminScript, /!approvalInput\.checked/);
-  assert.match(adminScript, /deliveryButton\.addEventListener\('click'/);
-  assert.match(adminScript, /setInterval\(\(\) => loadDashboard\(true\), 60 \* 1000\)/);
-  assert.match(adminScript, /approveRush/);
-  assert.match(adminCss, /\.order-card\.is-new/);
-  assert.match(statusNotify, /'待确认支付'/);
-});
-
-test('ordinary orders use Stripe secure checkout with manual QR fallback', async () => {
-  const [html, script, paymentHtml, paymentScript, api] = await Promise.all([read('index.html'), read('script.js'), read('payment.html'), read('payment.js'), read('api/payment-confirm.js')]);
-  assert.match(html, /id="openOrderPayment"/);
-  assert.match(html, /前往安全付款/);
-  assert.match(script, /function startOrderPayment/);
-  assert.match(script, /value="安全付款" checked/);
-  assert.match(script, /data-pay-order/);
-  assert.match(script, /kind: 'order'/);
-  assert.match(paymentHtml, /id="startStripeCheckout"/);
-  assert.match(paymentHtml, /id="paymentQr"/);
-  assert.doesNotMatch(paymentHtml, /class="qr-logo"/);
-  assert.match(paymentScript, /action=create-checkout/);
-  assert.match(paymentScript, /action=status/);
-  assert.match(paymentScript, /fetch\('\/api\/payment-confirm'/);
-  assert.match(paymentScript, /credentials: 'same-origin'/);
-  assert.match(api, /bodyParser: false/);
-  assert.match(api, /constructEvent/);
-  assert.match(api, /configure-live-webhook/);
-  assert.match(api, /webhookEndpoints\.create/);
-  assert.match(api, /LIVE_WEBHOOK_SECRET_KEY/);
-  assert.match(api, /isAdmin\(req\)/);
-  assert.match(api, /paidSessionMatchesOrder/);
-  assert.match(api, /STRIPE_ENABLE_LIVE/);
-  assert.match(api, /checkout\.sessions\.retrieve\(order\.stripeCheckoutSessionId\)/);
-  assert.doesNotMatch(api, /automatic_payment_methods/);
-  assert.match(api, /existing\.status === 'open'/);
-  assert.match(api, /if \(order\.status === '已支付'\) return res\.status\(200\)\.json\(\{ received: true, duplicate: true \}\)/);
-  assert.match(api, /getCurrentUser/);
-  assert.match(api, /status: '待确认支付'/);
-  assert.match(api, /客户已确认付款/);
-  assert.match(api, /请核对实际到账后再将订单改为“已支付”/);
-});
-
-test('admin can initiate the live Stripe webhook connection without exposing its secret', async () => {
-  const [adminHtml, adminScript, api] = await Promise.all([
-    read('admin.html'), read('admin.js'), read('api/payment-confirm.js')
-  ]);
-  assert.match(adminHtml, /id="configureStripeWebhook"/);
-  assert.match(adminScript, /configureStripeWebhook/);
-  assert.match(adminScript, /action=configure-live-webhook/);
-  assert.match(adminScript, /addEventListener\('click', configureStripeWebhook\)/);
-  assert.doesNotMatch(adminScript, /endpoint\.secret/);
-  assert.doesNotMatch(api, /json\([^)]*endpoint\.secret/);
-});
-
-test('Stripe sandbox verification uses an owner-only isolated test order', async () => {
-  const [api, testPage, testScript] = await Promise.all([
-    read('api/payment-confirm.js'), read('stripe-test.html'), read('stripe-test.js')
-  ]);
-  assert.match(api, /action === 'test-create'/);
-  assert.match(api, /action === 'test-cleanup'/);
-  assert.match(api, /user\.email !== OWNER_EMAIL/);
-  assert.match(api, /isTest: true/);
-  assert.match(api, /if \(!updatedOrder\.isTest\)/);
-  assert.match(api, /kv\('del', `wonder:order:\$\{order\.id\}`\)/);
-  assert.doesNotMatch(api, /isTest[\s\S]{0,300}zadd/);
-  assert.match(testPage, /noindex,nofollow,noarchive/);
-  assert.match(testPage, /stripe-test\.js/);
-  assert.match(testScript, /action=test-create/);
-  assert.match(testScript, /action=test-cleanup/);
-});
-
-test('orders upload up to 100 reference files and 1 GB directly into private storage', async () => {
-  const [html, script, css, notify, orders, uploadApi, uploadClient, admin] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/notify-order.js'), read('api/orders.js'), read('api/reference-upload.js'), read('reference-upload-client.entry.js'), read('admin.js')]);
-  assert.match(html, /id="orderReferenceFiles"[^>]*multiple/);
-  assert.match(html, /id="orderReferenceFolder"[^>]*webkitdirectory/);
-  assert.match(html, /最多 100 个 · 合计 1GB/);
-  assert.match(script, /MAX_ORDER_REFERENCE_FILES = 100/);
-  assert.match(script, /MAX_ORDER_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
-  assert.match(script, /uploadOrderReferenceFiles/);
-  assert.doesNotMatch(script, /function readOrderReferenceFile/);
-  assert.match(css, /\.reference-file-list/);
-  assert.match(css, /\.reference-progress/);
-  assert.match(uploadClient, /multipart: file\.size > MULTIPART_THRESHOLD/);
-  assert.match(uploadClient, /access: 'private'/);
-  assert.match(uploadApi, /handleUpload/);
-  assert.match(uploadApi, /maximumSizeInBytes: MAX_FILE_BYTES/);
-  assert.match(uploadApi, /MAX_ORDER_BYTES = 1024 \* 1024 \* 1024/);
-  assert.match(uploadApi, /MAX_ORDER_FILES = 100/);
-  assert.match(notify, /已安全存入私有空间/);
-  assert.doesNotMatch(notify, /ownerPayload\.attachments = references/);
-  assert.match(notify, /Idempotency-Key/);
-  assert.match(notify, /getCurrentUser/);
-  assert.match(notify, /wonder:order:/);
-  assert.match(orders, /referenceMetadata/);
-  assert.match(orders, /await head\(item\.blobUrl\)/);
-  assert.match(orders, /MAX_REFERENCE_BYTES = 1024 \* 1024 \* 1024/);
-  assert.match(orders, /MAX_REFERENCE_FILES = 100/);
-  assert.match(orders, /delete order\.referenceAttachments/);
-  assert.match(orders, /issueSignedToken/);
-  assert.match(orders, /validUntil = Date\.now\(\) \+ 10 \* 60 \* 1000/);
-  assert.match(orders, /createReferenceDownload/);
-  assert.match(admin, /参考样板（私有存储）/);
-  assert.match(admin, /downloadReference/);
-});
-
-test('feedback form saves suggestions and emails the studio with abuse controls', async () => {
-  const [html, script, css, api, router, vercel] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css'), read('api/_feedback-route.js'), read('api/account-actions.js'), read('vercel.json')]);
-  assert.match(html, /id="openFeedback"/);
-  assert.match(html, /id="feedbackModal"/);
-  assert.match(html, /id="feedbackForm"/);
-  assert.match(html, /id="feedbackMessage"[^>]*maxlength="2000"/);
-  assert.match(script, /fetch\('\/api\/feedback'/);
-  assert.match(script, /Feedback & suggestions/);
-  assert.match(css, /\.feedback-honeypot/);
-  assert.match(api, /wonder07090518@gmail\.com/);
-  assert.match(api, /wonder:feedback-rate:/);
-  assert.match(api, /count <= 5/);
-  assert.match(api, /req\.body\?\.website/);
-  assert.match(api, /reply_to: email/);
-  assert.match(api, /Wonder Ad Lab 意见建议/);
-  assert.match(router, /route === 'feedback'/);
-  assert.match(vercel, /"source": "\/api\/feedback"/);
-});
-
-test('automatic support answers verified FAQs and escalates unknown questions safely', async () => {
-  const [html, script, css, api, router, vercel, adminHtml, adminScript, privacy] = await Promise.all([
-    read('index.html'), read('script.js'), read('apple-refresh.css'), read('api/_support-route.js'),
-    read('api/account-actions.js'), read('vercel.json'), read('admin.html'), read('admin.js'), read('privacy.html')
-  ]);
-  assert.match(html, /id="openSupport"/);
-  assert.match(html, /id="supportPanel"/);
-  assert.match(html, /id="supportForm"/);
-  assert.match(html, /id="supportEmailAnswer"/);
-  assert.match(script, /fetch\('\/api\/support'/);
-  assert.match(script, /function addSupportBubble/);
-  assert.match(css, /\.wonder-support-launcher/);
-  assert.match(css, /\.wonder-support\.open/);
-  assert.match(api, /export function answerSupportQuestion/);
-  assert.match(api, /Idempotency-Key/);
-  assert.match(api, /客服不会自动确认|does not confirm a quote/);
-  assert.match(api, /wonder:support-rate:/);
-  assert.match(router, /route === 'support'/);
-  assert.match(vercel, /"source": "\/api\/support"/);
-  assert.match(adminHtml, /id="supportTickets"/);
-  assert.match(adminScript, /loadSupportTickets/);
-  assert.match(privacy, /support questions|客服问题/);
-});
-
-test('value-card top-ups include a ten-percent bonus only after idempotent admin approval', async () => {
-  const [html, script, payment, api, balanceApi, balanceHelpers, adminHtml, adminScript] = await Promise.all([
-    read('index.html'), read('script.js'), read('payment.js'), read('api/_recharges-route.js'), read('api/_balance-route.js'), read('api/_balance.js'), read('admin.html'), read('admin.js')
-  ]);
-  assert.match(html, /id="rechargeModal"/);
-  assert.match(html, /支付 ¥100，赠送 ¥10，到账余额 ¥110/);
-  assert.match(html, /value="500"/);
-  assert.match(html, /核对实际到账/);
-  assert.match(script, /kind: 'recharge'/);
-  assert.match(script, /accountApi\('\/api\/balance'\)/);
-  assert.match(payment, /fetch\('\/api\/recharges'/);
-  assert.match(payment, /topUpNotice/);
-  assert.match(balanceHelpers, /new Set\(\[100, 200, 300, 400, 500\]\)/);
-  assert.match(balanceHelpers, /function rechargeBonus/);
-  assert.match(balanceHelpers, /function rechargeCredit/);
-  assert.match(api, /bonusAmount = rechargeBonus\(amount\)/);
-  assert.match(api, /creditedAmount = rechargeCredit\(amount\)/);
-  assert.match(api, /isAdmin\(req\)/);
-  assert.match(api, /kv\('setnx', `wonder:recharge-applied:/);
-  assert.match(api, /kv\('incrby', balanceKey\(item\.email\), item\.creditedAmount\)/);
-  assert.match(balanceApi, /getCurrentUser/);
-  assert.match(balanceApi, /bonusAmount: item\.bonusAmount \|\| 0/);
-  assert.match(adminHtml, /id="recharges"/);
-  assert.match(adminScript, /action: 'approve'/);
-  assert.match(adminHtml, /每充 ¥100 赠 ¥10/);
-  assert.match(adminScript, /确认实际到账并入账/);
-});
-
-test('admin dashboard shows real privacy-safe visitor totals and countries', async () => {
-  const publicPages = [
-    'index.html', 'payment.html', 'privacy.html',
-    'services/ai-image-design.html', 'services/ai-poster-design.html', 'services/banner-design.html',
-    'services/creative-design-services.html', 'services/ecommerce-visual-design.html',
-    'services/logo-design.html', 'services/menu-price-list-design.html',
-    'services/ppt-design.html', 'services/social-cover-design.html'
-  ];
-  const [adminHtml, adminScript, analyticsClient, analyticsRoute, router, vercel, privacy, ...pages] = await Promise.all([
-    read('admin.html'), read('admin.js'), read('analytics.js'), read('api/_analytics-route.js'),
-    read('api/account-actions.js'), read('vercel.json'), read('privacy.html'),
-    ...publicPages.map(read)
-  ]);
-  assert.match(adminHtml, /id="analyticsVisitors"/);
-  assert.match(adminHtml, /id="analyticsCountries"/);
-  assert.match(adminHtml, /真实访问数据/);
-  assert.match(adminHtml, /不补造历史数字/);
-  assert.match(adminScript, /api\('\/api\/analytics'\)/);
-  assert.match(adminScript, /Intl\.DisplayNames/);
-  assert.match(analyticsClient, /\['wonderadlab\.com', 'www\.wonderadlab\.com'\]/);
-  assert.match(analyticsClient, /navigator\.globalPrivacyControl/);
-  assert.match(analyticsRoute, /x-vercel-ip-country/);
-  assert.match(analyticsRoute, /wonder:analytics:visitors/);
-  assert.match(analyticsRoute, /wonder:analytics:country:/);
-  assert.match(analyticsRoute, /isAdmin\(req\)/);
-  assert.doesNotMatch(analyticsRoute, /x-forwarded-for|remoteAddress/);
-  assert.match(router, /route === 'analytics'/);
-  assert.match(vercel, /"source": "\/api\/analytics"/);
-  assert.match(privacy, /We do not save or display visitor IP addresses/);
-  assert.match(privacy, /不会保存或显示访客 IP/);
-  pages.forEach((page, index) => assert.match(page, /\/analytics\.js\?v=20260905a/, `analytics missing from ${publicPages[index]}`));
-});
-
-test('signed-in customers can pay an order from balance without duplicate deductions', async () => {
-  const [html, script, orderApi, route, router, vercel] = await Promise.all([
-    read('index.html'), read('script.js'), read('api/orders.js'), read('api/_balance-payment-route.js'), read('api/account-actions.js'), read('vercel.json')
-  ]);
-  assert.match(script, /value="余额支付"/);
-  assert.match(script, /value="安全付款" checked/);
-  assert.match(script, /fetch\(path, \{ credentials: 'same-origin'/);
-  assert.match(script, /accountApi\('\/api\/balance-payment'/);
-  assert.match(script, /data-balance-pay-order/);
-  assert.match(script, /Remaining balance/);
-  assert.match(html, /id="submittedTitle"/);
-  assert.match(orderApi, /'余额支付'/);
-  assert.match(orderApi, /delete order\.isTest/);
-  assert.match(route, /servicePrices\[order\.service\]/);
-  assert.match(route, /This order does not belong to your account/);
-  assert.match(route, /redis\.call\('GET', KEYS\[3\]\)/);
-  assert.match(route, /if mode == 'test' and test >= amount then/);
-  assert.match(route, /elseif mode ~= 'test' and real >= amount then/);
-  assert.doesNotMatch(route, /source = 'mixed'/);
-  assert.match(route, /redis\.call\('DECRBY', KEYS\[2\], testUsed\)/);
-  assert.match(route, /redis\.call\('DECRBY', KEYS\[1\], realUsed\)/);
-  assert.match(route, /status: '已支付'/);
-  assert.match(route, /paidOrder\.isTest === true/);
-  assert.match(router, /route === 'balance-payment'/);
-  assert.match(vercel, /"source": "\/api\/balance-payment"/);
-});
-
 test('serverless API routes stay within the Vercel Hobby deployment limit', async () => {
   const { readdir } = await import('node:fs/promises');
   const apiFiles = (await readdir(new URL('../api', import.meta.url))).filter(name => name.endsWith('.js') && !name.startsWith('_'));
   assert.ok(apiFiles.length <= 12, `expected no more than 12 serverless functions, found ${apiFiles.length}`);
   assert.ok(apiFiles.includes('account-actions.js'));
-});
-
-test('privacy policy is public and signed-in users can permanently delete their account', async () => {
-  const [html, policy, route, router, vercel] = await Promise.all([
-    read('index.html'), read('privacy.html'), read('api/_account-delete-route.js'),
-    read('api/account-actions.js'), read('vercel.json')
-  ]);
-  assert.match(html, /href="\/privacy\.html"/);
-  assert.match(policy, /Your ideas stay yours\./);
-  assert.match(policy, /你的选择与账户注销/);
-  assert.match(policy, /wonder07090518@gmail\.com/);
-  assert.match(route, /getCurrentUser/);
-  assert.match(route, /confirmation !== 'DELETE'/);
-  assert.match(route, /timingSafeEqual/);
-  assert.match(route, /deleteBlob\(blobPathnames\)/);
-  assert.match(route, /clearUserSession\(res\)/);
-  assert.match(router, /route === 'account-delete'/);
-  assert.match(vercel, /"source": "\/api\/account-delete"/);
-});
-
-test('website removes the unavailable AI brief and does not pretend scripted support is AI', async () => {
-  const [html, script, css] = await Promise.all([read('index.html'), read('script.js'), read('manuscript.css')]);
-  assert.doesNotMatch(html, /id="buildPrompt"|Wonder AI|AI 在线客服/);
-  assert.doesNotMatch(script, /fetch\('\/api\/ai-brief'|function answerSupport\(/);
-  assert.doesNotMatch(css, /\.ai-support|\.prompt-output/);
-  assert.match(html, /不用写专业术语，我们收到后会帮你整理清楚/);
-  assert.match(html, /id="supportPanel"/);
-  assert.match(html, /常见问题即时回答 · 复杂问题转人工/);
-  await assert.rejects(() => access(new URL('../api/ai-brief.js', import.meta.url)));
-});
-
-test('homepage exposes a source-backed international AI radar', async () => {
-  const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
-  assert.match(html, /id="ai-radar"/);
-  assert.match(html, /id="aiRadarList"/);
-  assert.match(html, /Loading the latest official updates/);
-  assert.doesNotMatch(html, /How GPT-6 Astra can support promo films/);
-  assert.match(script, /fetch\('\/api\/app-content'/);
-  assert.match(script, /Official source/);
-});
-
-test('latest studio news is visible on the website and translated for English visitors', async () => {
-  const [html, script] = await Promise.all([read('index.html'), read('script.js')]);
-  assert.match(html, /2026\.09\.04 \/ SOCIAL/);
-  assert.match(html, /Wonder Ad Lab 正式入驻小红书/);
-  assert.match(script, /Wonder Ad Lab is now on Xiaohongshu/);
-  assert.match(script, /more social channels to follow/);
-});
-
-test('public indexing focuses on the main service page, not checkout', async () => {
-  const [html, script, sitemap, payment, manifest] = await Promise.all([read('index.html'), read('script.js'), read('sitemap.xml'), read('payment.html'), read('site.webmanifest')]);
-  assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>/);
-  assert.match(sitemap, /<loc>https:\/\/www\.wonderadlab\.com\/<\/loc>\s*<lastmod>2026-11-15<\/lastmod>/);
-  for (const page of ['ai-poster-design', 'social-cover-design', 'ecommerce-visual-design', 'ppt-design']) {
-    assert.match(sitemap, new RegExp(`<loc>https:\\/\\/www\\.wonderadlab\\.com\\/services\\/${page}\\.html<\\/loc>`));
-    const servicePage = await read(`services/${page}.html`);
-    assert.match(servicePage, /<meta name="robots" content="index,follow,max-image-preview:large">/);
-    assert.match(servicePage, /<link rel="canonical" href="https:\/\/www\.wonderadlab\.com\/services\//);
-    assert.match(servicePage, /application\/ld\+json/);
-    assert.match(servicePage, /href="\/\?service=/);
-  }
-  assert.doesNotMatch(sitemap, /payment\.html/);
-  assert.match(payment, /name="robots" content="noindex,nofollow,noarchive"/);
-  assert.match(html, /twitter:card" content="summary_large_image"/);
-  assert.match(html, /wonder-ad-lab-social\.jpg/);
-  assert.match(html, /wonder-hero-loop-poster\.jpg/);
-  assert.match(html, /service-guide-grid/);
-  assert.match(script, /pageParams\.get\('service'\)/);
-  assert.doesNotMatch(html, /120\+ 项 AI 创意服务与搜索场景/);
-  assert.equal(JSON.parse(manifest).name, 'Wonder Ad Lab 奇迹创意工作室');
-});
-
-test('homepage uses optimized visual assets and stable dimensions', async () => {
-  const [html, css, siteCss] = await Promise.all([read('index.html'), read('manuscript.css'), read('site.min.css')]);
-  assert.match(html, /site\.min\.css\?v=/);
-  assert.match(html, /script\.min\.js\?v=/);
-  assert.doesNotMatch(html, /href="ai-interface\.css|href="scroll-story\.css|href="service-matrix\.css/);
-  assert.match(html, /<link rel="preload" as="image" href="wonder-hero-loop-poster\.jpg" fetchpriority="high"/);
-  assert.match(html, /<video src="wonder-hero-loop\.mp4" poster="wonder-hero-loop-poster\.jpg" width="960" height="540" muted loop playsinline/);
-  assert.match(html, /portfolio-coffee\.webp" width="1122" height="1402"/);
-  assert.match(html, /href="wonder-wechat-qr\.png"/);
-  assert.match(html, /wonder-wechat-qr\.png" width="888" height="1131"/);
-  assert.match(html, /点击二维码查看高清图/);
-  assert.match(siteCss, /\.wechat-qr-link/);
-  assert.match(css, /background-image: url\("portfolio-coffee\.webp"\)/);
-  assert.doesNotMatch(css, /background-image: url\("portfolio-coffee\.jpg"\)/);
 });

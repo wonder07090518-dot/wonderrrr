@@ -1,20 +1,146 @@
 {
   "outputDirectory": ".",
   "rewrites": [
-    { "source": "/api/balance", "destination": "/api/account-actions?route=balance" },
-    { "source": "/api/balance-payment", "destination": "/api/account-actions?route=balance-payment" },
-    { "source": "/api/feedback", "destination": "/api/account-actions?route=feedback" },
-    { "source": "/api/recharges", "destination": "/api/account-actions?route=recharges" },
-    { "source": "/api/app-content", "destination": "/api/account-actions?route=app-content" },
-    { "source": "/api/account-delete", "destination": "/api/account-actions?route=account-delete" },
-    { "source": "/api/analytics", "destination": "/api/account-actions?route=analytics" },
-    { "source": "/api/memberships", "destination": "/api/account-actions?route=memberships" },
-    { "source": "/api/apple-auth", "destination": "/api/account-actions?route=apple-auth" },
-    { "source": "/api/apple-iap", "destination": "/api/account-actions?route=apple-iap" }
-    ,{ "source": "/api/news-submissions", "destination": "/api/account-actions?route=news-submissions" }
-    ,{ "source": "/api/news-comments", "destination": "/api/account-actions?route=news-comments" }
-    ,{ "source": "/api/support", "destination": "/api/account-actions?route=support" }
-    ,{ "source": "/api/wechat-support", "destination": "/api/account-actions?route=wechat-support" }
-    ,{ "source": "/api/agent-ops", "destination": "/api/account-actions?route=agent-ops" }
+    {
+      "source": "/api/balance",
+      "destination": "/api/account-actions?route=balance"
+    },
+    {
+      "source": "/api/balance-payment",
+      "destination": "/api/account-actions?route=balance-payment"
+    },
+    {
+      "source": "/api/feedback",
+      "destination": "/api/account-actions?route=feedback"
+    },
+    {
+      "source": "/api/recharges",
+      "destination": "/api/account-actions?route=recharges"
+    },
+    {
+      "source": "/api/app-content",
+      "destination": "/api/account-actions?route=app-content"
+    },
+    {
+      "source": "/api/account-delete",
+      "destination": "/api/account-actions?route=account-delete"
+    },
+    {
+      "source": "/api/analytics",
+      "destination": "/api/account-actions?route=analytics"
+    },
+    {
+      "source": "/api/memberships",
+      "destination": "/api/account-actions?route=memberships"
+    },
+    {
+      "source": "/api/apple-auth",
+      "destination": "/api/account-actions?route=apple-auth"
+    },
+    {
+      "source": "/api/apple-iap",
+      "destination": "/api/account-actions?route=apple-iap"
+    },
+    {
+      "source": "/api/news-submissions",
+      "destination": "/api/account-actions?route=news-submissions"
+    },
+    {
+      "source": "/api/news-comments",
+      "destination": "/api/account-actions?route=news-comments"
+    },
+    {
+      "source": "/api/support",
+      "destination": "/api/account-actions?route=support"
+    },
+    {
+      "source": "/api/wechat-support",
+      "destination": "/api/account-actions?route=wechat-support"
+    },
+    {
+      "source": "/api/agent-ops",
+      "destination": "/api/account-actions?route=agent-ops"
+    },
+    {
+      "source": "/api/inquiry",
+      "destination": "/api/account-actions?route=inquiry"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/services/banner-design.html",
+      "destination": "/etsy-listing-images.html",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/presentation-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/ppt-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/logo-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/social-cover-design.html",
+      "destination": "/etsy-listing-images.html",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/ai-image-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/ecommerce-visual-design.html",
+      "destination": "/shopify-product-images.html",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/social-media-design.html",
+      "destination": "/etsy-listing-images.html",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/ecommerce-product-image-design.html",
+      "destination": "/shopify-product-images.html",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/creative-design-services.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/menu-price-list-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/bilingual-graphic-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/ai-poster-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/minimalist-brand-design.html",
+      "destination": "/",
+      "statusCode": 308
+    },
+    {
+      "source": "/services/:path*",
+      "destination": "/",
+      "statusCode": 308
+    }
   ]
 }
