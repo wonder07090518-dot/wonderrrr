@@ -142,5 +142,6 @@
       "destination": "/",
       "statusCode": 308
     }
-  ]
+  ],
+  "buildCommand": "echo skip-legacy-build"
 }
