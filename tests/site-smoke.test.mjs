@@ -20,6 +20,24 @@ test('Wonder Lab homepage has fixed packages, samples and an accessible inquiry 
  assert.match(html, /wonder-lab\.css/);
  assert.doesNotMatch(html, /script\.min\.js|site\.min\.css|<video/);
 });
+test('Etsy positioning explains the required photo and labels the illustration', async () => {
+ const [home, etsy] = await Promise.all([read('index.html'), read('etsy-listing-images.html')]);
+ const url = 'https://help.etsy.com/hc/en-us/articles/44297885802647-How-Do-Etsy-s-Listing-Image-Requirements-Apply-to-My-Listings';
+ const hero = 'For Etsy: keep at least one unedited photo of the actual item against a real background in your listing; it does not have to be first. Wonder Lab does not take or edit that required photo. If you send several originals, we can help you mark which one to keep unedited. For additional images, we work from your real product photos. AI may assist background creation, layout exploration and lifestyle scenes, followed by human review, without changing the product’s appearance. We do not guarantee Etsy approval.';
+ const pack = 'Etsy packages cover additional listing images only. Leave one unedited photo you took of the actual item against a real background in the listing. That required photo is not part of the pack, and we do not guarantee approval.';
+ assert.ok(home.includes(hero));
+ assert.ok(home.includes(`href="${url}">Please check Etsy’s current listing image requirements.</a>`));
+ assert.ok(home.match(/id="packages".*?<\/section>/s)[0].includes(pack));
+ assert.ok(etsy.match(/FIXED VALIDATION PRICES.*?<\/section>/s)[0].includes(pack));
+ assert.ok(etsy.includes(url));
+ assert.ok(home.includes('Illustrative example — not a client project, not a real listing, and not a promise of Etsy approval.'));
+ assert.ok(home.includes('Keep in the listing: your unedited photo of the actual item against a real background.'));
+ assert.ok(home.includes('Additional images: backgrounds, layout or lifestyle treatments based on your photos.'));
+ for (const file of publicPages()) {
+  const html = await read(file);
+  assert.doesNotMatch(html, /Etsy.compliant|guaranteed\s+(?:Etsy\s+)?approval|only change background and lighting/i);
+ }
+});
 test('public pages have distinct metadata, structured data and sitemap entries', async () => {
  const sitemap = await read('sitemap.xml'); const titles = new Set();
  for (const file of publicPages()) {
@@ -47,8 +65,8 @@ test('public pages have distinct metadata, structured data and sitemap entries',
  for (const entry of entries) {
   const dates = [...entry.matchAll(/<lastmod>(.*?)<\/lastmod>/g)];
   assert.equal(dates.length, 1);
-  assert.ok(['2026-11-16','2026-11-17'].includes(dates[0][1]));
-  if (publicPages().some(file => entry.includes(`<loc>https://www.wonderadlab.com/${file === 'index.html' ? '' : file === 'guides/index.html' ? 'guides/' : file}</loc>`))) assert.equal(dates[0][1], '2026-11-17');
+  assert.ok(['2026-11-16','2026-11-17','2026-11-18'].includes(dates[0][1]));
+  if (publicPages().some(file => entry.includes(`<loc>https://www.wonderadlab.com/${file === 'index.html' ? '' : file === 'guides/index.html' ? 'guides/' : file}</loc>`))) assert.equal(dates[0][1], /<loc>https:\/\/www\.wonderadlab\.com\/(?:etsy-listing-images\.html)?<\/loc>/.test(entry) ? '2026-11-18' : '2026-11-17');
  }
  assert.equal(JSON.parse(await read('site.webmanifest')).name,'Wonder Lab');
  assert.equal(JSON.parse(await read('site.webmanifest')).short_name,'Wonder Lab');
